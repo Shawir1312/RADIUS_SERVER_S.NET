@@ -77,6 +77,13 @@ foreach ($past_expired as $v) {
         db_execute("DELETE FROM radcheck WHERE username = ?", 's', [$username]);
         db_execute("DELETE FROM radreply WHERE username = ?", 's', [$username]);
 
+        // Fix stale sessions: Mark any active radacct sessions for this user as stopped
+        db_execute(
+            "UPDATE radacct SET acctstoptime = NOW(), acctterminatecause = 'Session-Timeout'
+             WHERE username = ? AND acctstoptime IS NULL",
+            's', [$username]
+        );
+
         // Audit entry
         db_execute(
             "INSERT INTO audit_log (admin_id, admin_name, action, target, ip_address, detail, created_at)
