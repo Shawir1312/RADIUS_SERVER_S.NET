@@ -315,7 +315,7 @@ function run_auto_expire_vouchers($log = null) {
 
     // ── Find expired vouchers ──
     $past_expired = db_fetch_all(
-        "SELECT id, username FROM vouchers WHERE status = 'active' AND expired_at < NOW() AND expired_at IS NOT NULL"
+        "SELECT id, username FROM vouchers WHERE status = 'active' AND expired_at <= NOW() AND expired_at IS NOT NULL"
     );
 
     if (count($past_expired) > 0) {
