@@ -57,10 +57,13 @@ if (empty($vouchers)) {
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="/assets/css/print.css" media="print">
     <style>
-        body { background: #f5f5f5; padding: 20px; }
-        .voucher-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
+        body { background: #f5f5f5; padding: 20px; font-family: Arial, sans-serif; }
+        /* Reset grid to use block/float so it perfectly wraps */
+        .voucher-grid { display: block; width: 100%; max-width: 210mm; margin: 0 auto; background: white; padding: 5mm; }
+        .voucher-card { float: left; }
         @media print {
             body { background: white; padding: 0; }
+            .voucher-grid { padding: 0; max-width: none; }
             .no-print { display: none !important; }
         }
     </style>
@@ -105,12 +108,15 @@ if (empty($vouchers)) {
     <!-- Atas Kiri: Keterangan & No Voucher -->
     <div style="font-size: 4pt; font-family: monospace; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; margin-bottom: 1px;">
         <span style="font-weight: bold;">Ket: <?= htmlspecialchars($ket_voucher) ?></span>
-        <span>No: <?= $v['id'] ?></span>
+        <span>No: <?= $index + 1 ?></span>
     </div>
     
-    <!-- Nama Reseller / Profil -->
-    <div style="font-size: 6.5pt; font-weight: 800; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 1px 0; border-bottom: 1px solid #000;">
-        <?= htmlspecialchars($v['display_name'] ?: $v['profile_name']) ?>
+    <!-- Nama Reseller / Profil + Logo -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 2px; border-bottom: 1px solid #000; padding: 1px 0;">
+        <img src="/assets/img/logo.png" style="height: 6px;" alt="Logo">
+        <div style="font-size: 6.5pt; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <?= htmlspecialchars($v['display_name'] ?: $v['profile_name']) ?>
+        </div>
     </div>
     
     <!-- Username / Password Area -->
