@@ -34,23 +34,40 @@ if ($is_list) {
     </div>
     <div class="table-responsive">
         <table class="table" id="data-table">
-            <thead><tr>
-                <th>Nama Profil</th><th>Durasi</th><th>Kuota</th><th>Rate Limit</th>
-                <th>Harga</th><th>Router</th><th>Status</th><th>Voucher</th><th>Aksi</th>
-            </tr></thead>
+            <thead>
+                <tr>
+                    <th>Nama Profil</th>
+                    <th>Masa Aktif</th>
+                    <th>Durasi Pakai</th>
+                    <th>Kuota</th>
+                    <th>Rate Limit</th>
+                    <th>Harga</th>
+                    <th>Router</th>
+                    <th>Status</th>
+                    <th>Voucher</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
             <tbody>
             <?php if (empty($profiles)): ?>
-            <tr><td colspan="9" class="text-center text-muted py-4">Belum ada profil.</td></tr>
+            <tr><td colspan="10" class="text-center text-muted py-4">Belum ada profil.</td></tr>
             <?php else: ?>
             <?php foreach ($profiles as $p): ?>
             <tr>
                 <td>
-                    <div class="fw-600"><?= htmlspecialchars($p['name']) ?></div>
-                    <?php if ($p['description']): ?>
-                    <small class="text-muted"><?= htmlspecialchars($p['description']) ?></small>
+                    <div class="fw-bold"><?= htmlspecialchars($p['name']) ?></div>
+                    <?php if ($p['display_name']): ?>
+                    <small class="text-muted"><?= htmlspecialchars($p['display_name']) ?></small>
                     <?php endif; ?>
                 </td>
-                <td><?= $p['duration_value'] . ' ' . $p['duration_unit'] ?></td>
+                <td><?= $p['validity_value'] ?> <?= trans_unit($p['validity_unit'] ?? 'days') ?></td>
+                <td>
+                    <?php if ($p['duration_value'] == 0): ?>
+                        <span class="badge bg-secondary">Unlimited</span>
+                    <?php else: ?>
+                        <?= $p['duration_value'] ?> <?= trans_unit($p['duration_unit'] ?? 'hours') ?>
+                    <?php endif; ?>
+                </td>
                 <td><?= $p['quota_mb'] > 0 ? format_bytes($p['quota_mb'] * 1048576) : '<span class="text-muted">Unlimited</span>' ?></td>
                 <td class="font-mono">
                     <span class="text-primary">↑<?= htmlspecialchars($p['rate_up'] ?: '0') ?></span> /
@@ -138,21 +155,35 @@ include __DIR__ . '/../../include/header.php';
                            placeholder="Contoh: 1 JAM - 5MB">
                 </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">Durasi <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" name="duration_value" min="1" required
-                           value="<?= $profile['duration_value'] ?? 1 ?>">
+                <div class="col-md-6">
+                    <label class="form-label">Masa Aktif <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" name="validity_value" min="1" required
+                               value="<?= $profile['validity_value'] ?? 30 ?>">
+                        <select class="form-select" style="max-width: 120px;" name="validity_unit">
+                            <option value="minutes" <?= ($profile['validity_unit'] ?? '') === 'minutes' ? 'selected' : '' ?>>Menit</option>
+                            <option value="hours"   <?= ($profile['validity_unit'] ?? '') === 'hours' ? 'selected' : '' ?>>Jam</option>
+                            <option value="days"    <?= ($profile['validity_unit'] ?? 'days') === 'days' ? 'selected' : '' ?>>Hari</option>
+                        </select>
+                    </div>
+                    <div class="form-text">→ Batas absolut sejak pertama login (Expired_at)</div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Satuan Durasi</label>
-                    <select class="form-select" name="duration_unit">
-                        <option value="minutes" <?= ($profile['duration_unit'] ?? '') === 'minutes' ? 'selected' : '' ?>>Menit</option>
-                        <option value="hours"   <?= ($profile['duration_unit'] ?? 'hours') === 'hours' ? 'selected' : '' ?>>Jam</option>
-                        <option value="days"    <?= ($profile['duration_unit'] ?? '') === 'days' ? 'selected' : '' ?>>Hari</option>
-                    </select>
-                    <div class="form-text">→ Atribut RADIUS: <code>Session-Timeout</code></div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Durasi Pakai (0 = Unlimited)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" name="duration_value" min="0" required
+                               value="<?= $profile['duration_value'] ?? 30 ?>">
+                        <select class="form-select" style="max-width: 120px;" name="duration_unit">
+                            <option value="minutes" <?= ($profile['duration_unit'] ?? '') === 'minutes' ? 'selected' : '' ?>>Menit</option>
+                            <option value="hours"   <?= ($profile['duration_unit'] ?? 'hours') === 'hours' ? 'selected' : '' ?>>Jam</option>
+                            <option value="days"    <?= ($profile['duration_unit'] ?? '') === 'days' ? 'selected' : '' ?>>Hari</option>
+                        </select>
+                    </div>
+                    <div class="form-text">→ Total kuota waktu online (Session-Timeout)</div>
                 </div>
-                <div class="col-md-4">
+
+                <div class="col-md-12">
                     <label class="form-label">Harga (Rp)</label>
                     <input type="number" class="form-control" name="price" min="0" step="500"
                            value="<?= $profile['price'] ?? 0 ?>">

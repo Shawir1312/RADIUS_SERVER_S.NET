@@ -17,7 +17,9 @@ if (empty($_POST['csrf']) || $_POST['csrf'] !== $_SESSION['csrf_token']) {
 $id             = (int)post('id');
 $name           = sanitize(post('name'));
 $display_name   = sanitize(post('display_name', ''));
-$duration_value = max(1, (int)post('duration_value', 1));
+$validity_value = max(1, (int)post('validity_value', 30));
+$validity_unit  = in_array(post('validity_unit'), ['minutes','hours','days']) ? post('validity_unit') : 'days';
+$duration_value = max(0, (int)post('duration_value', 30)); // 0 = unlimited
 $duration_unit  = in_array(post('duration_unit'), ['minutes','hours','days']) ? post('duration_unit') : 'hours';
 $quota_mb       = max(0, (int)post('quota_mb', 0));
 $rate_up        = sanitize(post('rate_up', '0'));
@@ -35,19 +37,19 @@ if (!$name) {
 try {
     if ($id > 0) {
         db_execute(
-            "UPDATE profiles SET name=?, display_name=?, duration_value=?, duration_unit=?, quota_mb=?,
+            "UPDATE profiles SET name=?, display_name=?, validity_value=?, validity_unit=?, duration_value=?, duration_unit=?, quota_mb=?,
              rate_up=?, rate_down=?, price=?, router_id=?, description=?, is_active=? WHERE id=?",
-            'ssisissdisii',
-            [$name, $display_name, $duration_value, $duration_unit, $quota_mb,
+            'ssisisisssdisii',
+            [$name, $display_name, $validity_value, $validity_unit, $duration_value, $duration_unit, $quota_mb,
              $rate_up, $rate_down, $price, $router_id, $description, $is_active, $id]
         );
         flash_set('success', "Profil '{$name}' berhasil diperbarui.");
     } else {
         db_execute(
-            "INSERT INTO profiles (name, display_name, duration_value, duration_unit, quota_mb, rate_up, rate_down, price, router_id, description, is_active)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            'ssisissdisi',
-            [$name, $display_name, $duration_value, $duration_unit, $quota_mb,
+            "INSERT INTO profiles (name, display_name, validity_value, validity_unit, duration_value, duration_unit, quota_mb, rate_up, rate_down, price, router_id, description, is_active)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            'ssisisisssdisi',
+            [$name, $display_name, $validity_value, $validity_unit, $duration_value, $duration_unit, $quota_mb,
              $rate_up, $rate_down, $price, $router_id, $description, $is_active]
         );
         flash_set('success', "Profil '{$name}' berhasil ditambahkan.");

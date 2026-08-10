@@ -217,7 +217,7 @@ function router_status_badge(bool $online): string {
 
 function sync_active_vouchers() {
     $newly_active = db_fetch_all("
-        SELECT v.id, v.username, v.profile_id, p.name AS profile_name, p.price, v.router_id, ra.acctstarttime, p.duration_value, p.duration_unit
+        SELECT v.id, v.username, v.profile_id, p.name AS profile_name, p.price, v.router_id, ra.acctstarttime, p.validity_value, p.validity_unit
         FROM vouchers v
         JOIN radacct ra ON v.username = ra.username
         JOIN profiles p ON v.profile_id = p.id
@@ -227,9 +227,9 @@ function sync_active_vouchers() {
     foreach ($newly_active as $v) {
         db_begin();
         try {
-            $duration_s = duration_to_seconds($v['duration_value'], $v['duration_unit']);
+            $validity_s = duration_to_seconds($v['validity_value'] ?? 30, $v['validity_unit'] ?? 'days');
             $used_at = $v['acctstarttime'];
-            $expired_at = date('Y-m-d H:i:s', strtotime($used_at) + $duration_s);
+            $expired_at = date('Y-m-d H:i:s', strtotime($used_at) + $validity_s);
 
             db_execute(
                 "UPDATE vouchers SET status = 'active', used_at = ?, expired_at = ? WHERE id = ?",
@@ -270,14 +270,36 @@ function run_auto_expire_vouchers($log = null) {
 
     // ── Catch up missing expired_at ──
     $missing_exp = db_fetch_all("
-        SELECT v.id, v.used_at, p.duration_value, p.duration_unit
+        SELECT v.id, v.used_at, p.validity_value, p.validity_unit
         FROM vouchers v JOIN profiles p ON v.profile_id = p.id
         WHERE v.status = 'active' AND v.expired_at IS NULL AND v.used_at IS NOT NULL
     ");
     foreach ($missing_exp as $m) {
-        $ds = duration_to_seconds($m['duration_value'], $m['duration_unit']);
-        $exp = date('Y-m-d H:i:s', strtotime($m['used_at']) + $ds);
+        $vs = duration_to_seconds($m['validity_value'] ?? 30, $m['validity_unit'] ?? 'days');
+        $exp = date('Y-m-d H:i:s', strtotime($m['used_at']) + $vs);
         db_execute("UPDATE vouchers SET expired_at = ? WHERE id = ?", 'si', [$exp, $m['id']]);
+    }
+
+    // ── Uptime Quota (Durasi Pakai) Enforcement ──
+    // Sum all usage and update radreply Session-Timeout for active vouchers
+    $active_v = db_fetch_all("
+        SELECT v.id, v.username, p.duration_value, p.duration_unit 
+        FROM vouchers v JOIN profiles p ON v.profile_id = p.id 
+        WHERE v.status = 'active' AND p.duration_value > 0
+    ");
+    foreach ($active_v as $v) {
+        $limit = duration_to_seconds($v['duration_value'], $v['duration_unit']);
+        $used = (int)(db_fetch_one("SELECT SUM(acctsessiontime) as used FROM radacct WHERE username = ?", 's', [$v['username']])['used'] ?? 0);
+        $remaining = $limit - $used;
+
+        if ($remaining <= 0) {
+            // Force expire if quota is reached
+            db_execute("UPDATE vouchers SET expired_at = NOW() WHERE id = ?", 'i', [$v['id']]);
+            $log("Quota reached for {$v['username']}. Marked to expire.");
+        } else {
+            // Update Session-Timeout in radreply so Mikrotik enforces the remaining time on next login
+            db_execute("UPDATE radreply SET value = ? WHERE username = ? AND attribute = 'Session-Timeout'", 'ss', [(string)$remaining, $v['username']]);
+        }
     }
 
     sync_active_vouchers();

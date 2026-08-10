@@ -191,6 +191,8 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             id int(11) NOT NULL AUTO_INCREMENT,
             name varchar(100) NOT NULL,
             display_name varchar(100) DEFAULT NULL,
+            validity_value int(11) DEFAULT 30,
+            validity_unit enum('minutes','hours','days') DEFAULT 'days',
             duration_value int(11) DEFAULT 30,
             duration_unit enum('minutes','hours','days') DEFAULT 'days',
             quota_mb bigint(20) DEFAULT 0,
