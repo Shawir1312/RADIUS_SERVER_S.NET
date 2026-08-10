@@ -2,7 +2,7 @@
 <?php
 /**
  * S.NET RADIUS Manager — Cron: Auto-Expire Vouchers
- * Run via crontab: */5 * * * * php /var/www/html/radius-hotspot/cron/expire_vouchers.php
+ * Run via crontab: * /5 * * * * php /var/www/html/radius-hotspot/cron/expire_vouchers.php
  *
  * Checks radacct for sessions that have exceeded their Session-Timeout,
  * marks the corresponding vouchers as expired, and removes from radcheck/radreply.
