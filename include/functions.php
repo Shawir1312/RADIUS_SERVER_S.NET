@@ -10,7 +10,7 @@ function random_string(int $length, string $type = 'mix'): string {
     $lower  = 'abcdefghjkmnpqrstuvwxyz';   // no i,l,o
     $upper  = 'ABCDEFGHJKMNPQRSTUVWXYZ';
     $digits = '23456789';                   // no 0,1
-    $chars  = match ($type) {
+    $map = [
         'lower'  => $lower,
         'upper'  => $upper,
         'num'    => $digits,
@@ -18,8 +18,8 @@ function random_string(int $length, string $type = 'mix'): string {
         'mix'    => $lower . $digits,
         'mix1'   => $upper . $digits,
         'mix2'   => $lower . $upper . $digits,
-        default  => $lower . $digits,
-    };
+    ];
+    $chars = $map[$type] ?? ($lower . $upper . $digits);
     $result = '';
     $max    = strlen($chars) - 1;
     for ($i = 0; $i < $length; $i++) {
@@ -56,12 +56,12 @@ function mb_to_bytes(float $mb): int {
  * Convert profile duration to seconds (for Session-Timeout RADIUS attr).
  */
 function duration_to_seconds(int $value, string $unit): int {
-    return match ($unit) {
+    $map = [
         'minutes' => $value * 60,
         'hours'   => $value * 3600,
         'days'    => $value * 86400,
-        default   => $value * 3600,
-    };
+    ];
+    return $map[$unit] ?? ($value * 3600);
 }
 
 function seconds_to_human(int $secs): string {
@@ -163,12 +163,12 @@ function flash_get(): ?array {
 function flash_html(): string {
     $f = flash_get();
     if (!$f) return '';
-    $type = match ($f['type']) {
+    $map = [
         'success' => 'success',
         'error'   => 'danger',
         'warning' => 'warning',
-        default   => 'info',
-    };
+    ];
+    $type = $map[$f['type']] ?? 'info';
     return "<div class='alert alert-{$type} alert-dismissible fade show' role='alert'>"
          . htmlspecialchars($f['msg'], ENT_QUOTES)
          . "<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
@@ -200,13 +200,13 @@ function format_price(float $price): string {
 // ───── Status Badge ────────────────────────────────────────────────────
 
 function voucher_status_badge(string $status): string {
-    return match ($status) {
+    $map = [
         'unused'  => "<span class='badge bg-secondary'>Belum Dipakai</span>",
         'active'  => "<span class='badge bg-success'>Aktif</span>",
         'expired' => "<span class='badge bg-danger'>Kadaluarsa</span>",
         'deleted' => "<span class='badge bg-dark'>Dihapus</span>",
-        default   => "<span class='badge bg-light text-dark'>{$status}</span>",
-    };
+    ];
+    return $map[$status] ?? "<span class='badge bg-light text-dark'>{$status}</span>";
 }
 
 function router_status_badge(bool $online): string {

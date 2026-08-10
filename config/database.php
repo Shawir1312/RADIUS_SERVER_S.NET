@@ -39,7 +39,7 @@ function db(): mysqli {
  * Execute a prepared statement and return MySQLi result or bool.
  * Usage: db_query("SELECT * FROM routers WHERE id = ?", "i", [$id])
  */
-function db_query(string $sql, string $types = '', array $params = []): mysqli_result|bool {
+function db_query(string $sql, string $types = '', array $params = []) {
     $stmt = db()->prepare($sql);
     if ($types && $params) {
         $stmt->bind_param($types, ...$params);
