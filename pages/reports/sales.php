@@ -48,6 +48,15 @@ $by_day = db_fetch_all(
     $types, $params
 );
 
+// By profile (Reseller)
+$by_profile = db_fetch_all(
+    "SELECT profile_name, COUNT(*) AS cnt, COALESCE(SUM(price),0) AS revenue
+     FROM sales_log {$where_sql} 
+     GROUP BY profile_name 
+     ORDER BY revenue DESC",
+    $types, $params
+);
+
 // Detail rows
 $details = db_fetch_all(
     "SELECT sl.*, r.name AS router_name, a.username AS sold_by_name
@@ -151,8 +160,42 @@ include __DIR__ . '/../../include/header.php';
     <div class="card-body"><canvas id="salesChart" height="120"></canvas></div>
 </div>
 
-<!-- Detail Table -->
-<div class="card table-card">
+<!-- Profile Breakdown & Detail -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-5">
+        <div class="card h-100">
+            <div class="card-header"><h5 class="card-title"><i class="bi bi-pie-chart"></i> Penjualan per Profil (Reseller)</h5></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Profil / Reseller</th>
+                                <th class="text-center">Terjual</th>
+                                <th class="text-end">Pendapatan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($by_profile)): ?>
+                            <tr><td colspan="3" class="text-center text-muted py-3">Belum ada data penjualan</td></tr>
+                            <?php else: ?>
+                            <?php foreach ($by_profile as $bp): ?>
+                            <tr>
+                                <td class="fw-600"><?= htmlspecialchars($bp['profile_name'] ?: 'Tanpa Profil') ?></td>
+                                <td class="text-center"><span class="badge bg-secondary"><?= number_format($bp['cnt']) ?></span></td>
+                                <td class="text-end text-success fw-bold"><?= format_price((float)$bp['revenue']) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-7">
+        <div class="card table-card h-100">
     <div class="table-toolbar">
         <span class="fw-600">Detail Transaksi</span>
         <small class="text-muted">(maks. 500 baris)</small>
@@ -179,6 +222,8 @@ include __DIR__ . '/../../include/header.php';
             <?php endif; ?>
             </tbody>
         </table>
+    </div>
+        </div>
     </div>
 </div>
 
