@@ -1,0 +1,38 @@
+# S.NET RADIUS Manager — Apache .htaccess
+Options -Indexes -MultiViews
+
+# Protect sensitive directories
+<FilesMatch "^(config|lib|cron|logs)">
+    Require all denied
+</FilesMatch>
+
+# Protect config files directly
+<Files "db_local.php">
+    Require all denied
+</Files>
+<Files ".installed">
+    Require all denied
+</Files>
+
+# Allow PHP files in config/ to be included but not accessed directly
+<DirectoryMatch "^(.*/)(config|lib|cron|include|logs)/">
+    Require all denied
+</DirectoryMatch>
+
+# Prevent access to hidden files
+<FilesMatch "^\.|~$|\.bak$|\.sql$">
+    Require all denied
+</FilesMatch>
+
+# Enable compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript
+</IfModule>
+
+# PHP settings
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 32M
+    php_value post_max_size 32M
+    php_value max_execution_time 300
+    php_value session.gc_maxlifetime 7200
+</IfModule>

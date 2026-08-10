@@ -1,0 +1,254 @@
+<?php
+/**
+ * Voucher — List Page (with filters)
+ */
+$page_title       = 'Daftar Voucher';
+$show_router_filter = true;
+$all_routers      = get_all_routers();
+
+// ── Filters ──────────────────────────────────────────────
+$filter_status   = get('status', '');
+$filter_router   = (int)get('router_id');
+$filter_profile  = (int)get('profile_id');
+$filter_batch    = get('batch_id', '');
+$filter_search   = get('q', '');
+$page_num        = max(1, (int)get('page', 1));
+
+// Build WHERE
+$where  = ["v.status != 'deleted'"];
+$params = [];
+$types  = '';
+
+if ($filter_status) {
+    $where[] = "v.status = ?"; $params[] = $filter_status; $types .= 's';
+}
+if ($filter_router) {
+    $where[] = "v.router_id = ?"; $params[] = $filter_router; $types .= 'i';
+}
+if ($filter_profile) {
+    $where[] = "v.profile_id = ?"; $params[] = $filter_profile; $types .= 'i';
+}
+if ($filter_batch) {
+    $where[] = "v.batch_id = ?"; $params[] = $filter_batch; $types .= 's';
+}
+if ($filter_search) {
+    $where[] = "v.username LIKE ?"; $params[] = '%' . $filter_search . '%'; $types .= 's';
+}
+
+// Restrict by router access for operators
+$access = accessible_router_ids();
+if ($access !== null) {
+    if (empty($access)) {
+        $where[] = "1=0";
+    } else {
+        $pls = implode(',', array_fill(0, count($access), '?'));
+        $where[] = "(v.router_id IN ({$pls}) OR v.router_id IS NULL)";
+        foreach ($access as $rid) { $params[] = $rid; $types .= 'i'; }
+    }
+}
+
+$where_sql = 'WHERE ' . implode(' AND ', $where);
+
+// Count total
+$total_count = (int)(db_fetch_one(
+    "SELECT COUNT(*) AS n FROM vouchers v {$where_sql}", $types, $params
+)['n'] ?? 0);
+
+$pager = paginate($total_count, PER_PAGE, $page_num,
+    "/index.php?page=voucher_list&status={$filter_status}&router_id={$filter_router}&profile_id={$filter_profile}&batch_id=" . urlencode($filter_batch) . "&q=" . urlencode($filter_search));
+
+// Fetch vouchers
+$vouchers = db_fetch_all(
+    "SELECT v.*, p.name AS profile_name, r.name AS router_name, a.username AS gen_by
+     FROM vouchers v
+     LEFT JOIN profiles p ON v.profile_id = p.id
+     LEFT JOIN routers r ON v.router_id = r.id
+     LEFT JOIN admins a ON v.generated_by = a.id
+     {$where_sql}
+     ORDER BY v.created_at DESC
+     LIMIT ? OFFSET ?",
+    $types . 'ii', array_merge($params, [PER_PAGE, $pager['offset']])
+);
+
+$profiles = db_fetch_all("SELECT id, name FROM profiles ORDER BY name ASC");
+
+include __DIR__ . '/../../include/header.php';
+?>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Daftar Voucher</h1>
+        <p class="page-subtitle">
+            <?= number_format($total_count) ?> voucher ditemukan
+            <?= $filter_batch ? ' — Batch: <span class="font-mono">' . htmlspecialchars($filter_batch) . '</span>' : '' ?>
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <?php if ($filter_batch): ?>
+        <a href="/index.php?page=voucher_print&batch_id=<?= urlencode($filter_batch) ?>" target="_blank"
+           class="btn btn-primary">
+            <i class="bi bi-printer me-1"></i>Cetak Batch Ini
+        </a>
+        <?php endif; ?>
+        <a href="/index.php?page=generate_voucher" class="btn btn-outline-primary">
+            <i class="bi bi-plus-circle me-1"></i>Generate Baru
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="GET" action="/index.php" class="row g-2 align-items-end">
+            <input type="hidden" name="page" value="voucher_list">
+            <div class="col-sm-auto">
+                <label class="form-label">Status</label>
+                <select class="form-select form-select-sm" name="status">
+                    <option value="">Semua</option>
+                    <option value="unused"  <?= $filter_status==='unused'  ? 'selected':'' ?>>Belum Dipakai</option>
+                    <option value="active"  <?= $filter_status==='active'  ? 'selected':'' ?>>Aktif</option>
+                    <option value="expired" <?= $filter_status==='expired' ? 'selected':'' ?>>Kadaluarsa</option>
+                </select>
+            </div>
+            <div class="col-sm-auto">
+                <label class="form-label">Router</label>
+                <select class="form-select form-select-sm" name="router_id">
+                    <option value="">Semua Router</option>
+                    <?php foreach ($all_routers as $r): ?>
+                    <option value="<?= $r['id'] ?>" <?= $filter_router==$r['id'] ? 'selected':'' ?>>
+                        <?= htmlspecialchars($r['name']) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-sm-auto">
+                <label class="form-label">Profil</label>
+                <select class="form-select form-select-sm" name="profile_id">
+                    <option value="">Semua Profil</option>
+                    <?php foreach ($profiles as $p): ?>
+                    <option value="<?= $p['id'] ?>" <?= $filter_profile==$p['id'] ? 'selected':'' ?>>
+                        <?= htmlspecialchars($p['name']) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-sm-auto">
+                <label class="form-label">Batch ID</label>
+                <input type="text" class="form-control form-control-sm" name="batch_id"
+                       value="<?= htmlspecialchars($filter_batch) ?>" placeholder="Batch ID...">
+            </div>
+            <div class="col-sm-auto">
+                <label class="form-label">Cari Username</label>
+                <input type="text" class="form-control form-control-sm" name="q"
+                       value="<?= htmlspecialchars($filter_search) ?>" placeholder="Username...">
+            </div>
+            <div class="col-sm-auto">
+                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                <a href="/index.php?page=voucher_list" class="btn btn-outline-secondary btn-sm">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bulk Action Bar -->
+<div id="bulk-bar" class="alert alert-info d-none d-flex align-items-center gap-3 mb-3">
+    <span><strong id="selected-count">0</strong> voucher dipilih</span>
+    <form method="POST" action="/process/delete_voucher.php" class="d-flex gap-2">
+        <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+        <input type="hidden" name="ids" id="bulk-ids-input">
+        <button type="submit" class="btn btn-danger btn-sm"
+                data-confirm="Hapus voucher yang dipilih? Ini akan menghapus dari radcheck/radreply juga.">
+            <i class="bi bi-trash me-1"></i>Hapus Dipilih
+        </button>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="card table-card">
+    <div class="table-responsive">
+        <table class="table" id="data-table">
+            <thead><tr>
+                <th><input type="checkbox" id="select-all" class="form-check-input"></th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Profil</th>
+                <th>Router</th>
+                <th>Batch</th>
+                <th>Status</th>
+                <th>Dibuat</th>
+                <th>Aksi</th>
+            </tr></thead>
+            <tbody>
+            <?php if (empty($vouchers)): ?>
+            <tr><td colspan="9" class="text-center text-muted py-5">
+                <i class="bi bi-ticket-perforated display-4 d-block mb-2"></i>Tidak ada voucher ditemukan.
+            </td></tr>
+            <?php else: ?>
+            <?php foreach ($vouchers as $v): ?>
+            <tr>
+                <td><input type="checkbox" class="form-check-input row-check" value="<?= $v['id'] ?>"></td>
+                <td class="font-mono fw-600" style="font-size:.82rem;"><?= htmlspecialchars($v['username']) ?></td>
+                <td class="font-mono" style="font-size:.82rem;"><?= htmlspecialchars($v['password']) ?></td>
+                <td><?= htmlspecialchars($v['profile_name'] ?? '-') ?></td>
+                <td><span class="text-muted" style="font-size:.78rem;"><?= htmlspecialchars($v['router_name'] ?? 'Semua') ?></span></td>
+                <td>
+                    <a href="/index.php?page=voucher_list&batch_id=<?= urlencode($v['batch_id'] ?? '') ?>"
+                       class="font-mono text-blue" style="font-size:.72rem;">
+                        <?= htmlspecialchars($v['batch_id'] ?? '-') ?>
+                    </a>
+                </td>
+                <td><?= voucher_status_badge($v['status']) ?></td>
+                <td style="font-size:.75rem;color:var(--gray-500);">
+                    <?= date('d/m/Y H:i', strtotime($v['created_at'])) ?>
+                </td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <a href="/index.php?page=voucher_print&voucher_id=<?= $v['id'] ?>" target="_blank"
+                           class="btn btn-sm btn-outline-primary btn-icon" title="Cetak">
+                            <i class="bi bi-printer"></i>
+                        </a>
+                        <a href="/index.php?page=voucher_delete&id=<?= $v['id'] ?>"
+                           class="btn btn-sm btn-outline-danger btn-icon"
+                           data-confirm="Hapus voucher '<?= htmlspecialchars($v['username']) ?>'? Ini juga akan menghapus dari radcheck/radreply."
+                           title="Hapus">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-body py-2 d-flex justify-content-between align-items-center">
+        <small class="text-muted">
+            Menampilkan <?= count($vouchers) ?> dari <?= number_format($total_count) ?> voucher
+        </small>
+        <?= pagination_html($pager) ?>
+    </div>
+</div>
+
+<script>
+// Bulk select
+const selectAll = document.getElementById('select-all');
+const bulkBar   = document.getElementById('bulk-bar');
+const countEl   = document.getElementById('selected-count');
+const idsInput  = document.getElementById('bulk-ids-input');
+
+function updateBulk() {
+    const checked = [...document.querySelectorAll('.row-check:checked')];
+    const cnt = checked.length;
+    if (bulkBar) bulkBar.classList.toggle('d-none', cnt === 0);
+    if (bulkBar) bulkBar.classList.toggle('d-flex', cnt > 0);
+    if (countEl) countEl.textContent = cnt;
+    if (idsInput) idsInput.value = checked.map(cb => cb.value).join(',');
+}
+selectAll?.addEventListener('change', function() {
+    document.querySelectorAll('.row-check').forEach(cb => cb.checked = this.checked);
+    updateBulk();
+});
+document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateBulk));
+</script>
+
+<?php include __DIR__ . '/../../include/footer.php'; ?>

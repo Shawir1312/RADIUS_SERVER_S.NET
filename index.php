@@ -1,0 +1,73 @@
+<?php
+/**
+ * S.NET RADIUS Manager — Main Dispatcher (index.php)
+ * Routes requests to appropriate page files.
+ */
+
+// Bootstrap
+require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/auth.php';
+require_once __DIR__ . '/include/functions.php';
+
+// Check installation
+if (!file_exists(__DIR__ . '/config/.installed')) {
+    header('Location: /install.php');
+    exit;
+}
+
+// Require login
+auth_check();
+
+// Route
+$page = get('page', 'dashboard');
+
+// Whitelist of valid pages → file mapping
+$routes = [
+    'dashboard'        => 'pages/dashboard.php',
+    // Routers
+    'router_list'      => 'pages/routers/list.php',
+    'router_add'       => 'pages/routers/add.php',
+    'router_edit'      => 'pages/routers/edit.php',
+    'router_delete'    => 'pages/routers/delete.php',
+    // Profiles
+    'profile_list'     => 'pages/profiles/list.php',
+    'profile_add'      => 'pages/profiles/add.php',
+    'profile_edit'     => 'pages/profiles/edit.php',
+    'profile_delete'   => 'pages/profiles/delete.php',
+    // Vouchers
+    'voucher_list'     => 'pages/vouchers/list.php',
+    'generate_voucher' => 'pages/vouchers/generate.php',
+    'voucher_print'    => 'pages/vouchers/print.php',
+    'voucher_delete'   => 'pages/vouchers/delete.php',
+    // Monitoring
+    'active_users'     => 'pages/monitoring/active.php',
+    // Reports
+    'report_sales'     => 'pages/reports/sales.php',
+    'report_usage'     => 'pages/reports/usage.php',
+    'report_export'    => 'pages/reports/export.php',
+    // Admins (superadmin only)
+    'admin_list'       => 'pages/admins/list.php',
+    'admin_add'        => 'pages/admins/add.php',
+    'admin_edit'       => 'pages/admins/edit.php',
+    // Misc
+    'audit_log'        => 'pages/settings/audit_log.php',
+    'backup'           => 'pages/settings/backup.php',
+    'settings'         => 'pages/settings/general.php',
+];
+
+$file = $routes[$page] ?? null;
+
+if ($file && file_exists(__DIR__ . '/' . $file)) {
+    include __DIR__ . '/' . $file;
+} else {
+    // 404
+    $page_title = '404 Not Found';
+    include __DIR__ . '/include/header.php';
+    echo '<div class="text-center py-5">
+        <i class="bi bi-emoji-frown display-1 text-muted d-block mb-3"></i>
+        <h3>Halaman tidak ditemukan</h3>
+        <a href="/index.php?page=dashboard" class="btn btn-primary mt-2">Kembali ke Dashboard</a>
+    </div>';
+    include __DIR__ . '/include/footer.php';
+}

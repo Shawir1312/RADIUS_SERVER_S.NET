@@ -1,0 +1,41 @@
+# S.NET RADIUS Hotspot Manager — .gitignore
+
+# ── Konfigurasi Sensitif (JANGAN di-commit!) ──────────────────
+config/db_local.php
+config/.installed
+logs/
+*.log
+
+# ── Temporary / Cache ─────────────────────────────────────────
+*.tmp
+*.cache
+*.swp
+*.swo
+*~
+
+# ── PHP errors / sessions ─────────────────────────────────────
+php_errors.log
+sessions/
+
+# ── OS Files ──────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ── Editor/IDE ────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ── Backup dumps dari aplikasi ────────────────────────────────
+snet_backup_*.sql
+*.bak
+
+# ── Upload temporary ──────────────────────────────────────────
+uploads/tmp/
+
+# ── Node (jika ada) ───────────────────────────────────────────
+node_modules/
