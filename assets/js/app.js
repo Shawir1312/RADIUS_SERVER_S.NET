@@ -260,3 +260,34 @@ document.querySelectorAll('.alert.auto-dismiss').forEach(el => {
         if (bsAlert) bsAlert.close();
     }, 5000);
 });
+
+// ── Theme Toggle ───────────────────────────────────────
+const themeToggles = document.querySelectorAll('.theme-toggle');
+function applyThemeIcons(theme) {
+    document.querySelectorAll('.theme-toggle').forEach(btn => {
+        const darkIcon = btn.querySelector('.dark-icon');
+        const lightIcon = btn.querySelector('.light-icon');
+        if (darkIcon && lightIcon) {
+            if (theme === 'dark') {
+                darkIcon.classList.remove('d-none');
+                lightIcon.classList.add('d-none');
+            } else {
+                darkIcon.classList.add('d-none');
+                lightIcon.classList.remove('d-none');
+            }
+        }
+    });
+}
+
+if (themeToggles.length > 0) {
+    applyThemeIcons(document.documentElement.getAttribute('data-bs-theme') || 'light');
+    themeToggles.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('snet-theme', newTheme);
+            applyThemeIcons(newTheme);
+        });
+    });
+}

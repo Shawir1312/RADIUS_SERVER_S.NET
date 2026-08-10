@@ -46,10 +46,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/assets/css/app.css?v=<?= filemtime(__DIR__ . '/assets/css/app.css') ?>">
     <style>
+    <style>
         body { margin: 0; padding: 0; }
+        .theme-toggle-login { position: fixed; top: 15px; right: 15px; }
     </style>
+    <script>
+        (function() {
+            const theme = localStorage.getItem('snet-theme') || 'light';
+            if (theme === 'dark') document.documentElement.setAttribute('data-bs-theme', 'dark');
+        })();
+    </script>
 </head>
 <body class="login-body">
+
+<button type="button" class="btn btn-outline-secondary theme-toggle theme-toggle-login" title="Ganti Tema">
+    <i class="bi bi-moon-fill dark-icon d-none"></i>
+    <i class="bi bi-sun-fill light-icon"></i>
+</button>
 
 <div class="login-card">
     <!-- Logo -->
@@ -106,18 +119,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/app.js?v=<?= filemtime(__DIR__ . '/assets/js/app.js') ?>"></script>
 <script>
 const pwd = document.getElementById('password');
 const eye = document.getElementById('eyeIcon');
-document.getElementById('togglePwd').addEventListener('click', function() {
-    if (pwd.type === 'password') {
-        pwd.type = 'text';
-        eye.className = 'bi bi-eye-slash';
-    } else {
-        pwd.type = 'password';
-        eye.className = 'bi bi-eye';
-    }
-});
+const toggleBtn = document.getElementById('togglePwd');
+if(toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+        if (pwd.type === 'password') {
+            pwd.type = 'text';
+            eye.className = 'bi bi-eye-slash';
+        } else {
+            pwd.type = 'password';
+            eye.className = 'bi bi-eye';
+        }
+    });
+}
 // Auto-dismiss alerts
 document.querySelectorAll('.auto-dismiss').forEach(el => {
     setTimeout(() => el.style.display = 'none', 5000);

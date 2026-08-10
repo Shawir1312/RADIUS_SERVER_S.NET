@@ -34,6 +34,13 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
     <link rel="stylesheet" href="/assets/css/app.css?v=<?= filemtime(__DIR__ . '/../assets/css/app.css') ?>">
     <!-- Print CSS -->
     <link rel="stylesheet" href="/assets/css/print.css" media="print">
+    <!-- Dark Mode Init -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('snet-theme') || 'light';
+            if (theme === 'dark') document.documentElement.setAttribute('data-bs-theme', 'dark');
+        })();
+    </script>
 </head>
 <body>
 <!-- Page Loader -->
@@ -70,6 +77,12 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
             <?php endforeach; ?>
         </select>
         <?php endif; ?>
+
+        <!-- Theme Toggle -->
+        <button type="button" class="btn btn-sm btn-icon border-0 me-2 theme-toggle" title="Ganti Tema">
+            <i class="bi bi-moon-fill dark-icon d-none" style="font-size:1.1rem; color:var(--gray-700)"></i>
+            <i class="bi bi-sun-fill light-icon" style="font-size:1.1rem; color:var(--gray-700)"></i>
+        </button>
 
         <!-- User Menu -->
         <div class="dropdown">

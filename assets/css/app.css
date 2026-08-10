@@ -755,3 +755,75 @@ table.dataTable thead th { background: var(--gray-50) !important; }
   from { opacity: 0; transform: translateX(40px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
+/* ================================================================
+   Dark Mode Overrides
+   ================================================================ */
+[data-bs-theme="dark"] body {
+  background: #151521;
+  color: #e4e6ef;
+}
+[data-bs-theme="dark"] #topbar,
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .card-header,
+[data-bs-theme="dark"] .login-card,
+[data-bs-theme="dark"] .router-card,
+[data-bs-theme="dark"] .toast-item,
+[data-bs-theme="dark"] .widget-card {
+  background: #1e1e2d !important;
+  border-color: #2b2b40 !important;
+}
+[data-bs-theme="dark"] .border-bottom,
+[data-bs-theme="dark"] .border-top,
+[data-bs-theme="dark"] .login-divider {
+  border-color: #2b2b40 !important;
+}
+[data-bs-theme="dark"] .topbar-title,
+[data-bs-theme="dark"] .topbar-user-name,
+[data-bs-theme="dark"] .card-title,
+[data-bs-theme="dark"] h1, [data-bs-theme="dark"] h2, [data-bs-theme="dark"] h3, [data-bs-theme="dark"] h4, [data-bs-theme="dark"] h5, [data-bs-theme="dark"] h6 {
+  color: #e4e6ef !important;
+}
+[data-bs-theme="dark"] .text-muted, [data-bs-theme="dark"] .text-secondary {
+  color: #5e6278 !important;
+}
+[data-bs-theme="dark"] .bg-light {
+  background: #151521 !important;
+}
+[data-bs-theme="dark"] .bg-white {
+  background: #1e1e2d !important;
+}
+[data-bs-theme="dark"] .table {
+  --bs-table-bg: transparent;
+  --bs-table-color: #e4e6ef;
+  --bs-table-border-color: #2b2b40;
+  --bs-table-striped-bg: #1b1b29;
+  --bs-table-hover-bg: #2b2b40;
+}
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .input-group-text {
+  background-color: #151521;
+  border-color: #2b2b40;
+  color: #e4e6ef;
+}
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  background-color: #151521;
+  color: #e4e6ef;
+}
+[data-bs-theme="dark"] .modal-content, [data-bs-theme="dark"] .dropdown-menu {
+  background: #1e1e2d;
+  border-color: #2b2b40;
+}
+[data-bs-theme="dark"] .dropdown-item {
+  color: #e4e6ef;
+}
+[data-bs-theme="dark"] .dropdown-item:hover {
+  background: #2b2b40;
+  color: #fff;
+}
+[data-bs-theme="dark"] .login-logo img {
+  background-color: transparent !important;
+  border-radius: 0;
+}
