@@ -136,10 +136,32 @@ include __DIR__ . '/../../include/header.php';
                     <?php endforeach; ?>
                 </select>
             </div>
+            <?php
+            // Fetch batches
+            $batch_list = db_fetch_all(
+                "SELECT v.batch_id, DATE(MAX(v.created_at)) as created_date, COUNT(*) as vcr_count, p.name AS profile_name
+                 FROM vouchers v
+                 LEFT JOIN profiles p ON v.profile_id = p.id
+                 WHERE v.batch_id IS NOT NULL AND v.batch_id != ''
+                 GROUP BY v.batch_id, p.name
+                 ORDER BY MAX(v.created_at) DESC
+                 LIMIT 50"
+            );
+            ?>
             <div class="col-sm-auto">
-                <label class="form-label">Batch ID</label>
-                <input type="text" class="form-control form-control-sm" name="batch_id"
-                       value="<?= htmlspecialchars($filter_batch) ?>" placeholder="Batch ID...">
+                <label class="form-label">Pilih Batch / Comment</label>
+                <select class="form-select form-select-sm" name="batch_id" style="max-width: 300px;">
+                    <option value="">— Semua Batch —</option>
+                    <?php foreach ($batch_list as $b): 
+                        $date_fmt = date('d M Y', strtotime($b['created_date']));
+                        $prof = $b['profile_name'] ?: 'Tanpa Profil';
+                        $label = "{$date_fmt} — {$prof} [{$b['vcr_count']} vcr] · {$b['batch_id']}";
+                    ?>
+                    <option value="<?= htmlspecialchars($b['batch_id']) ?>" <?= $filter_batch === $b['batch_id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($label) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="col-sm-auto">
                 <label class="form-label">Cari Username</label>
