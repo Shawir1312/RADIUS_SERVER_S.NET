@@ -23,6 +23,11 @@ $today_sales = db_fetch_one(
     "SELECT COUNT(*) AS cnt, COALESCE(SUM(price),0) AS total FROM sales_log WHERE DATE(sold_at) = CURDATE()"
 ) ?? ['cnt' => 0, 'total' => 0];
 
+// This month's sales
+$month_sales = db_fetch_one(
+    "SELECT COUNT(*) AS cnt, COALESCE(SUM(price),0) AS total FROM sales_log WHERE MONTH(sold_at) = MONTH(CURDATE()) AND YEAR(sold_at) = YEAR(CURDATE())"
+) ?? ['cnt' => 0, 'total' => 0];
+
 // Recent voucher batches
 $recent_batches = db_fetch_all(
     "SELECT v.batch_id, v.created_at, v.router_id, r.name AS router_name, p.name AS profile_name,
@@ -150,22 +155,37 @@ include __DIR__ . '/../include/header.php';
         </div>
     </div>
 
-    <!-- Today's Revenue -->
+    <!-- Revenue -->
     <div class="col-12 col-lg-4">
         <div class="card h-100">
             <div class="card-header">
-                <h5 class="card-title"><i class="bi bi-cash-stack"></i> Penjualan Hari Ini</h5>
+                <h5 class="card-title"><i class="bi bi-cash-stack"></i> Ringkasan Penjualan</h5>
             </div>
-            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
-                <div class="mb-2" style="font-size:2.5rem;font-weight:800;color:var(--blue);">
-                    <?= $today_sales['cnt'] ?>
+            <div class="card-body p-0">
+                <div class="row g-0 h-100">
+                    <!-- Hari Ini -->
+                    <div class="col-6 border-end d-flex flex-column align-items-center justify-content-center text-center p-3">
+                        <div class="text-muted mb-2" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Hari Ini</div>
+                        <div class="mb-1" style="font-size:2rem;font-weight:800;color:var(--blue);line-height:1;">
+                            <?= $today_sales['cnt'] ?> <span style="font-size:0.8rem;font-weight:normal;color:#6c757d">pcs</span>
+                        </div>
+                        <div style="font-size:1.15rem;font-weight:700;color:var(--red);">
+                            <?= format_price((float)$today_sales['total']) ?>
+                        </div>
+                    </div>
+                    <!-- Bulan Ini -->
+                    <div class="col-6 d-flex flex-column align-items-center justify-content-center text-center p-3">
+                        <div class="text-muted mb-2" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Bulan Ini</div>
+                        <div class="mb-1" style="font-size:2rem;font-weight:800;color:var(--blue);line-height:1;">
+                            <?= $month_sales['cnt'] ?> <span style="font-size:0.8rem;font-weight:normal;color:#6c757d">pcs</span>
+                        </div>
+                        <div style="font-size:1.15rem;font-weight:700;color:var(--red);">
+                            <?= format_price((float)$month_sales['total']) ?>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-muted mb-3">voucher terjual</div>
-                <div style="font-size:1.4rem;font-weight:700;color:var(--red);">
-                    <?= format_price((float)$today_sales['total']) ?>
-                </div>
-                <div class="text-muted">total pendapatan</div>
-                <hr class="w-100 my-3">
+            </div>
+            <div class="card-footer bg-white border-top-0 pt-0 pb-3">
                 <a href="/index.php?page=report_sales" class="btn btn-outline-primary btn-sm w-100">
                     <i class="bi bi-bar-chart me-1"></i>Lihat Laporan Lengkap
                 </a>
