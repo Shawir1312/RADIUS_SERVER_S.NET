@@ -303,8 +303,18 @@ document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('chang
 
                 <div class="mb-3">
                     <label class="form-label">Hapus Berdasarkan Batch ID</label>
-                    <input type="text" class="form-control" name="batch_id" placeholder="Contoh: B260810ABCD">
-                    <div class="form-text">Biarkan kosong jika tidak ingin memfilter berdasarkan Batch.</div>
+                    <select class="form-select" name="batch_id">
+                        <option value="">— Kosongkan jika tidak memfilter Batch —</option>
+                        <?php foreach ($batch_list as $b): 
+                            $date_fmt = date('d M Y', strtotime($b['created_date']));
+                            $prof = $b['profile_name'] ?: 'Tanpa Profil';
+                            $label = "{$date_fmt} — {$prof} [{$b['vcr_count']} vcr] · {$b['batch_id']}";
+                        ?>
+                        <option value="<?= htmlspecialchars($b['batch_id']) ?>">
+                            <?= htmlspecialchars($label) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <div class="mb-3">
