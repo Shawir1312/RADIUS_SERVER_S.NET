@@ -111,11 +111,11 @@ sql {
 
                 <div class="bg-dark text-light p-3 rounded" style="font-family:monospace;font-size:.85rem;">
 <pre class="mb-0 text-warning"># Jalankan pengecekan voucher expired setiap 5 menit
-*/5 * * * * /usr/bin/php <?= realpath(__DIR__ . '/../../cron/expire_vouchers.php') ?></pre>
+*/5 * * * * /www/server/php/81/bin/php <?= realpath(__DIR__ . '/../../cron/expire_vouchers.php') ?></pre>
                 </div>
                 
                 <div class="alert alert-info mt-3 mb-0" style="font-size:0.85rem;">
-                    <i class="bi bi-info-circle-fill me-2"></i> <strong>Catatan:</strong> Pastikan path PHP (<code>/usr/bin/php</code>) sesuai dengan sistem Anda. Jika menggunakan cPanel, Anda juga bisa menambahkan perintah di atas pada menu <strong>Cron Jobs</strong>.
+                    <i class="bi bi-info-circle-fill me-2"></i> <strong>Catatan:</strong> Path PHP di atas (<code>/www/server/php/81/bin/php</code>) adalah contoh untuk pengguna <strong>aaPanel (PHP 8.1)</strong>. Sesuaikan dengan path PHP CLI di server Anda (contoh lain: <code>/usr/bin/php</code>).
                 </div>
             </div>
         </div>
