@@ -230,15 +230,16 @@ include __DIR__ . '/../../include/header.php';
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Berlaku untuk Router</label>
+                    <label class="form-label">Cabang / Lokasi <span class="text-danger">*</span></label>
                     <select class="form-select" name="router_id">
-                        <option value="">Semua Router</option>
+                        <option value="">Semua Cabang (Global)</option>
                         <?php foreach ($all_routers as $r): ?>
                         <option value="<?= $r['id'] ?>" <?= ($profile['router_id'] ?? '') == $r['id'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($r['name']) ?> (<?= htmlspecialchars($r['ip_address']) ?>)
                         </option>
                         <?php endforeach; ?>
                     </select>
+                    <div class="form-text">Profil ini akan masuk ke cabang mana saat penagihan?</div>
                 </div>
 
                 <div class="col-md-3">
