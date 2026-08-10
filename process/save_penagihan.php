@@ -71,7 +71,7 @@ try {
     db_execute(
         "INSERT INTO penagihan (router_id, profile_id, total_pendapatan, bagian_reseller, pendapatan_bersih, estimasi_voucher, voucher_aktual, status_kecocokan, catatan, ditagih_oleh, tanggal) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        'iidddiisiss',
+        'iidddiissis',
         [
             $router_id, $profile_id, $total_pendapatan, $bagian_reseller, $pendapatan_bersih, 
             $estimasi_voucher, $unbilled_vouchers, $status, $catatan, $admin_id, $tanggal
