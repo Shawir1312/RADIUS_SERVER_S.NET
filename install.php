@@ -427,7 +427,7 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
     <p class="text-muted">Klik tombol di bawah untuk membuat semua tabel yang diperlukan (FreeRADIUS + aplikasi).</p>
     <div class="bg-light rounded p-3 mb-3" style="font-size:.75rem;font-family:monospace;">
         radcheck, radreply, radgroupcheck, radgroupreply, radusergroup,<br>
-        radacct, nas, routers, profiles, vouchers, admins, audit_log, sales_log
+        radacct, nas, routers, profiles, vouchers, admins, audit_log, sales_log, penagihan
     </div>
     <form method="POST" action="/install.php?step=4">
         <button class="btn btn-primary w-100">Buat Tabel <i class="bi bi-arrow-right ms-2"></i></button>
