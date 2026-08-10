@@ -69,8 +69,23 @@ sql {
     usergroup_table = "radusergroup"
     nas_table = "nas"
     
+    # Nama user untuk query
+    sql_user_name = "%{%{Stripped-User-Name}:-%{%{User-Name}:-DEFAULT}}"
+    default_user_profile = ""
+
+    # Simultaneous-Use check (cegah 1 voucher dipakai banyak orang)
+    simul_count_query = "SELECT COUNT(*) FROM ${acct_table1} WHERE username = '%{SQL-User-Name}' AND acctstoptime IS NULL"
+    simul_verify_query = "SELECT radacctid, acctsessionid, username, nasipaddress, nasportid, framedipaddress, callingstationid, framedprotocol FROM ${acct_table1} WHERE username = '%{SQL-User-Name}' AND acctstoptime IS NULL"
+
     read_clients = yes
     client_table = "nas"
+    group_attribute = "SQL-Group"
+
+    # Karakter aman untuk query
+    safe_characters = "@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_: /"
+
+    # Muat query standar FreeRADIUS untuk MySQL
+    $INCLUDE ${modconfdir}/${.:name}/main/${dialect}/queries.conf
 }
 
 # /etc/freeradius/3.0/clients.conf
