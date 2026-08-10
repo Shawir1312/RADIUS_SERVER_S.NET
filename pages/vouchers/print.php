@@ -11,6 +11,7 @@ $voucher_id = (int)get('voucher_id');
 if ($batch_id) {
     $vouchers = db_fetch_all(
         "SELECT v.*, p.name AS profile_name, p.display_name, p.duration_value, p.duration_unit,
+                p.validity_value, p.validity_unit,
                 p.quota_mb, p.rate_up, p.rate_down, p.price,
                 r.name AS router_name
          FROM vouchers v
@@ -22,6 +23,7 @@ if ($batch_id) {
 } elseif ($voucher_id) {
     $row = db_fetch_one(
         "SELECT v.*, p.name AS profile_name, p.display_name, p.duration_value, p.duration_unit,
+                p.validity_value, p.validity_unit,
                 p.quota_mb, p.rate_up, p.rate_down, p.price,
                 r.name AS router_name
          FROM vouchers v
@@ -88,50 +90,55 @@ if (empty($vouchers)) {
 
 <!-- Voucher Cards Grid -->
 <div class="voucher-grid">
-<?php foreach ($vouchers as $v):
-    $duration_str = $v['duration_value'] . ' ' . match($v['duration_unit']) {
-        'minutes' => 'Menit', 'hours' => 'Jam', 'days' => 'Hari', default => $v['duration_unit']
-    };
-    $quota_str = $v['quota_mb'] > 0 ? format_bytes($v['quota_mb'] * 1048576) : 'Unlimited';
-    $rate_str  = ($v['rate_up'] && $v['rate_down']) ? $v['rate_up'].'↑ / '.$v['rate_down'].'↓' : '-';
-    $price_str = $v['price'] > 0 ? format_price((float)$v['price']) : '';
-    $ssid      = htmlspecialchars($v['router_name'] ?? 'WiFi Hotspot');
+<?php foreach ($vouchers as $index => $v):
+    $dur_unit_id = match($v['duration_unit']) { 'minutes'=>'Mnt', 'hours'=>'Jam', 'days'=>'Hari', default=>$v['duration_unit'] };
+    $val_unit_id = match($v['validity_unit'] ?? '') { 'minutes'=>'Mnt', 'hours'=>'Jam', 'days'=>'Hari', default=>($v['validity_unit'] ?? '') };
+    
+    $duration_str = $v['duration_value'] == 0 ? 'Unlimited' : $v['duration_value'] . ' ' . $dur_unit_id;
+    $validity_str = ($v['validity_value'] ?? 0) == 0 ? 'Unlimited' : ($v['validity_value'] ?? 0) . ' ' . $val_unit_id;
+    
+    $price_str = $v['price'] > 0 ? format_price((float)$v['price']) : 'Gratis';
+    $ket_voucher = $batch_id ? explode('-', $batch_id)[0] : 'VOUCHER';
 ?>
-<div class="voucher-card">
-    <div class="vc-header">
-        <?= APP_COMPANY ?> — Voucher Internet
+<div class="voucher-card" style="page-break-inside: avoid; border: 1px solid #000; padding: 2px; width: 27mm; height: 30mm; float: left; margin-right: 1mm; margin-bottom: 1mm; box-sizing: border-box; display: flex; flex-direction: column; background: #fff; overflow: hidden; position: relative;">
+    
+    <!-- Atas Kiri: Keterangan & No Voucher -->
+    <div style="font-size: 4pt; font-family: monospace; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; margin-bottom: 1px;">
+        <span style="font-weight: bold;">Ket: <?= htmlspecialchars($ket_voucher) ?></span>
+        <span>No: <?= $v['id'] ?></span>
     </div>
-    <div class="text-center mb-1">
-        <img src="/assets/img/logo.png" class="vc-logo" alt="Logo" style="height:24px;">
+    
+    <!-- Nama Reseller / Profil -->
+    <div style="font-size: 6.5pt; font-weight: 800; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 1px 0; border-bottom: 1px solid #000;">
+        <?= htmlspecialchars($v['display_name'] ?: $v['profile_name']) ?>
     </div>
-
-    <?php if ($v['status'] === 'unused'): ?>
-    <div class="vc-user"><?= htmlspecialchars($v['username']) ?></div>
-    <div class="text-center mb-1" style="font-size:.65rem;color:var(--gray-500);">PASSWORD</div>
-    <div class="vc-pass"><?= htmlspecialchars($v['password']) ?></div>
-    <?php else: ?>
-    <div class="vc-user text-muted"><?= htmlspecialchars($v['username']) ?></div>
-    <div class="text-center"><span class="badge bg-danger"><?= ucfirst($v['status']) ?></span></div>
-    <?php endif; ?>
-
-    <hr style="margin:8px 0;border-color:var(--gray-200);">
-    <div class="vc-meta">
-        <span><strong>Profil:</strong> <?= htmlspecialchars($v['display_name'] ?: $v['profile_name']) ?></span>
-        <span><strong>Masa Aktif:</strong> <?= $duration_str ?></span>
-        <span><strong>Kuota:</strong> <?= $quota_str ?></span>
-        <span><strong>Kecepatan:</strong> <?= $rate_str ?></span>
-        <?php if ($ssid !== 'WiFi Hotspot'): ?>
-        <span><strong>Router:</strong> <?= $ssid ?></span>
-        <?php endif; ?>
-        <?php if ($price_str): ?>
-        <span style="margin-top:4px;"><strong>Harga:</strong> <span style="color:var(--red);font-weight:700;"><?= $price_str ?></span></span>
+    
+    <!-- Username / Password Area -->
+    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1px 0;">
+        <?php if ($v['username'] === $v['password']): ?>
+            <div style="font-size: 4pt; color: #333; margin-bottom: 1px;">KODE VOUCHER</div>
+            <div style="font-weight: 900; font-size: 9.5pt; letter-spacing: 0.5px;"><?= htmlspecialchars($v['username']) ?></div>
+        <?php else: ?>
+            <div style="font-size: 4pt; color: #333;">USER</div>
+            <div style="font-weight: 900; font-size: 8pt; letter-spacing: 0.5px;"><?= htmlspecialchars($v['username']) ?></div>
+            <div style="font-size: 4pt; color: #333; margin-top: 1px;">PASS</div>
+            <div style="font-weight: 900; font-size: 8pt; letter-spacing: 0.5px;"><?= htmlspecialchars($v['password']) ?></div>
         <?php endif; ?>
     </div>
-
-    <div class="text-center mt-2" style="font-size:.62rem;color:var(--gray-500);">
-        <?= date('d/m/Y H:i', strtotime($v['created_at'])) ?>
-        <?= $batch_id ? ' • ' . htmlspecialchars($batch_id) : '' ?>
+    
+    <!-- Meta Data Area -->
+    <div style="font-size: 4.5pt; border-top: 1px dashed #000; padding-top: 1px;">
+        <div style="display: flex; justify-content: space-between;">
+            <span>Masa Aktif:</span><span style="font-weight: bold;"><?= $validity_str ?></span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>Durasi:</span><span style="font-weight: bold;"><?= $duration_str ?></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 1px;">
+            <span style="font-weight: bold; font-size: 5.5pt;">Harga:</span><span style="font-weight: 900; font-size: 6pt; color: #000;"><?= $price_str ?></span>
+        </div>
     </div>
+    
 </div>
 <?php endforeach; ?>
 </div>

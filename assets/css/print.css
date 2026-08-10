@@ -22,25 +22,15 @@
   }
 
   .voucher-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px;
+    display: block; /* use block for floats */
+    padding: 0;
+    margin: 0;
   }
 
-  .voucher-card {
-    width: 220px !important;
-    border: 1.5px dashed #1565C0 !important;
-    border-radius: 8px !important;
-    padding: 10px !important;
-    margin: 0 !important;
-    display: inline-block !important;
-    page-break-inside: avoid;
-    box-shadow: none !important;
-  }
+  /* .voucher-card styles are now inline in print.php */
 
   @page {
-    margin: 10mm;
-    size: A4;
+    margin: 5mm;
+    size: A4 portrait;
   }
 }
