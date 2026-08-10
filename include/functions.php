@@ -250,3 +250,87 @@ function sync_active_vouchers() {
         }
     }
 }
+
+/**
+ * Global cleanup routine to expire vouchers and clear stale sessions.
+ */
+function run_auto_expire_vouchers($log = null) {
+    if (!$log) $log = function($msg) {};
+
+    // ── Clear bogus expired_at for unused vouchers ──
+    db_execute("UPDATE vouchers SET expired_at = NULL WHERE status = 'unused' AND expired_at IS NOT NULL");
+
+    // ── Fix Stale Sessions globally ──
+    db_execute("
+        UPDATE radacct ra
+        JOIN vouchers v ON ra.username = v.username
+        SET ra.acctstoptime = NOW(), ra.acctterminatecause = 'Admin-Reset'
+        WHERE v.status IN ('expired', 'deleted') AND ra.acctstoptime IS NULL
+    ");
+
+    // ── Catch up missing expired_at ──
+    $missing_exp = db_fetch_all("
+        SELECT v.id, v.used_at, p.duration_value, p.duration_unit
+        FROM vouchers v JOIN profiles p ON v.profile_id = p.id
+        WHERE v.status = 'active' AND v.expired_at IS NULL AND v.used_at IS NOT NULL
+    ");
+    foreach ($missing_exp as $m) {
+        $ds = duration_to_seconds($m['duration_value'], $m['duration_unit']);
+        $exp = date('Y-m-d H:i:s', strtotime($m['used_at']) + $ds);
+        db_execute("UPDATE vouchers SET expired_at = ? WHERE id = ?", 'si', [$exp, $m['id']]);
+    }
+
+    sync_active_vouchers();
+
+    // ── Find expired vouchers ──
+    $past_expired = db_fetch_all(
+        "SELECT id, username FROM vouchers WHERE status = 'active' AND expired_at < NOW() AND expired_at IS NOT NULL"
+    );
+
+    if (count($past_expired) > 0) {
+        require_once __DIR__ . '/../lib/routeros_api.class.php';
+    }
+
+    foreach ($past_expired as $v) {
+        $username = $v['username'];
+        $log("Expiring: {$username}");
+        db_begin();
+        try {
+            db_execute("UPDATE vouchers SET status = 'expired' WHERE id = ?", 'i', [(int)$v['id']]);
+            db_execute("DELETE FROM radcheck WHERE username = ?", 's', [$username]);
+            db_execute("DELETE FROM radreply WHERE username = ?", 's', [$username]);
+            db_execute("
+                UPDATE radacct SET acctstoptime = NOW(), acctterminatecause = 'Session-Timeout'
+                WHERE username = ? AND acctstoptime IS NULL", 's', [$username]
+            );
+            db_execute(
+                "INSERT INTO audit_log (admin_id, admin_name, action, target, ip_address, detail, created_at)
+                 VALUES (0, 'SYSTEM', 'auto_expire', ?, 'system', 'Expired by date', NOW())", 's', [$username]
+            );
+            db_commit();
+            $log("  → Voucher expired and removed from RADIUS tables");
+
+            // Kick from Mikrotik
+            $acct = db_fetch_one("SELECT nasipaddress FROM radacct WHERE username = ? ORDER BY acctstarttime DESC LIMIT 1", 's', [$username]);
+            if ($acct) {
+                $router = db_fetch_one("SELECT ip_address, api_user, api_password, api_port FROM routers WHERE ip_address = ? OR nas_ip = ?", 'ss', [$acct['nasipaddress'], $acct['nasipaddress']]);
+                if ($router) {
+                    try {
+                        $api = new RouterosAPI();
+                        $api->debug = false;
+                        if ($api->connect($router['ip_address'], $router['api_user'], $router['api_password'], (int)$router['api_port'])) {
+                            $active_users = $api->comm("/ip/hotspot/active/print", ["?user" => $username]);
+                            foreach ($active_users as $au) {
+                                $api->comm("/ip/hotspot/active/remove", [".id" => $au['.id']]);
+                                $log("  → Kicked {$username} from Mikrotik ({$router['ip_address']})");
+                            }
+                            $api->disconnect();
+                        }
+                    } catch (Throwable $e) {}
+                }
+            }
+        } catch (Throwable $e) {
+            db_rollback();
+        }
+    }
+}
