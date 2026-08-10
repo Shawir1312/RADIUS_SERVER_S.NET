@@ -58,13 +58,45 @@ if (empty($vouchers)) {
     <link rel="stylesheet" href="/assets/css/print.css" media="print">
     <style>
         body { background: #f5f5f5; padding: 20px; font-family: Arial, sans-serif; }
-        /* Reset grid to use block/float so it perfectly wraps */
-        .voucher-grid { display: block; width: 100%; max-width: 210mm; margin: 0 auto; background: white; padding: 5mm; }
-        .voucher-card { float: left; }
+        
+        /* Layar monitor: flexbox agar rapi */
+        .voucher-grid { display: grid; grid-template-columns: repeat(auto-fill, 27mm); gap: 1mm; justify-content: center; background: white; padding: 5mm; max-width: 210mm; margin: 0 auto; }
+        
+        .voucher-card { 
+            border: 1px solid #000; 
+            padding: 2px; 
+            width: 28mm; 
+            height: 31mm; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            background: #fff; 
+            overflow: hidden; 
+            position: relative;
+            page-break-inside: avoid;
+        }
+
         @media print {
-            body { background: white; padding: 0; }
-            .voucher-grid { padding: 0; max-width: none; }
+            @page { margin: 5mm; size: A4 portrait; }
+            body { background: white; padding: 0; margin: 0; }
             .no-print { display: none !important; }
+            
+            /* Saat print, paksa grid jadi 7 kolom x 9 baris = 63 */
+            .voucher-grid { 
+                padding: 0; 
+                margin: 0; 
+                max-width: none; 
+                display: grid !important; 
+                grid-template-columns: repeat(7, 28mm) !important; 
+                grid-auto-rows: 31mm !important; 
+                gap: 1mm !important; 
+                justify-content: start !important;
+            }
+            .voucher-card {
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+            }
         }
     </style>
 </head>
@@ -101,21 +133,19 @@ if (empty($vouchers)) {
     $validity_str = ($v['validity_value'] ?? 0) == 0 ? 'Unlimited' : ($v['validity_value'] ?? 0) . ' ' . $val_unit_id;
     
     $price_str = $v['price'] > 0 ? format_price((float)$v['price']) : 'Gratis';
-    $ket_voucher = $batch_id ? explode('-', $batch_id)[0] : 'VOUCHER';
 ?>
-<div class="voucher-card" style="page-break-inside: avoid; border: 1px solid #000; padding: 2px; width: 27mm; height: 30mm; float: left; margin-right: 1mm; margin-bottom: 1mm; box-sizing: border-box; display: flex; flex-direction: column; background: #fff; overflow: hidden; position: relative;">
+<div class="voucher-card">
     
-    <!-- Atas Kiri: Keterangan & No Voucher -->
-    <div style="font-size: 4pt; font-family: monospace; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; margin-bottom: 1px;">
-        <span style="font-weight: bold;">Ket: <?= htmlspecialchars($ket_voucher) ?></span>
-        <span>No: <?= $index + 1 ?></span>
-    </div>
-    
-    <!-- Nama Reseller / Profil + Logo -->
-    <div style="display: flex; align-items: center; justify-content: center; gap: 2px; border-bottom: 1px solid #000; padding: 1px 0;">
-        <img src="/assets/img/logo.png" style="height: 6px;" alt="Logo">
-        <div style="font-size: 6.5pt; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <!-- Atas: Reseller (Kiri), Logo (Tengah), No (Kanan) -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #000; padding-bottom: 1px; margin-bottom: 1px;">
+        <div style="font-size: 4.5pt; font-weight: 800; max-width: 45%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1;">
             <?= htmlspecialchars($v['display_name'] ?: $v['profile_name']) ?>
+        </div>
+        <div style="flex-grow: 1; text-align: center; padding: 0 1px;">
+            <img src="/assets/img/logo.png" style="height: 6px; display: inline-block;" alt="Logo">
+        </div>
+        <div style="font-size: 4.5pt; font-family: monospace; font-weight: bold; line-height: 1;">
+            No: <?= $index + 1 ?>
         </div>
     </div>
     
@@ -133,7 +163,7 @@ if (empty($vouchers)) {
     </div>
     
     <!-- Meta Data Area -->
-    <div style="font-size: 4.5pt; border-top: 1px dashed #000; padding-top: 1px;">
+    <div style="font-size: 4.5pt; border-top: 1px dashed #000; padding-top: 1px; line-height: 1.1;">
         <div style="display: flex; justify-content: space-between;">
             <span>Masa Aktif:</span><span style="font-weight: bold;"><?= $validity_str ?></span>
         </div>
