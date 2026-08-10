@@ -229,35 +229,130 @@ include __DIR__ . '/../../include/header.php';
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
+(function() {
 const bd = <?= json_encode($by_day) ?>;
-new Chart(document.getElementById('salesChart').getContext('2d'), {
+const labels = bd.map(d => {
+    const dt = new Date(d.day);
+    return dt.toLocaleDateString('id-ID', { day:'numeric', month:'short' });
+});
+const cnts = bd.map(d => parseInt(d.cnt));
+const revs = bd.map(d => parseFloat(d.revenue));
+
+const canvas = document.getElementById('salesChart');
+if (!canvas) return;
+const ctxg = canvas.getContext('2d');
+
+// Gradients
+const revGrad = ctxg.createLinearGradient(0, 0, 0, 400);
+revGrad.addColorStop(0, 'rgba(198,40,40,0.3)');
+revGrad.addColorStop(1, 'rgba(198,40,40,0)');
+
+const barGrad = ctxg.createLinearGradient(0, 0, 0, 400);
+barGrad.addColorStop(0, 'rgba(21,101,192,0.95)');
+barGrad.addColorStop(1, 'rgba(21,101,192,0.3)');
+
+const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+const tickColor  = isDark ? '#adb5bd' : '#6c757d';
+const labelColor = isDark ? '#dee2e6' : '#343a40';
+
+new Chart(ctxg, {
     type: 'bar',
     data: {
-        labels: bd.map(d => d.day),
-        datasets: [{
-            label: 'Terjual',
-            data: bd.map(d => parseInt(d.cnt)),
-            backgroundColor: 'rgba(21,101,192,.7)',
-            borderRadius: 5,
-        }, {
-            label: 'Pendapatan',
-            type: 'line',
-            data: bd.map(d => parseFloat(d.revenue)),
-            borderColor: '#C62828',
-            borderWidth: 2,
-            tension: .3,
-            yAxisID: 'y2',
-            fill: false,
-        }]
+        labels,
+        datasets: [
+            {
+                label: 'Voucher Terjual',
+                data: cnts,
+                backgroundColor: barGrad,
+                borderColor: 'rgba(0,0,0,0)',
+                borderRadius: { topLeft: 8, topRight: 8 },
+                borderSkipped: false,
+                yAxisID: 'y',
+                order: 2,
+            },
+            {
+                label: 'Pendapatan (Rp)',
+                data: revs,
+                type: 'line',
+                borderColor: '#C62828',
+                backgroundColor: revGrad,
+                borderWidth: 2.5,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#C62828',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                tension: 0.45,
+                fill: true,
+                yAxisID: 'y2',
+                order: 1,
+            }
+        ],
     },
     options: {
         responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        animation: { duration: 900, easing: 'easeInOutQuart' },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: { family: 'Inter, sans-serif', size: 12, weight: '600' },
+                    color: labelColor,
+                    usePointStyle: true,
+                    pointStyleWidth: 10,
+                    padding: 20,
+                }
+            },
+            tooltip: {
+                backgroundColor: isDark ? '#1e2330' : '#fff',
+                titleColor:  isDark ? '#dee2e6' : '#212529',
+                bodyColor:   isDark ? '#adb5bd' : '#495057',
+                borderColor: isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.1)',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 10,
+                boxPadding: 4,
+                titleFont: { size: 12, weight: '700' },
+                bodyFont:  { size: 12 },
+                callbacks: {
+                    label: function(ctx) {
+                        if (ctx.dataset.label.includes('Pendapatan')) {
+                            return ' Pendapatan: Rp ' + parseInt(ctx.parsed.y).toLocaleString('id-ID');
+                        }
+                        return ' Terjual: ' + ctx.parsed.y + ' voucher';
+                    }
+                }
+            }
+        },
         scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } },
-            y2: { beginAtZero: true, position: 'right', grid: { display: false } }
-        }
-    }
+            x: {
+                grid: { display: false },
+                ticks: { color: tickColor, font: { size: 11 } },
+                border: { display: false },
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { precision: 0, color: tickColor, font: { size: 11 } },
+                grid: { color: gridColor },
+                border: { display: false },
+            },
+            y2: {
+                beginAtZero: true,
+                position: 'right',
+                grid: { display: false },
+                border: { display: false },
+                ticks: {
+                    color: '#C62828',
+                    font: { size: 11 },
+                    callback: v => 'Rp ' + (v >= 1000000 ? (v/1000000).toFixed(1)+'jt' : (v >= 1000 ? (v/1000).toFixed(0)+'rb' : v))
+                },
+            },
+        },
+    },
 });
+})();
 </script>
 
 <?php include __DIR__ . '/../../include/footer.php'; ?>

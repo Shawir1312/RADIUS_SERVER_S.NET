@@ -251,14 +251,37 @@ include __DIR__ . '/../include/header.php';
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
-// Sales chart
+(function() {
+// Sales chart — Dashboard (7 Hari Terakhir)
 const chartData = <?= json_encode($chart_data) ?>;
-const labels    = chartData.map(d => d.day);
-const cnts      = chartData.map(d => parseInt(d.cnt));
-const revs      = chartData.map(d => parseFloat(d.revenue));
+const labels    = chartData.map(d => {
+    const dt = new Date(d.day);
+    return dt.toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short' });
+});
+const cnts = chartData.map(d => parseInt(d.cnt));
+const revs = chartData.map(d => parseFloat(d.revenue));
 
-const ctx = document.getElementById('salesChart').getContext('2d');
-new Chart(ctx, {
+const ctx = document.getElementById('salesChart');
+if (!ctx) return;
+const ctxg = ctx.getContext('2d');
+
+// Gradient for revenue line
+const revGrad = ctxg.createLinearGradient(0, 0, 0, 300);
+revGrad.addColorStop(0,   'rgba(198,40,40,0.25)');
+revGrad.addColorStop(1,   'rgba(198,40,40,0)');
+
+// Gradient for bars
+const barGrad = ctxg.createLinearGradient(0, 0, 0, 300);
+barGrad.addColorStop(0,  'rgba(21,101,192,0.95)');
+barGrad.addColorStop(1,  'rgba(21,101,192,0.35)');
+
+// Detect dark mode
+const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+const tickColor  = isDark ? '#adb5bd' : '#6c757d';
+const labelColor = isDark ? '#dee2e6' : '#343a40';
+
+new Chart(ctxg, {
     type: 'bar',
     data: {
         labels,
@@ -266,35 +289,95 @@ new Chart(ctx, {
             {
                 label: 'Voucher Terjual',
                 data: cnts,
-                backgroundColor: 'rgba(21,101,192,0.7)',
-                borderColor: '#1565C0',
-                borderWidth: 1,
-                borderRadius: 6,
+                backgroundColor: barGrad,
+                borderColor: 'rgba(21,101,192,0)',
+                borderRadius: { topLeft: 8, topRight: 8 },
+                borderSkipped: false,
                 yAxisID: 'y',
+                order: 2,
             },
             {
                 label: 'Pendapatan (Rp)',
                 data: revs,
                 type: 'line',
                 borderColor: '#C62828',
-                backgroundColor: 'rgba(198,40,40,0.08)',
-                borderWidth: 2,
-                pointBackgroundColor: '#C62828',
-                tension: 0.3,
+                backgroundColor: revGrad,
+                borderWidth: 2.5,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#C62828',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                tension: 0.45,
                 fill: true,
                 yAxisID: 'y2',
+                order: 1,
             }
         ],
     },
     options: {
         responsive: true,
-        plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 } } } },
+        interaction: { mode: 'index', intersect: false },
+        animation: { duration: 800, easing: 'easeInOutQuart' },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: { family: 'Inter, sans-serif', size: 12, weight: '600' },
+                    color: labelColor,
+                    usePointStyle: true,
+                    pointStyleWidth: 10,
+                    padding: 20,
+                }
+            },
+            tooltip: {
+                backgroundColor: isDark ? '#1e2330' : '#fff',
+                titleColor:  isDark ? '#dee2e6' : '#212529',
+                bodyColor:   isDark ? '#adb5bd' : '#495057',
+                borderColor: isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.08)',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 10,
+                boxPadding: 4,
+                titleFont: { size: 12, weight: '700' },
+                bodyFont:  { size: 12 },
+                callbacks: {
+                    label: ctx => {
+                        if (ctx.dataset.label.includes('Pendapatan')) {
+                            return ' ' + ctx.dataset.label + ': Rp ' + parseInt(ctx.parsed.y).toLocaleString('id-ID');
+                        }
+                        return ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + ' pcs';
+                    }
+                }
+            }
+        },
         scales: {
-            y:  { beginAtZero: true, ticks: { precision: 0, font: { size: 11 } }, grid: { color: '#eee' } },
-            y2: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: { font: { size: 11 } } },
+            x: {
+                grid: { display: false },
+                ticks: { color: tickColor, font: { size: 11 } },
+                border: { display: false },
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { precision: 0, color: tickColor, font: { size: 11 } },
+                grid: { color: gridColor },
+                border: { display: false },
+            },
+            y2: {
+                beginAtZero: true,
+                position: 'right',
+                grid: { display: false },
+                border: { display: false },
+                ticks: {
+                    color: '#C62828',
+                    font: { size: 11 },
+                    callback: v => 'Rp ' + (v >= 1000000 ? (v/1000000).toFixed(1)+'jt' : (v >= 1000 ? (v/1000).toFixed(0)+'rb' : v))
+                },
+            },
         },
     },
 });
+})();
 </script>
 
 <?php include __DIR__ . '/../include/footer.php'; ?>
