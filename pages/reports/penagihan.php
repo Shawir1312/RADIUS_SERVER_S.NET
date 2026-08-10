@@ -131,7 +131,10 @@ include __DIR__ . '/../../include/header.php';
                     </select>
                 </div>
                 <div id="resellerInfo" class="alert alert-success py-2 px-3 mt-2 mb-0 d-none" style="font-size:.85rem;">
-                    <i class="bi bi-check-circle-fill me-1"></i> <span id="resellerName" class="fw-bold"></span> — Keuntungan: <span id="resellerPercent" class="fw-bold"></span>% · <span id="resellerPrice" class="fw-bold"></span>/voucher
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><i class="bi bi-check-circle-fill me-1"></i> <span id="resellerName" class="fw-bold"></span> — Keuntungan: <span id="resellerPercent" class="fw-bold"></span>% · <span id="resellerPrice" class="fw-bold"></span>/voucher</div>
+                        <div id="resellerTekorCount" class="badge bg-danger d-none"><i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="tekorCountNum">0</span>x Riwayat Tekor</div>
+                    </div>
                 </div>
             </div>
 
@@ -316,6 +319,15 @@ selectProfile.addEventListener('change', function() {
             elResellerName.textContent = selectedProfile.name;
             elResellerPercent.textContent = parseFloat(selectedProfile.reseller_percent);
             elResellerPrice.textContent = formatRp(selectedProfile.price);
+            
+            const tekorCount = parseInt(selectedProfile.tekor_count) || 0;
+            if (tekorCount > 0) {
+                document.getElementById('tekorCountNum').textContent = tekorCount;
+                document.getElementById('resellerTekorCount').classList.remove('d-none');
+            } else {
+                document.getElementById('resellerTekorCount').classList.add('d-none');
+            }
+            
             elResellerInfo.classList.remove('d-none');
         }
     }
@@ -350,8 +362,10 @@ function calculate() {
     
     let statusText = '';
     if (estimasi < unbilled) {
-        statusText = ' (TEKOR, aktual: ' + unbilled + ')';
-        resVoucher.innerHTML = estimasi + ' voucher <span class="text-danger fw-bold">' + statusText + '</span>';
+        const selisihVoucher = unbilled - estimasi;
+        const targetPenjualan = unbilled * price;
+        statusText = ` (TEKOR ${selisihVoucher} voucher, Hasil Penjualan Sistem: ${formatRp(targetPenjualan)})`;
+        resVoucher.innerHTML = estimasi + ' voucher <span class="text-danger fw-bold d-block mt-1">' + statusText + '</span>';
         document.querySelector('input[name="catatan"]').required = true;
         document.querySelector('input[name="catatan"]').placeholder = 'Wajib diisi karena tekor...';
         document.getElementById('catatanLabel').innerHTML = 'CATATAN (Wajib) <span class="text-danger">*</span>';

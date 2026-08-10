@@ -32,6 +32,7 @@ foreach ($profiles as &$p) {
     $total_used = db_fetch_one("SELECT COUNT(*) as c FROM vouchers WHERE profile_id = ? AND status IN ('active', 'expired')", 'i', [$pid])['c'] ?? 0;
     $total_billed = db_fetch_one("SELECT SUM(estimasi_voucher) as c FROM penagihan WHERE profile_id = ?", 'i', [$pid])['c'] ?? 0;
     $p['unbilled_vouchers'] = max(0, $total_used - $total_billed);
+    $p['tekor_count'] = db_fetch_one("SELECT COUNT(*) as c FROM penagihan WHERE profile_id = ? AND status_kecocokan = 'tekor'", 'i', [$pid])['c'] ?? 0;
 }
 
 echo json_encode($profiles);
