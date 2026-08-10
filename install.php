@@ -199,6 +199,7 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             rate_up varchar(20) DEFAULT '0',
             rate_down varchar(20) DEFAULT '0',
             price decimal(10,2) DEFAULT 0.00,
+            reseller_percent decimal(5,2) DEFAULT 0.00,
             router_id int(11) DEFAULT NULL,
             description text DEFAULT NULL,
             is_active tinyint(1) DEFAULT 1,
@@ -268,6 +269,26 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             PRIMARY KEY (id),
             KEY router_id (router_id),
             KEY sold_at (sold_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+        
+        "CREATE TABLE IF NOT EXISTS penagihan (
+            id int(11) NOT NULL AUTO_INCREMENT,
+            router_id int(11) NOT NULL,
+            profile_id int(11) NOT NULL,
+            total_pendapatan decimal(15,2) DEFAULT 0.00,
+            bagian_reseller decimal(15,2) DEFAULT 0.00,
+            pendapatan_bersih decimal(15,2) DEFAULT 0.00,
+            estimasi_voucher int(11) DEFAULT 0,
+            voucher_aktual int(11) DEFAULT 0,
+            status_kecocokan enum('sesuai','tekor','lebih') DEFAULT 'sesuai',
+            catatan text,
+            ditagih_oleh int(11) NOT NULL,
+            tanggal date NOT NULL,
+            created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY router_id (router_id),
+            KEY profile_id (profile_id),
+            KEY tanggal (tanggal)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
     ];
 
