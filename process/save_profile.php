@@ -25,6 +25,7 @@ $quota_mb       = max(0, (int)post('quota_mb', 0));
 $rate_up        = sanitize(post('rate_up', '0'));
 $rate_down      = sanitize(post('rate_down', '0'));
 $price          = max(0, (float)post('price', 0));
+$reseller_percent = max(0, min(100, (float)post('reseller_percent', 0)));
 $router_id      = post('router_id') !== '' ? (int)post('router_id') : null;
 $description    = sanitize(post('description', ''));
 $is_active      = post('is_active', '1') === '1' ? 1 : 0;
@@ -38,19 +39,19 @@ try {
     if ($id > 0) {
         db_execute(
             "UPDATE profiles SET name=?, display_name=?, validity_value=?, validity_unit=?, duration_value=?, duration_unit=?, quota_mb=?,
-             rate_up=?, rate_down=?, price=?, router_id=?, description=?, is_active=? WHERE id=?",
-            'ssisisissdisii',
+             rate_up=?, rate_down=?, price=?, reseller_percent=?, router_id=?, description=?, is_active=? WHERE id=?",
+            'ssisisissddisii',
             [$name, $display_name, $validity_value, $validity_unit, $duration_value, $duration_unit, $quota_mb,
-             $rate_up, $rate_down, $price, $router_id, $description, $is_active, $id]
+             $rate_up, $rate_down, $price, $reseller_percent, $router_id, $description, $is_active, $id]
         );
         flash_set('success', "Profil '{$name}' berhasil diperbarui.");
     } else {
         db_execute(
-            "INSERT INTO profiles (name, display_name, validity_value, validity_unit, duration_value, duration_unit, quota_mb, rate_up, rate_down, price, router_id, description, is_active)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            'ssisisissdisi',
+            "INSERT INTO profiles (name, display_name, validity_value, validity_unit, duration_value, duration_unit, quota_mb, rate_up, rate_down, price, reseller_percent, router_id, description, is_active)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            'ssisisissddisi',
             [$name, $display_name, $validity_value, $validity_unit, $duration_value, $duration_unit, $quota_mb,
-             $rate_up, $rate_down, $price, $router_id, $description, $is_active]
+             $rate_up, $rate_down, $price, $reseller_percent, $router_id, $description, $is_active]
         );
         flash_set('success', "Profil '{$name}' berhasil ditambahkan.");
     }

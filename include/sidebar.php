@@ -80,6 +80,11 @@ function nav_active(string $page, string|array $match): string {
                 <i class="bi bi-graph-up-arrow"></i> Pemakaian Data
             </a>
         </li>
+        <li>
+            <a href="/index.php?page=penagihan_report" class="nav-link <?= nav_active($current_page, 'penagihan_report') ?>">
+                <i class="bi bi-wallet2"></i> Laporan Penagihan
+            </a>
+        </li>
 
         <!-- Admin (superadmin only) -->
         <?php if ($admin['role'] === 'superadmin'): ?>

@@ -73,7 +73,12 @@ if ($is_list) {
                     <span class="text-primary">↑<?= htmlspecialchars($p['rate_up'] ?: '0') ?></span> /
                     <span class="text-success">↓<?= htmlspecialchars($p['rate_down'] ?: '0') ?></span>
                 </td>
-                <td><?= format_price((float)$p['price']) ?></td>
+                <td>
+                    <?= format_price((float)$p['price']) ?>
+                    <?php if ($p['reseller_percent'] > 0): ?>
+                    <br><small class="text-success"><i class="bi bi-tag"></i> Reseller: <?= (float)$p['reseller_percent'] ?>%</small>
+                    <?php endif; ?>
+                </td>
                 <td><?= $p['router_id'] ? htmlspecialchars($p['router_name'] ?? '') : '<span class="text-muted">Semua Router</span>' ?></td>
                 <td><?= $p['is_active'] ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-secondary">Nonaktif</span>' ?></td>
                 <td><span class="badge bg-primary"><?= $p['voucher_count'] ?></span></td>
@@ -183,10 +188,20 @@ include __DIR__ . '/../../include/header.php';
                     <div class="form-text">→ Total kuota waktu online (Session-Timeout)</div>
                 </div>
 
-                <div class="col-md-12">
-                    <label class="form-label">Harga (Rp)</label>
+                <div class="col-md-6">
+                    <label class="form-label">Harga Jual (Rp)</label>
                     <input type="number" class="form-control" name="price" min="0" step="500"
                            value="<?= $profile['price'] ?? 0 ?>">
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Keuntungan Reseller (%)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" name="reseller_percent" min="0" max="100" step="0.01"
+                               value="<?= $profile['reseller_percent'] ?? 0.00 ?>">
+                        <span class="input-group-text">%</span>
+                    </div>
+                    <div class="form-text">Isi jika profil ini khusus untuk reseller tertentu.</div>
                 </div>
 
                 <div class="col-md-6">

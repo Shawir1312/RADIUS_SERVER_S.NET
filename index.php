@@ -46,6 +46,7 @@ $routes = [
     'report_sales'     => 'pages/reports/sales.php',
     'report_usage'     => 'pages/reports/usage.php',
     'report_export'    => 'pages/reports/export.php',
+    'penagihan_report' => 'pages/reports/penagihan.php',
     // Admins (superadmin only)
     'admin_list'       => 'pages/admins/list.php',
     'admin_add'        => 'pages/admins/add.php',
