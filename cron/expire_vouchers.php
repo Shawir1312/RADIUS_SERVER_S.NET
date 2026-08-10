@@ -40,6 +40,15 @@ $log = function(string $msg) {
 // ── Clear bogus expired_at for unused vouchers (from old generate_voucher bug) ──
 db_execute("UPDATE vouchers SET expired_at = NULL WHERE status = 'unused' AND expired_at IS NOT NULL");
 
+// ── Fix Stale Sessions globally ──────────────────────────────────────────────
+// Close any radacct sessions for vouchers that are already expired or deleted
+db_execute("
+    UPDATE radacct ra
+    JOIN vouchers v ON ra.username = v.username
+    SET ra.acctstoptime = NOW(), ra.acctterminatecause = 'Admin-Reset'
+    WHERE v.status IN ('expired', 'deleted') AND ra.acctstoptime IS NULL
+");
+
 // ── Catch up missing expired_at for already active vouchers ─────────────────
 $missing_exp = db_fetch_all("
     SELECT v.id, v.used_at, p.duration_value, p.duration_unit
