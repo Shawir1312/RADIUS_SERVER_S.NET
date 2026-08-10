@@ -827,3 +827,20 @@ table.dataTable thead th { background: var(--gray-50) !important; }
   background-color: transparent !important;
   border-radius: 0;
 }
+[data-bs-theme="dark"] .table thead th,
+[data-bs-theme="dark"] table.dataTable thead th {
+  background: #151521 !important;
+  color: #a1a5b7 !important;
+  border-bottom-color: #2b2b40 !important;
+}
+[data-bs-theme="dark"] .router-name {
+  color: #e4e6ef !important;
+}
+[data-bs-theme="dark"] .router-ip {
+  color: #a1a5b7 !important;
+}
+[data-bs-theme="dark"] .dataTables_info,
+[data-bs-theme="dark"] .dataTables_length,
+[data-bs-theme="dark"] .dataTables_filter {
+  color: #a1a5b7 !important;
+}
