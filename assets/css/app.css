@@ -281,6 +281,8 @@ body.sidebar-open #sidebar-backdrop {
 
 /* ── Main Content ─────────────────────────────── */
 #main-content {
+  position: relative;
+  z-index: 1;
   margin-left: var(--sidebar-w);
   margin-top: var(--navbar-h);
   padding: 24px;
@@ -456,6 +458,9 @@ body.sidebar-open #sidebar-backdrop {
   border-radius: 7px;
   padding: 8px 12px;
   transition: var(--transition);
+}
+.form-select {
+  padding-right: 36px;
 }
 .form-control:focus, .form-select:focus {
   border-color: var(--blue);
