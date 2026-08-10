@@ -75,8 +75,18 @@ foreach ($history as $h) {
     echo '<td>' . number_format($h['total_pendapatan'], 0, ',', '.') . '</td>';
     echo '<td>' . number_format($h['bagian_reseller'], 0, ',', '.') . '</td>';
     echo '<td>' . number_format($h['pendapatan_bersih'], 0, ',', '.') . '</td>';
-    echo '<td>' . $h['estimasi_voucher'] . ' vs ' . $h['voucher_aktual'] . '</td>';
-    echo '<td>' . strtoupper($h['status_kecocokan']) . '</td>';
+    echo '<td>' . $h['estimasi_voucher'] . ' laku ' . $h['voucher_aktual'] . '</td>';
+    
+    if ($h['status_kecocokan'] === 'sesuai') {
+        echo '<td>SESUAI</td>';
+    } elseif ($h['status_kecocokan'] === 'tekor') {
+        $selisih = $h['voucher_aktual'] - $h['estimasi_voucher'];
+        echo '<td>TEKOR ' . $selisih . ' VOUCHER</td>';
+    } else {
+        $selisih = $h['estimasi_voucher'] - $h['voucher_aktual'];
+        echo '<td>LEBIH ' . $selisih . ' VOUCHER</td>';
+    }
+    
     echo '<td>' . htmlspecialchars($h['catatan'] ?? '') . '</td>';
     echo '<td>' . htmlspecialchars($h['admin_name']) . '</td>';
     echo '</tr>';

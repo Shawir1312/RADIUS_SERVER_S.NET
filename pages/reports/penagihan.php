@@ -215,7 +215,7 @@ include __DIR__ . '/../../include/header.php';
                             <div class="fw-bold"><?= date('d/m/Y', strtotime($h['tanggal'])) ?></div>
                             <small class="text-muted"><?= date('H:i', strtotime($h['created_at'])) ?></small>
                         </td>
-                        <td><span class="badge bg-purple text-purple bg-opacity-10 border border-purple"><?= htmlspecialchars($h['router_name']) ?></span></td>
+                        <td><span class="badge bg-primary text-white"><?= htmlspecialchars($h['router_name']) ?></span></td>
                         <td>
                             <div class="fw-bold"><?= htmlspecialchars($h['profile_name']) ?></div>
                         </td>
@@ -223,15 +223,23 @@ include __DIR__ . '/../../include/header.php';
                         <td class="text-danger fw-600"><?= format_price((float)$h['bagian_reseller']) ?></td>
                         <td class="text-success fw-bold"><?= format_price((float)$h['pendapatan_bersih']) ?></td>
                         <td>
-                            <div class="fw-bold text-primary"><?= $h['estimasi_voucher'] ?> vs <?= $h['voucher_aktual'] ?></div>
+                            <div class="fw-bold text-primary">Est: <?= $h['estimasi_voucher'] ?> / Laku: <?= $h['voucher_aktual'] ?></div>
                         </td>
                         <td>
                             <?php if ($h['status_kecocokan'] === 'sesuai'): ?>
                                 <span class="badge bg-success"><i class="bi bi-check-circle"></i> Sesuai</span>
                             <?php elseif ($h['status_kecocokan'] === 'tekor'): ?>
-                                <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Tekor</span>
+                                <?php $selisih = $h['voucher_aktual'] - $h['estimasi_voucher']; ?>
+                                <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Tekor <?= $selisih ?> Voucher</span>
                             <?php else: ?>
-                                <span class="badge bg-info"><i class="bi bi-info-circle"></i> Lebih</span>
+                                <?php $selisih = $h['estimasi_voucher'] - $h['voucher_aktual']; ?>
+                                <span class="badge bg-info"><i class="bi bi-info-circle"></i> Lebih <?= $selisih ?> Voucher</span>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($h['catatan'])): ?>
+                                <div class="mt-1" style="font-size:0.75rem; color:#6c757d; max-width:150px; overflow:hidden; text-overflow:ellipsis;">
+                                    <strong>Catatan:</strong> <?= htmlspecialchars($h['catatan']) ?>
+                                </div>
                             <?php endif; ?>
                         </td>
                         <td>
