@@ -137,14 +137,14 @@ if (empty($vouchers)) {
 <div class="voucher-card">
     
     <!-- Atas: Reseller (Kiri), Logo (Tengah), No (Kanan) -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #000; padding-bottom: 1px; margin-bottom: 1px;">
-        <div style="font-size: 4.5pt; font-weight: 800; max-width: 45%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #000; padding-bottom: 1px; margin-bottom: 1px; height: 10px;">
+        <div style="font-size: 3.5pt; font-weight: 800; width: 35%; line-height: 1; word-wrap: break-word; overflow: hidden; max-height: 10px;">
             <?= htmlspecialchars($v['display_name'] ?: $v['profile_name']) ?>
         </div>
-        <div style="flex-grow: 1; text-align: center; padding: 0 1px;">
-            <img src="/assets/img/logo.png" style="height: 6px; display: inline-block;" alt="Logo">
+        <div style="width: 30%; text-align: center;">
+            <img src="/assets/img/logo.png" style="max-height: 9px; max-width: 100%; display: inline-block;" alt="Logo">
         </div>
-        <div style="font-size: 4.5pt; font-family: monospace; font-weight: bold; line-height: 1;">
+        <div style="font-size: 4pt; font-family: monospace; font-weight: bold; line-height: 1; width: 35%; text-align: right;">
             No: <?= $index + 1 ?>
         </div>
     </div>
