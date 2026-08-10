@@ -29,7 +29,7 @@ function random_string(int $length, string $type = 'mix'): string {
 }
 
 function generate_batch_id(): string {
-    return 'B' . date('ymd') . strtoupper(random_string(4, 'mix1'));
+    return date('dmY-His');
 }
 
 // ───── Bytes Formatting ────────────────────────────────────────────────
