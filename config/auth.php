@@ -113,7 +113,7 @@ function audit_log(string $action, string $target = '', int $router_id = 0, stri
     db_execute(
         "INSERT INTO audit_log (admin_id, admin_name, action, target, router_id, detail, ip_address, created_at)
          VALUES (?,?,?,?,?,?,?,NOW())",
-        'isssisss',
+        'isssiss',
         [
             $admin['id'],
             $admin['username'],
