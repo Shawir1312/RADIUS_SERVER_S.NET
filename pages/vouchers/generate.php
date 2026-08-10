@@ -195,6 +195,7 @@ include __DIR__ . '/../../include/header.php';
 </div>
 
 <script>
+(function() {
 // Update qty label
 const qtyInput = document.getElementById('qty');
 const qtyLabel = document.getElementById('qty-label');
@@ -224,8 +225,8 @@ if (profileSel && profileInfo) {
 }
 
 // Preview username
-const _previewEl = document.getElementById('preview-user');
-if (_previewEl) {
+const previewEl = document.getElementById('preview-user');
+if (previewEl) {
     function generatePreview() {
         const lenEl  = document.getElementById('char_length');
         const typeEl = document.querySelector('[name=char_type]');
@@ -244,13 +245,14 @@ if (_previewEl) {
         }[type] || 'abcdefghjkmnpqrstuvwxyz23456789';
         let preview = pref;
         for (let i = 0; i < len; i++) preview += chars[Math.floor(Math.random() * chars.length)];
-        _previewEl.textContent = preview;
+        previewEl.textContent = preview;
     }
     document.getElementById('char_length')?.addEventListener('change', generatePreview);
     document.querySelector('[name=char_type]')?.addEventListener('change', generatePreview);
     document.querySelector('[name=prefix]')?.addEventListener('input', generatePreview);
     generatePreview();
 }
+})();
 </script>
 
 <?php include __DIR__ . '/../../include/footer.php'; ?>
