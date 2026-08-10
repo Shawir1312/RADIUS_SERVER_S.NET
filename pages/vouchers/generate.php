@@ -54,38 +54,27 @@ include __DIR__ . '/../../include/header.php';
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Profil / Paket <span class="text-danger">*</span></label>
-                            <select class="form-select" name="profile_id" id="profile_id" required>
-                                <option value="">— Pilih Profil —</option>
-                                <?php foreach ($profiles as $p): ?>
-                                <option value="<?= $p['id'] ?>"
-                                    data-duration="<?= $p['duration_value'].' '.$p['duration_unit'] ?>"
-                                    data-quota="<?= $p['quota_mb'] > 0 ? format_bytes($p['quota_mb']*1048576) : 'Unlimited' ?>"
-                                    data-rate="<?= htmlspecialchars($p['rate_up'].'/'.$p['rate_down']) ?>"
-                                    data-price="<?= format_price((float)$p['price']) ?>"
-                                    <?= $p['id'] === $preselect_profile ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($p['name']) ?>
-                                    <?= $p['price'] > 0 ? ' — '.format_price((float)$p['price']) : '' ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <!-- Profile Info Box -->
-                        <div class="col-12" id="profile-info"></div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Router Tujuan</label>
-                            <select class="form-select" name="router_id">
-                                <option value="">Semua Router (lintas router)</option>
+                            <label class="form-label">Cabang / Lokasi Pembuatan <span class="text-danger">*</span></label>
+                            <select class="form-select" name="router_id" id="router_id" required>
+                                <option value="">— Pilih Cabang —</option>
                                 <?php foreach ($all_routers as $r): ?>
                                 <option value="<?= $r['id'] ?>">
                                     <?= htmlspecialchars($r['name']) ?> — <?= htmlspecialchars($r['ip_address']) ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
-                            <div class="form-text">Pilih "Semua Router" agar voucher berlaku di semua NAS</div>
+                            <div class="form-text">Voucher otomatis <strong>bisa dipakai di SEMUA router/cabang</strong> manapun.</div>
                         </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Profil / Paket (Reseller) <span class="text-danger">*</span></label>
+                            <select class="form-select" name="profile_id" id="profile_id" required disabled>
+                                <option value="">— Pilih Cabang Terlebih Dahulu —</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Profile Info Box -->
+                        <div class="col-12" id="profile-info"></div>
 
                         <div class="col-md-6">
                             <label class="form-label">Mode Voucher <span class="text-danger">*</span></label>
@@ -198,12 +187,24 @@ if (qtyInput && qtyLabel) {
     qtyInput.addEventListener('input', () => qtyLabel.textContent = qtyInput.value);
 }
 
-// Profile info box
+// Profile info box & AJAX Loading
+const routerSel = document.getElementById('router_id');
 const profileSel = document.getElementById('profile_id');
 const profileInfo = document.getElementById('profile-info');
+
+// Format Price
+const formatRp = (num) => 'Rp ' + parseFloat(num).toLocaleString('id-ID', {minimumFractionDigits:0});
+// Format Bytes
+const formatBytes = (bytes) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
 function updateProfileInfo() {
     const opt = profileSel.options[profileSel.selectedIndex];
-    if (!opt.value) { profileInfo.innerHTML = ''; return; }
+    if (!opt || !opt.value) { profileInfo.innerHTML = ''; return; }
     profileInfo.innerHTML = `
         <div class="p-3 rounded" style="background:var(--blue-pale);border-left:3px solid var(--blue);">
             <div class="row g-2" style="font-size:.8rem;">
@@ -214,8 +215,50 @@ function updateProfileInfo() {
             </div>
         </div>`;
 }
+
+routerSel.addEventListener('change', async function() {
+    const rid = this.value;
+    profileSel.innerHTML = '<option value="">— Loading... —</option>';
+    profileSel.disabled = true;
+    updateProfileInfo();
+    
+    if(!rid) {
+        profileSel.innerHTML = '<option value="">— Pilih Cabang Terlebih Dahulu —</option>';
+        return;
+    }
+    
+    try {
+        const resp = await fetch('/process/get_resellers.php?type=all&router_id=' + rid);
+        const data = await resp.json();
+        
+        let defaultOption = '<option value="">— Pilih Profil / Paket —</option>';
+        if(data.length === 0) {
+            defaultOption = '<option value="">— Tidak ada paket untuk cabang ini —</option>';
+        } else {
+            profileSel.disabled = false;
+        }
+        
+        let optionsHtml = defaultOption;
+        data.forEach(p => {
+            let label = p.name;
+            if (p.price > 0) label += ' — ' + formatRp(p.price);
+            
+            // Reconstruct data attributes
+            const duration = p.duration_value + ' ' + p.duration_unit;
+            const quota = (p.quota_mb > 0) ? formatBytes(p.quota_mb * 1048576) : 'Unlimited';
+            const rate = (p.rate_up || '0') + '/' + (p.rate_down || '0');
+            const price = formatRp(p.price);
+            
+            optionsHtml += `<option value="${p.id}" data-duration="${duration}" data-quota="${quota}" data-rate="${rate}" data-price="${price}">${label}</option>`;
+        });
+        
+        profileSel.innerHTML = optionsHtml;
+    } catch (e) {
+        profileSel.innerHTML = '<option value="">— Gagal memuat data —</option>';
+    }
+});
+
 profileSel.addEventListener('change', updateProfileInfo);
-updateProfileInfo();
 
 // Preview username
 function generatePreview() {
