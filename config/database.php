@@ -42,7 +42,12 @@ function db(): mysqli {
 function db_query(string $sql, string $types = '', array $params = []) {
     $stmt = db()->prepare($sql);
     if ($types && $params) {
-        $stmt->bind_param($types, ...$params);
+        $bind_params = [];
+        $bind_params[] = $types;
+        foreach ($params as $key => $value) {
+            $bind_params[] = &$params[$key];
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
     $stmt->execute();
     $result = $stmt->get_result();
@@ -81,7 +86,12 @@ function db_fetch_one(string $sql, string $types = '', array $params = []): ?arr
 function db_execute(string $sql, string $types = '', array $params = []): int {
     $stmt = db()->prepare($sql);
     if ($types && $params) {
-        $stmt->bind_param($types, ...$params);
+        $bind_params = [];
+        $bind_params[] = $types;
+        foreach ($params as $key => $value) {
+            $bind_params[] = &$params[$key];
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
     $stmt->execute();
     return $stmt->affected_rows;

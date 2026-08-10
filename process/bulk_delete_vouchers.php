@@ -78,6 +78,7 @@ try {
         // Remove from Mikrotik RADIUS
         db_execute("DELETE FROM radcheck WHERE username IN ({$u_pls})", $u_types, $usernames);
         db_execute("DELETE FROM radreply WHERE username IN ({$u_pls})", $u_types, $usernames);
+        db_execute("DELETE FROM radusergroup WHERE username IN ({$u_pls})", $u_types, $usernames);
         
         // Mark as deleted in App
         db_execute("UPDATE vouchers SET status = 'deleted' WHERE id IN ({$i_pls})", $i_types, $ids);

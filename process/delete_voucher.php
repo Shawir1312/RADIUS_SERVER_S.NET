@@ -50,9 +50,11 @@ db_begin();
 try {
     foreach ($vouchers as $v) {
         $u = $v['username'];
-        // Remove from radcheck and radreply
+        // Remove from radcheck, radreply, and radusergroup
         db_execute("DELETE FROM radcheck WHERE username = ?", 's', [$u]);
         db_execute("DELETE FROM radreply WHERE username = ?", 's', [$u]);
+        db_execute("DELETE FROM radusergroup WHERE username = ?", 's', [$u]);
+        
         // Mark as deleted in vouchers
         db_execute("UPDATE vouchers SET status = 'deleted' WHERE id = ?", 'i', [$v['id']]);
     }
