@@ -64,6 +64,15 @@ function duration_to_seconds(int $value, string $unit): int {
     return $map[$unit] ?? ($value * 3600);
 }
 
+function trans_unit(string $unit): string {
+    $map = [
+        'minutes' => 'Menit',
+        'hours'   => 'Jam',
+        'days'    => 'Hari',
+    ];
+    return $map[$unit] ?? $unit;
+}
+
 function seconds_to_human(int $secs): string {
     if ($secs <= 0) return 'Unlimited';
     $d = intdiv($secs, 86400);
