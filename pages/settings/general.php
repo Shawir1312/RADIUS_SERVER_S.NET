@@ -94,6 +94,32 @@ sql {
             </div>
         </div>
     </div>
+    
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h5 class="card-title"><i class="bi bi-clock-history"></i> Konfigurasi Cron Job (Otomatisasi)</h5></div>
+            <div class="card-body">
+                <p class="text-muted mb-2">Agar sistem dapat secara otomatis <strong>memutuskan koneksi voucher yang habis waktu (expired)</strong> dan <strong>menghapus voucher kadaluarsa</strong>, Anda wajib menambahkan perintah Cron Job di server hosting atau VPS Anda.</p>
+                
+                <h6 class="fw-bold mt-3">Langkah-langkah:</h6>
+                <ol class="text-muted" style="font-size: 0.9rem;">
+                    <li>Buka terminal server / VPS Anda.</li>
+                    <li>Ketik perintah <code>crontab -e</code> untuk mengedit jadwal cron.</li>
+                    <li>Tambahkan baris kode di bawah ini pada baris paling bawah.</li>
+                    <li>Simpan konfigurasi (jika menggunakan nano: tekan <code>Ctrl+X</code>, lalu <code>Y</code>, lalu <code>Enter</code>).</li>
+                </ol>
+
+                <div class="bg-dark text-light p-3 rounded" style="font-family:monospace;font-size:.85rem;">
+<pre class="mb-0 text-warning"># Jalankan pengecekan voucher expired setiap 5 menit
+*/5 * * * * /usr/bin/php <?= realpath(__DIR__ . '/../../cron/expire_vouchers.php') ?></pre>
+                </div>
+                
+                <div class="alert alert-info mt-3 mb-0" style="font-size:0.85rem;">
+                    <i class="bi bi-info-circle-fill me-2"></i> <strong>Catatan:</strong> Pastikan path PHP (<code>/usr/bin/php</code>) sesuai dengan sistem Anda. Jika menggunakan cPanel, Anda juga bisa menambahkan perintah di atas pada menu <strong>Cron Jobs</strong>.
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <?php include __DIR__ . '/../../include/footer.php'; ?>
