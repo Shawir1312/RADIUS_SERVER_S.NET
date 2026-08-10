@@ -92,7 +92,7 @@ include __DIR__ . '/../../include/header.php';
                 <div class="col-md-6">
                     <label class="form-label">Password <?= $is_edit ? '(kosongkan jika tidak diubah)' : '<span class="text-danger">*</span>' ?></label>
                     <input type="password" class="form-control" name="password"
-                           <?= $is_edit ? '' : 'required' ?> minlength="8" placeholder="Min. 8 karakter">
+                           <?= $is_edit ? '' : 'required' ?> minlength="6" placeholder="Min. 6 karakter">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Role</label>

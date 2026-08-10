@@ -322,8 +322,8 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
     } elseif ($adm_pass !== $adm_pass2) {
         $errors[] = 'Password tidak sama.';
         $step = 6;
-    } elseif (strlen($adm_pass) < 8) {
-        $errors[] = 'Password minimal 8 karakter.';
+    } elseif (strlen($adm_pass) < 6) {
+        $errors[] = 'Password minimal 6 karakter.';
         $step = 6;
     } else {
         $dbc = $_SESSION['install_db'];
@@ -447,8 +447,8 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
         </div>
         <div class="mb-3">
             <label class="form-label">Password</label>
-            <input type="password" class="form-control" name="adm_pass" minlength="8" required>
-            <div class="form-text">Minimal 8 karakter</div>
+            <input type="password" class="form-control" name="adm_pass" minlength="6" required>
+            <div class="form-text">Minimal 6 karakter</div>
         </div>
         <div class="mb-4">
             <label class="form-label">Ulangi Password</label>

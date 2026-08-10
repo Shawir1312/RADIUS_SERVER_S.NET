@@ -46,8 +46,8 @@ if (!$username) {
 
 if ($id > 0) {
     // Edit
-    if ($password !== '') {
-        if (strlen($password) < 8) { flash_set('error', 'Password minimal 8 karakter.'); header('Location: /index.php?page=admin_edit&id='.$id); exit; }
+    if ($password) {
+        if (strlen($password) < 6) { flash_set('error', 'Password minimal 6 karakter.'); header('Location: /index.php?page=admin_edit&id='.$id); exit; }
         $hash = password_hash($password, PASSWORD_DEFAULT);
         db_execute("UPDATE admins SET username=?, full_name=?, password=?, role=?, router_access=?, is_active=? WHERE id=?",
             'sssssii', [$username, $full_name, $hash, $role, $router_access, $is_active, $id]);
@@ -57,8 +57,8 @@ if ($id > 0) {
     }
     flash_set('success', "Admin '{$username}' berhasil diperbarui.");
 } else {
-    if (!$password || strlen($password) < 8) {
-        flash_set('error', 'Password baru minimal 8 karakter.'); header('Location: /index.php?page=admin_add'); exit;
+    if (!$password || strlen($password) < 6) {
+        flash_set('error', 'Password baru minimal 6 karakter.'); header('Location: /index.php?page=admin_add'); exit;
     }
     $hash = password_hash($password, PASSWORD_DEFAULT);
     db_execute("INSERT INTO admins (username, password, full_name, role, router_access, is_active) VALUES (?,?,?,?,?,?)",
