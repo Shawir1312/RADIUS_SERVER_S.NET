@@ -12,8 +12,13 @@ function toggleSidebar(e) {
         e.preventDefault();
         e.stopPropagation();
     }
-    document.body.classList.toggle('sidebar-collapsed');
-    document.body.classList.toggle('sidebar-open');
+    if (window.innerWidth <= 768) {
+        document.body.classList.toggle('sidebar-open');
+        document.body.classList.remove('sidebar-collapsed');
+    } else {
+        document.body.classList.toggle('sidebar-collapsed');
+        document.body.classList.remove('sidebar-open');
+    }
 }
 
 if (sidebarToggle) {
@@ -22,7 +27,6 @@ if (sidebarToggle) {
 if (sidebarBackdrop) {
     sidebarBackdrop.addEventListener('click', () => {
         document.body.classList.remove('sidebar-open');
-        document.body.classList.add('sidebar-collapsed');
     });
 }
 
