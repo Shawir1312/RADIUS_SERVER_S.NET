@@ -144,6 +144,16 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             KEY framedipaddress (framedipaddress)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
+        "CREATE TABLE IF NOT EXISTS radpostauth (
+            id int(11) NOT NULL AUTO_INCREMENT,
+            username varchar(64) NOT NULL DEFAULT '',
+            pass varchar(64) NOT NULL DEFAULT '',
+            reply varchar(32) NOT NULL DEFAULT '',
+            authdate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY username (username)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+
         "CREATE TABLE IF NOT EXISTS nas (
             id int(10) NOT NULL AUTO_INCREMENT,
             nasname varchar(128) NOT NULL,
