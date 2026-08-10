@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S.NET Hotspot Status</title>
+    <link rel="stylesheet" href="css/style.css">
+    $(if refresh-timeout)
+    <meta http-equiv="refresh" content="$(refresh-timeout-secs)">
+    $(endif)
+</head>
+<body>
+    <div class="container">
+        <div class="glass-card" style="padding: 30px;">
+            <img src="img/logo.png" alt="S.NET Logo" class="logo" style="max-width:100px; margin-bottom:15px;">
+            
+            <h1 class="title" style="font-size: 1.2rem;">Status Koneksi</h1>
+            
+            <div class="status-badge">
+                Terhubung (Aktif)
+            </div>
+
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">Voucher</div>
+                    <div class="status-value highlight">$(username)</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">IP Address</div>
+                    <div class="status-value">$(ip)</div>
+                </div>
+                
+                <div class="status-item">
+                    <div class="status-label">Waktu Terpakai</div>
+                    <div class="status-value">$(uptime)</div>
+                </div>
+                
+                $(if session-time-left)
+                <div class="status-item">
+                    <div class="status-label">Sisa Waktu</div>
+                    <div class="status-value highlight">$(session-time-left)</div>
+                </div>
+                $(else)
+                <div class="status-item">
+                    <div class="status-label">Sisa Waktu</div>
+                    <div class="status-value">Unlimited</div>
+                </div>
+                $(endif)
+
+                <div class="status-item">
+                    <div class="status-label">Download</div>
+                    <div class="status-value">$(bytes-out-nice)</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Upload</div>
+                    <div class="status-value">$(bytes-in-nice)</div>
+                </div>
+            </div>
+
+            <p class="info-note mb-4">
+                Waktu terus berjalan sesuai paket yang Anda beli. Koneksi akan terputus otomatis jika sisa waktu atau batas kuota telah habis.
+            </p>
+
+            <form action="$(link-logout)" name="logout" onSubmit="return openLogout()">
+                <button type="submit" class="btn btn-danger">Putus Koneksi (Logout)</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function openLogout() {
+            if (window.name !== 'hotspot_status') return true;
+            open('$(link-logout)', 'hotspot_logout', 'toolbar=0,location=0,directories=0,status=0,menubars=0,resizable=1,width=280,height=250');
+            window.close();
+            return false;
+        }
+    </script>
+</body>
+</html>

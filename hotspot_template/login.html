@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S.NET Hotspot Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Error Message (if any from Mikrotik) -->
+        $(if error)
+        <div class="error-msg" style="display: block;">
+            $(error)
+        </div>
+        $(endif)
+
+        <div class="glass-card">
+            <img src="img/logo.png" alt="S.NET Logo" class="logo">
+            
+            <h1 class="title">Hotspot Login</h1>
+            <p class="subtitle">Silakan masukkan kode voucher Anda untuk mengakses internet.</p>
+
+            <form name="login" action="$(link-login-only)" method="post" onSubmit="return doLogin()">
+                <input type="hidden" name="dst" value="$(link-orig)">
+                <input type="hidden" name="popup" value="true">
+                <input type="hidden" name="password" id="password">
+                
+                <div class="form-group">
+                    <label class="form-label" for="username">Kode Voucher</label>
+                    <input type="text" class="form-control" name="username" id="username" placeholder="Masukkan kode voucher" required autofocus autocomplete="off" autocapitalize="none">
+                </div>
+
+                <button type="submit" class="btn">Masuk / Connect</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mikrotik MD5 script for secure login (optional, usually provided by RouterOS) -->
+    <script type="text/javascript" src="/md5.js"></script>
+    <script type="text/javascript">
+        function doLogin() {
+            var userField = document.getElementById('username');
+            var passField = document.getElementById('password');
+            
+            // Set password same as username (Voucher Mode)
+            passField.value = userField.value.trim();
+            userField.value = userField.value.trim();
+
+            /* Optional: If Mikrotik chap-id is available, use MD5 (Standard Mikrotik) */
+            // if (document.login.chap-id) { ... }
+            
+            return true;
+        }
+    </script>
+</body>
+</html>
