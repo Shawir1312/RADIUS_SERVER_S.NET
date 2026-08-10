@@ -10,6 +10,7 @@ require_once __DIR__ . '/../include/functions.php';
 require_once LIB_PATH . '/routeros_api.class.php';
 
 auth_check();
+session_write_close(); // Prevent session locking during slow API calls
 header('Content-Type: application/json');
 
 $id = (int)($_GET['id'] ?? 0);

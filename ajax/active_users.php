@@ -9,6 +9,7 @@ require_once __DIR__ . '/../config/auth.php';
 require_once __DIR__ . '/../include/functions.php';
 
 auth_check();
+session_write_close();
 header('Content-Type: application/json');
 
 // Count-only mode for badge

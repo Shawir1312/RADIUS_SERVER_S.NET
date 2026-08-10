@@ -39,7 +39,7 @@ try {
         db_execute(
             "UPDATE routers SET name=?, ip_address=?, nas_ip=?, radius_secret=?, api_user=?, api_password=?,
              api_port=?, location=?, status=? WHERE id=?",
-            'sssssssissi', [$name, $ip, $nas_ip, $secret, $api_user, $api_pass, $api_port, $location, $status, $id]
+            'ssssssissi', [$name, $ip, $nas_ip, $secret, $api_user, $api_pass, $api_port, $location, $status, $id]
         );
         // Update nas table
         $router = get_router($id);
