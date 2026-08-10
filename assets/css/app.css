@@ -844,3 +844,35 @@ table.dataTable thead th { background: var(--gray-50) !important; }
 [data-bs-theme="dark"] .dataTables_filter {
   color: #a1a5b7 !important;
 }
+
+/* ── Penagihan Specific ───────────────────────── */
+.stat-card-kotor { background-color: #e3f2fd; border-left: 4px solid #1565C0; }
+.stat-card-bersih { background-color: #d1fae5; border-left: 4px solid #10b981; }
+.stat-value-kotor { color: var(--gray-900); }
+.step-box-1 { background-color: #f8fdf8; border: 1px solid #c3e6cb; }
+.step-box-2 { background-color: #f8f9fa; border: 1px solid #dee2e6; }
+.step-box-3 { background-color: #fcf8ff; border: 1px solid #e1c4ff; }
+
+[data-bs-theme="dark"] .stat-card-kotor {
+  background-color: #1a2436 !important;
+  border-left-color: #3b82f6 !important;
+}
+[data-bs-theme="dark"] .stat-card-bersih {
+  background-color: #102a1b !important;
+  border-left-color: #10b981 !important;
+}
+[data-bs-theme="dark"] .stat-value-kotor {
+  color: #e4e6ef !important;
+}
+[data-bs-theme="dark"] .step-box-1 {
+  background-color: #162a1c !important;
+  border-color: #10b981 !important;
+}
+[data-bs-theme="dark"] .step-box-2 {
+  background-color: #1e1e2d !important;
+  border-color: #2b2b40 !important;
+}
+[data-bs-theme="dark"] .step-box-3 {
+  background-color: #26173b !important;
+  border-color: #8b5cf6 !important;
+}

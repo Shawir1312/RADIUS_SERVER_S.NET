@@ -81,14 +81,14 @@ include __DIR__ . '/../../include/header.php';
         
         <div class="row g-3 mt-2">
             <div class="col-md-6 col-lg-4">
-                <div class="p-3 rounded" style="background-color:var(--blue-pale); border-left:4px solid var(--blue);">
+                <div class="p-3 rounded stat-card-kotor">
                     <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-cash-stack me-1"></i> TOTAL SEMUA CABANG (KOTOR)</div>
-                    <div class="fs-4 fw-bold text-dark"><?= format_price($total_kotor) ?></div>
+                    <div class="fs-4 fw-bold stat-value-kotor"><?= format_price($total_kotor) ?></div>
                     <div class="text-muted" style="font-size:0.85rem;"><?= $total_transaksi ?> transaksi penagihan</div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
-                <div class="p-3 rounded" style="background-color:var(--green-pale); border-left:4px solid var(--green);">
+                <div class="p-3 rounded stat-card-bersih">
                     <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-piggy-bank me-1"></i> TOTAL BERSIH PERUSAHAAN</div>
                     <div class="fs-4 fw-bold text-success"><?= format_price($total_bersih) ?></div>
                     <div class="text-muted" style="font-size:0.85rem;">Setelah dipotong bagian reseller</div>
@@ -108,7 +108,7 @@ include __DIR__ . '/../../include/header.php';
             <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
             
             <!-- Step 1: Cabang -->
-            <div class="p-3 mb-3 rounded" style="background-color:#f8fdf8; border:1px solid #c3e6cb;">
+            <div class="p-3 mb-3 rounded step-box-1">
                 <h6 class="fw-bold mb-3"><span class="badge bg-success rounded-circle me-2">1</span> Pilih Cabang</h6>
                 <div class="mb-2">
                     <label class="form-label" style="font-size:.8rem;font-weight:600">NAMA CABANG *</label>
@@ -122,7 +122,7 @@ include __DIR__ . '/../../include/header.php';
             </div>
 
             <!-- Step 2: Reseller -->
-            <div class="p-3 mb-3 rounded" style="background-color:#f8f9fa; border:1px solid #dee2e6;">
+            <div class="p-3 mb-3 rounded step-box-2">
                 <h6 class="fw-bold mb-3"><span class="badge bg-primary rounded-circle me-2">2</span> Pilih Reseller</h6>
                 <div class="mb-2">
                     <label class="form-label" style="font-size:.8rem;font-weight:600">NAMA RESELLER *</label>
@@ -139,7 +139,7 @@ include __DIR__ . '/../../include/header.php';
             </div>
 
             <!-- Step 3: Input & Calc -->
-            <div class="p-3 mb-3 rounded" style="background-color:#fcf8ff; border:1px solid #e1c4ff;">
+            <div class="p-3 mb-3 rounded step-box-3">
                 <h6 class="fw-bold mb-3"><span class="badge bg-purple rounded-circle me-2" style="background-color:#6f42c1">3</span> Isi Total Pendapatan</h6>
                 <div class="row g-3">
                     <div class="col-md-6">
