@@ -5,6 +5,7 @@
 $page_title       = 'Daftar Voucher';
 $show_router_filter = true;
 $all_routers      = get_all_routers();
+sync_active_vouchers(); // Sync newly used vouchers to active status
 
 // ── Filters ──────────────────────────────────────────────
 $filter_status   = get('status', '');

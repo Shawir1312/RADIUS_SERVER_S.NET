@@ -214,3 +214,16 @@ function router_status_badge(bool $online): string {
         ? "<span class='badge bg-success'><i class='bi bi-circle-fill me-1'></i>Online</span>"
         : "<span class='badge bg-danger'><i class='bi bi-circle-fill me-1'></i>Offline</span>";
 }
+
+/**
+ * Sinkronisasi voucher yang sudah terpakai
+ * Mengubah status voucher menjadi 'active' berdasarkan data radacct
+ */
+function sync_active_vouchers() {
+    db_execute("
+        UPDATE vouchers v
+        JOIN radacct ra ON v.username = ra.username
+        SET v.status = 'active', v.used_at = ra.acctstarttime
+        WHERE v.status = 'unused'
+    ");
+}

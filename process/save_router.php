@@ -22,6 +22,8 @@ $secret      = trim(post('radius_secret'));
 $api_user    = sanitize(post('api_user', 'admin'));
 $api_pass    = post('api_password', '');
 $api_port    = (int)post('api_port', 8728);
+$nas_ip      = sanitize(post('nas_ip', '0.0.0.0/0'));
+if ($nas_ip === '') $nas_ip = '0.0.0.0/0';
 $location    = sanitize(post('location', ''));
 $status      = post('status', 'active') === 'inactive' ? 'inactive' : 'active';
 
@@ -35,15 +37,15 @@ try {
     if ($id > 0) {
         // Update
         db_execute(
-            "UPDATE routers SET name=?, ip_address=?, radius_secret=?, api_user=?, api_password=?,
+            "UPDATE routers SET name=?, ip_address=?, nas_ip=?, radius_secret=?, api_user=?, api_password=?,
              api_port=?, location=?, status=? WHERE id=?",
-            'sssssissi', [$name, $ip, $secret, $api_user, $api_pass, $api_port, $location, $status, $id]
+            'sssssssissi', [$name, $ip, $nas_ip, $secret, $api_user, $api_pass, $api_port, $location, $status, $id]
         );
         // Update nas table
         $router = get_router($id);
         if ($router['nas_id']) {
             db_execute("UPDATE nas SET nasname=?, shortname=?, secret=?, description=? WHERE id=?",
-                'ssssi', [$ip, $name, $secret, $location ?: $name, $router['nas_id']]);
+                'ssssi', [$nas_ip, $name, $secret, $location ?: $name, $router['nas_id']]);
         }
         $action = 'edit_router';
         $target = "router_id:{$id}";
@@ -51,15 +53,15 @@ try {
         // Insert into nas first
         db_execute(
             "INSERT INTO nas (nasname, shortname, type, secret, description) VALUES (?,?,'other',?,?)",
-            'ssss', [$ip, $name, $secret, $location ?: $name]
+            'ssss', [$nas_ip, $name, $secret, $location ?: $name]
         );
         $nas_id = db_last_id();
 
         // Insert router
         db_execute(
-            "INSERT INTO routers (name, ip_address, nas_id, api_user, api_password, api_port, radius_secret, location, status)
-             VALUES (?,?,?,?,?,?,?,?,?)",
-            'ssississs', [$name, $ip, $nas_id, $api_user, $api_pass, $api_port, $secret, $location, $status]
+            "INSERT INTO routers (name, ip_address, nas_ip, nas_id, api_user, api_password, api_port, radius_secret, location, status)
+             VALUES (?,?,?,?,?,?,?,?,?,?)",
+            'sssississs', [$name, $ip, $nas_ip, $nas_id, $api_user, $api_pass, $api_port, $secret, $location, $status]
         );
         $action = 'add_router';
         $target = "ip:{$ip}";

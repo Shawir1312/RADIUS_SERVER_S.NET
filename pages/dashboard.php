@@ -5,6 +5,7 @@
 $page_title       = 'Dashboard';
 $show_router_filter = false;
 $all_routers      = get_all_routers();
+sync_active_vouchers(); // Sync newly used vouchers to active status
 
 // ── Stats ────────────────────────────────────────────────
 $total_routers   = count($all_routers);

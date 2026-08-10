@@ -39,6 +39,11 @@ $log = function(string $msg) {
 
 $log("=== expire_vouchers cron started ===");
 
+// ── Sync Active Vouchers ─────────────────────────────────────────────────────
+// Vouchers that have been used (have radacct entry) but status is still 'unused'
+sync_active_vouchers();
+$log("Synced active vouchers");
+
 // ── Find expired active sessions ─────────────────────────────────────────────
 // Sessions where acctstoptime IS NULL and they started longer ago than Session-Timeout
 // We use the Session-Timeout from radreply table.

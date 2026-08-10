@@ -174,6 +174,7 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             name varchar(100) NOT NULL,
             ip_address varchar(45) NOT NULL,
             nas_id int(11) DEFAULT NULL,
+            nas_ip varchar(128) DEFAULT '0.0.0.0/0',
             api_user varchar(64) DEFAULT 'admin',
             api_password varchar(128) DEFAULT '',
             api_port smallint(5) unsigned DEFAULT 8728,

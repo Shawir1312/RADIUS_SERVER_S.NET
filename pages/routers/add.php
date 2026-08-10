@@ -48,11 +48,18 @@ include __DIR__ . '/../../include/header.php';
                            placeholder="Contoh: Router Kota A">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">IP Address / NAS Name <span class="text-danger">*</span></label>
+                    <label class="form-label">Router IP Address (API) <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="ip_address" required
                            value="<?= htmlspecialchars($router['ip_address'] ?? '') ?>"
-                           placeholder="192.168.1.1">
-                    <div class="form-text">Harus sama dengan nasname di FreeRADIUS</div>
+                           placeholder="10.1.1.18">
+                    <div class="form-text">IP untuk test koneksi dan API (Bisa IP lokal router)</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">RADIUS NAS IP <span class="text-muted">(Optional)</span></label>
+                    <input type="text" class="form-control" name="nas_ip"
+                           value="<?= htmlspecialchars($router['nas_ip'] ?? '0.0.0.0/0') ?>"
+                           placeholder="0.0.0.0/0">
+                    <div class="form-text">IP yang dideteksi FreeRADIUS (Biarkan 0.0.0.0/0 untuk VPN/NAT)</div>
                 </div>
                 <div class="col-md-12">
                     <label class="form-label">RADIUS Shared Secret <span class="text-danger">*</span></label>
