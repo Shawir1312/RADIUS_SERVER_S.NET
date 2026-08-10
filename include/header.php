@@ -48,7 +48,7 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
 <!-- Topbar -->
 <nav id="topbar">
     <div class="topbar-left">
-        <button id="sidebar-toggle" title="Toggle Sidebar">
+        <button type="button" id="sidebar-toggle" title="Toggle Sidebar">
             <i class="bi bi-list"></i>
         </button>
         <span class="topbar-title d-flex align-items-center gap-2">

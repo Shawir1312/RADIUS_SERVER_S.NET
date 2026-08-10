@@ -7,7 +7,11 @@
 const sidebarToggle = document.getElementById('sidebar-toggle');
 const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 
-function toggleSidebar() {
+function toggleSidebar(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
     document.body.classList.toggle('sidebar-collapsed');
     document.body.classList.toggle('sidebar-open');
 }
