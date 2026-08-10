@@ -129,7 +129,7 @@ include __DIR__ . '/../../include/header.php';
                     </div>
 
                     <!-- Preview -->
-                    <div class="mt-3 p-3 rounded" style="background:var(--gray-50);border:1px solid var(--gray-200);">
+                    <div class="mt-3 p-3 rounded bg-light border">
                         <div class="fw-600 mb-1" style="font-size:.8rem;">Preview username yang akan dibuat:</div>
                         <code id="preview-user" class="text-blue" style="font-size:.88rem;">—</code>
                         <span class="text-muted ms-2" style="font-size:.75rem;">(contoh acak)</span>
