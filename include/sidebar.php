@@ -53,6 +53,7 @@ function nav_active(string $page, string|array $match): string {
         </li>
 
         <!-- Profiles -->
+        <?php if ($admin['role'] === 'superadmin'): ?>
         <li class="nav-label">Paket</li>
         <li>
             <a href="/index.php?page=profile_list" class="nav-link <?= nav_active($current_page, ['profile_list','profile_add','profile_edit']) ?>">
@@ -67,6 +68,7 @@ function nav_active(string $page, string|array $match): string {
                 <i class="bi bi-router"></i> Router / NAS
             </a>
         </li>
+        <?php endif; ?>
 
         <!-- Reports -->
         <li class="nav-label">Laporan</li>
