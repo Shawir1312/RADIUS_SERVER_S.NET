@@ -29,7 +29,7 @@ define('LIB_PATH',    BASE_PATH . '/lib');
 define('LOG_PATH',    BASE_PATH . '/logs');
 
 // Timezone
-define('APP_TIMEZONE', 'Asia/Makassar');  // WIT — change as needed
+define('APP_TIMEZONE', 'Asia/Jayapura');  // WIT — change as needed
 date_default_timezone_set(APP_TIMEZONE);
 
 // Pagination

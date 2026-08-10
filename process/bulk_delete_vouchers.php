@@ -80,8 +80,8 @@ try {
         db_execute("DELETE FROM radreply WHERE username IN ({$u_pls})", $u_types, $usernames);
         db_execute("DELETE FROM radusergroup WHERE username IN ({$u_pls})", $u_types, $usernames);
         
-        // Mark as deleted in App
-        db_execute("UPDATE vouchers SET status = 'deleted' WHERE id IN ({$i_pls})", $i_types, $ids);
+        // Mark as deleted in App (Hard delete as requested)
+        db_execute("DELETE FROM vouchers WHERE id IN ({$i_pls})", $i_types, $ids);
     }
     
     db_commit();

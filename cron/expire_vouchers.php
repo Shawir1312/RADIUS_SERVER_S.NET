@@ -21,7 +21,7 @@ if (file_exists(CONFIG_PATH . '/db_local.php')) {
 }
 // Remaining constants
 if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');
-if (!defined('APP_TIMEZONE')) define('APP_TIMEZONE', 'Asia/Makassar');
+if (!defined('APP_TIMEZONE')) define('APP_TIMEZONE', 'Asia/Jayapura');
 date_default_timezone_set(APP_TIMEZONE);
 
 require_once CONFIG_PATH . '/database.php';

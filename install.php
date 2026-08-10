@@ -9,7 +9,7 @@ define('BASE_PATH', __DIR__);
 define('CONFIG_PATH', __DIR__ . '/config');
 define('APP_NAME', 'S.NET RADIUS Manager');
 define('APP_COMPANY', 'PT Network Inovation Solutions');
-define('APP_TIMEZONE', 'Asia/Makassar');
+define('APP_TIMEZONE', 'Asia/Jayapura');
 date_default_timezone_set(APP_TIMEZONE);
 
 if (file_exists(CONFIG_PATH . '/.installed')) {

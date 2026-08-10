@@ -55,8 +55,8 @@ try {
         db_execute("DELETE FROM radreply WHERE username = ?", 's', [$u]);
         db_execute("DELETE FROM radusergroup WHERE username = ?", 's', [$u]);
         
-        // Mark as deleted in vouchers
-        db_execute("UPDATE vouchers SET status = 'deleted' WHERE id = ?", 'i', [$v['id']]);
+        // Mark as deleted in vouchers (Hard delete as requested)
+        db_execute("DELETE FROM vouchers WHERE id = ?", 'i', [$v['id']]);
     }
     db_commit();
 
