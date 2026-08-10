@@ -203,45 +203,54 @@ if (qtyInput && qtyLabel) {
 }
 
 // Profile info box
-const profileSel = document.getElementById('profile_id');
+const profileSel  = document.getElementById('profile_id');
 const profileInfo = document.getElementById('profile-info');
-function updateProfileInfo() {
-    const opt = profileSel.options[profileSel.selectedIndex];
-    if (!opt.value) { profileInfo.innerHTML = ''; return; }
-    profileInfo.innerHTML = `
-        <div class="p-3 rounded" style="background:var(--blue-pale);border-left:3px solid var(--blue);">
-            <div class="row g-2" style="font-size:.8rem;">
-                <div class="col-3"><strong>Durasi</strong><br>${opt.dataset.duration}</div>
-                <div class="col-3"><strong>Kuota</strong><br>${opt.dataset.quota}</div>
-                <div class="col-3"><strong>Rate Limit</strong><br><code>${opt.dataset.rate}</code></div>
-                <div class="col-3"><strong>Harga</strong><br><span class="fw-600 text-red">${opt.dataset.price}</span></div>
-            </div>
-        </div>`;
+if (profileSel && profileInfo) {
+    function updateProfileInfo() {
+        const opt = profileSel.options[profileSel.selectedIndex];
+        if (!opt || !opt.value) { profileInfo.innerHTML = ''; return; }
+        profileInfo.innerHTML = `
+            <div class="p-3 rounded" style="background:var(--blue-pale);border-left:3px solid var(--blue);">
+                <div class="row g-2" style="font-size:.8rem;">
+                    <div class="col-3"><strong>Durasi</strong><br>${opt.dataset.duration || '-'}</div>
+                    <div class="col-3"><strong>Kuota</strong><br>${opt.dataset.quota || '-'}</div>
+                    <div class="col-3"><strong>Rate Limit</strong><br><code>${opt.dataset.rate || '-'}</code></div>
+                    <div class="col-3"><strong>Harga</strong><br><span class="fw-600 text-red">${opt.dataset.price || '-'}</span></div>
+                </div>
+            </div>`;
+    }
+    profileSel.addEventListener('change', updateProfileInfo);
+    updateProfileInfo();
 }
-profileSel.addEventListener('change', updateProfileInfo);
-updateProfileInfo();
 
 // Preview username
-function generatePreview() {
-    const len  = parseInt(document.getElementById('char_length').value);
-    const type = document.querySelector('[name=char_type]').value;
-    const pref = document.querySelector('[name=prefix]').value;
-    const chars = {
-        mix: 'abcdefghjkmnpqrstuvwxyz23456789',
-        mix1: 'ABCDEFGHJKMNPQRSTUVWXYZ23456789',
-        mix2: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ23456789',
-        lower: 'abcdefghjkmnpqrstuvwxyz',
-        upper: 'ABCDEFGHJKMNPQRSTUVWXYZ',
-        num: '234567890123456789',
-    }[type] || 'abcdefghjkmnpqrstuvwxyz23456789';
-    let preview = pref;
-    for (let i = 0; i < len; i++) preview += chars[Math.floor(Math.random() * chars.length)];
-    document.getElementById('preview-user').textContent = preview;
+const _previewEl = document.getElementById('preview-user');
+if (_previewEl) {
+    function generatePreview() {
+        const lenEl  = document.getElementById('char_length');
+        const typeEl = document.querySelector('[name=char_type]');
+        const prefEl = document.querySelector('[name=prefix]');
+        if (!lenEl || !typeEl || !prefEl) return;
+        const len  = parseInt(lenEl.value) || 6;
+        const type = typeEl.value;
+        const pref = prefEl.value;
+        const chars = {
+            mix:   'abcdefghjkmnpqrstuvwxyz23456789',
+            mix1:  'ABCDEFGHJKMNPQRSTUVWXYZ23456789',
+            mix2:  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ23456789',
+            lower: 'abcdefghjkmnpqrstuvwxyz',
+            upper: 'ABCDEFGHJKMNPQRSTUVWXYZ',
+            num:   '234567890123456789',
+        }[type] || 'abcdefghjkmnpqrstuvwxyz23456789';
+        let preview = pref;
+        for (let i = 0; i < len; i++) preview += chars[Math.floor(Math.random() * chars.length)];
+        _previewEl.textContent = preview;
+    }
+    document.getElementById('char_length')?.addEventListener('change', generatePreview);
+    document.querySelector('[name=char_type]')?.addEventListener('change', generatePreview);
+    document.querySelector('[name=prefix]')?.addEventListener('input', generatePreview);
+    generatePreview();
 }
-document.getElementById('char_length')?.addEventListener('change', generatePreview);
-document.querySelector('[name=char_type]')?.addEventListener('change', generatePreview);
-document.querySelector('[name=prefix]')?.addEventListener('input', generatePreview);
-generatePreview();
 </script>
 
 <?php include __DIR__ . '/../../include/footer.php'; ?>

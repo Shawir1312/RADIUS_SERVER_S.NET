@@ -256,25 +256,27 @@ include __DIR__ . '/../../include/header.php';
 </div>
 
 <script>
-// Bulk select
-const selectAll = document.getElementById('select-all');
-const bulkBar   = document.getElementById('bulk-bar');
-const countEl   = document.getElementById('selected-count');
-const idsInput  = document.getElementById('bulk-ids-input');
+// Bulk select (local scope to avoid redeclaration with app.js)
+(function() {
+    const _selectAll = document.getElementById('select-all');
+    const _bulkBar   = document.getElementById('bulk-bar');
+    const _countEl   = document.getElementById('selected-count');
+    const _idsInput  = document.getElementById('bulk-ids-input');
 
-function updateBulk() {
-    const checked = [...document.querySelectorAll('.row-check:checked')];
-    const cnt = checked.length;
-    if (bulkBar) bulkBar.classList.toggle('d-none', cnt === 0);
-    if (bulkBar) bulkBar.classList.toggle('d-flex', cnt > 0);
-    if (countEl) countEl.textContent = cnt;
-    if (idsInput) idsInput.value = checked.map(cb => cb.value).join(',');
-}
-selectAll?.addEventListener('change', function() {
-    document.querySelectorAll('.row-check').forEach(cb => cb.checked = this.checked);
-    updateBulk();
-});
-document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateBulk));
+    function updateBulk() {
+        const checked = [...document.querySelectorAll('.row-check:checked')];
+        const cnt = checked.length;
+        if (_bulkBar) _bulkBar.classList.toggle('d-none', cnt === 0);
+        if (_bulkBar) _bulkBar.classList.toggle('d-flex', cnt > 0);
+        if (_countEl) _countEl.textContent = cnt;
+        if (_idsInput) _idsInput.value = checked.map(cb => cb.value).join(',');
+    }
+    _selectAll?.addEventListener('change', function() {
+        document.querySelectorAll('.row-check').forEach(cb => cb.checked = this.checked);
+        updateBulk();
+    });
+    document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateBulk));
+})();
 </script>
 
 <!-- Bulk Delete Modal -->
