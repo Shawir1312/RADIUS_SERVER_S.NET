@@ -18,7 +18,7 @@ define('COA_PORT',    3799);
 define('COA_TIMEOUT', 5);     // seconds
 
 // Voucher generation
-define('VOUCHER_MAX_BATCH', 500);
+define('VOUCHER_MAX_BATCH', 2000);
 define('VOUCHER_RETRY',     10);   // retry attempts for unique username collision
 
 // Paths

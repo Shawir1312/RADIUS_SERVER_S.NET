@@ -109,6 +109,9 @@ function accessible_router_ids(): ?array {
  * Write to audit_log table.
  */
 function audit_log(string $action, string $target = '', int $router_id = 0, string $detail = ''): void {
+    if (strlen($target) > 250) {
+        $target = substr($target, 0, 247) . '...';
+    }
     $admin = current_admin();
     db_execute(
         "INSERT INTO audit_log (admin_id, admin_name, action, target, router_id, detail, ip_address, created_at)

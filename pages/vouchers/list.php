@@ -91,6 +91,9 @@ include __DIR__ . '/../../include/header.php';
             <i class="bi bi-printer me-1"></i>Cetak Batch Ini
         </a>
         <?php endif; ?>
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+            <i class="bi bi-trash-fill me-1"></i>Hapus Massal
+        </button>
         <a href="/index.php?page=generate_voucher" class="btn btn-outline-primary">
             <i class="bi bi-plus-circle me-1"></i>Generate Baru
         </a>
@@ -251,5 +254,60 @@ selectAll?.addEventListener('change', function() {
 });
 document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateBulk));
 </script>
+
+<!-- Bulk Delete Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="/process/bulk_delete_vouchers.php" class="modal-content">
+            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-trash-fill text-danger me-2"></i>Hapus Massal Voucher</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Perhatian!</strong> Fitur ini akan menghapus voucher secara permanen dari database aplikasi dan dari Mikrotik (radcheck & radreply).
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Hapus Berdasarkan Profil</label>
+                    <select class="form-select" name="profile_id">
+                        <option value="">— Pilih Profil (Opsional) —</option>
+                        <?php foreach ($profiles as $p): ?>
+                        <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Hapus Berdasarkan Batch ID</label>
+                    <input type="text" class="form-control" name="batch_id" placeholder="Contoh: B260810ABCD">
+                    <div class="form-text">Biarkan kosong jika tidak ingin memfilter berdasarkan Batch.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Hapus Berdasarkan Status</label>
+                    <select class="form-select" name="status">
+                        <option value="">— Semua Status —</option>
+                        <option value="unused">Belum Dipakai</option>
+                        <option value="active">Aktif</option>
+                        <option value="expired">Kadaluarsa</option>
+                    </select>
+                </div>
+
+                <div class="form-check text-danger mt-4">
+                    <input class="form-check-input" type="checkbox" name="confirm_all" id="confirmAll" required>
+                    <label class="form-check-label fw-bold" for="confirmAll">
+                        Saya yakin ingin menghapus voucher sesuai kriteria di atas!
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Eksekusi Hapus</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <?php include __DIR__ . '/../../include/footer.php'; ?>
