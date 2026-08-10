@@ -296,7 +296,7 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
         $conn = new mysqli($dbc['db_host'], $dbc['db_user'], $dbc['db_pass'], $dbc['db_name'], $dbc['db_port']);
         $conn->set_charset('utf8mb4');
         $hash = password_hash($adm_pass, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("INSERT INTO admins (username, password, full_name, role) VALUES (?,?,?,'superadmin')");
+        $stmt = $conn->prepare("INSERT INTO admins (username, password, full_name, role) VALUES (?,?,?,'superadmin') ON DUPLICATE KEY UPDATE password=VALUES(password), full_name=VALUES(full_name), role='superadmin'");
         $stmt->bind_param('sss', $adm_user, $hash, $adm_name);
         if ($stmt->execute()) {
             // Write config
