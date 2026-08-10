@@ -364,4 +364,14 @@ function run_auto_expire_vouchers($log = null) {
             db_rollback();
         }
     }
+
+    // ── Hard Delete Expired Vouchers > 3 Months ──
+    try {
+        $deleted = db_execute("DELETE FROM vouchers WHERE status = 'expired' AND expired_at < DATE_SUB(NOW(), INTERVAL 3 MONTH)");
+        if ($deleted > 0) {
+            $log("Auto-deleted {$deleted} vouchers that expired more than 3 months ago.");
+        }
+    } catch (Throwable $e) {
+        $log("Error auto-deleting old vouchers: " . $e->getMessage());
+    }
 }
