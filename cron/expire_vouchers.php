@@ -86,6 +86,29 @@ foreach ($past_expired as $v) {
 
         db_commit();
         $log("  → Voucher expired and removed from RADIUS tables");
+
+        // Kick from Mikrotik to prevent lingering sessions
+        $acct = db_fetch_one("SELECT nasipaddress FROM radacct WHERE username = ? ORDER BY acctstarttime DESC LIMIT 1", 's', [$username]);
+        if ($acct) {
+            $router = db_fetch_one("SELECT ip_address, api_user, api_password, api_port FROM routers WHERE ip_address = ? OR nas_ip = ?", 'ss', [$acct['nasipaddress'], $acct['nasipaddress']]);
+            if ($router) {
+                try {
+                    require_once LIB_PATH . '/routeros_api.class.php';
+                    $api = new RouterosAPI();
+                    $api->debug = false;
+                    if ($api->connect($router['ip_address'], $router['api_user'], $router['api_password'], (int)$router['api_port'])) {
+                        $active_users = $api->comm("/ip/hotspot/active/print", ["?user" => $username]);
+                        foreach ($active_users as $au) {
+                            $api->comm("/ip/hotspot/active/remove", [".id" => $au['.id']]);
+                            $log("  → Kicked {$username} from Mikrotik ({$router['ip_address']})");
+                        }
+                        $api->disconnect();
+                    }
+                } catch (Throwable $e) {
+                    $log("  → API Error: " . $e->getMessage());
+                }
+            }
+        }
     } catch (Throwable $e) {
         db_rollback();
         $log("  ERROR: " . $e->getMessage());
