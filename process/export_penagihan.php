@@ -72,9 +72,9 @@ foreach ($history as $h) {
     echo '<td>' . date('H:i:s', strtotime($h['created_at'])) . '</td>';
     echo '<td>' . htmlspecialchars($h['router_name']) . '</td>';
     echo '<td>' . htmlspecialchars($h['profile_name']) . '</td>';
-    echo '<td>' . $h['total_pendapatan'] . '</td>';
-    echo '<td>' . $h['bagian_reseller'] . '</td>';
-    echo '<td>' . $h['pendapatan_bersih'] . '</td>';
+    echo '<td>' . number_format($h['total_pendapatan'], 0, ',', '.') . '</td>';
+    echo '<td>' . number_format($h['bagian_reseller'], 0, ',', '.') . '</td>';
+    echo '<td>' . number_format($h['pendapatan_bersih'], 0, ',', '.') . '</td>';
     echo '<td>' . $h['estimasi_voucher'] . ' vs ' . $h['voucher_aktual'] . '</td>';
     echo '<td>' . strtoupper($h['status_kecocokan']) . '</td>';
     echo '<td>' . htmlspecialchars($h['catatan'] ?? '') . '</td>';
@@ -84,9 +84,9 @@ foreach ($history as $h) {
 
 echo '<tr>';
 echo '<th colspan="4" style="text-align:right;">TOTAL:</th>';
-echo '<th>' . $total_kotor . '</th>';
-echo '<th>' . $total_bagian . '</th>';
-echo '<th>' . $total_bersih . '</th>';
+echo '<th>' . number_format($total_kotor, 0, ',', '.') . '</th>';
+echo '<th>' . number_format($total_bagian, 0, ',', '.') . '</th>';
+echo '<th>' . number_format($total_bersih, 0, ',', '.') . '</th>';
 echo '<th colspan="4"></th>';
 echo '</tr>';
 echo '</table>';
