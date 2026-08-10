@@ -53,7 +53,7 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
         </button>
         <span class="topbar-title d-flex align-items-center gap-2">
             <!-- Mobile Logo -->
-            <img src="/assets/img/logo.png" class="d-inline-block d-md-none" style="height:24px; filter: brightness(0) invert(1);" alt="Logo">
+            <img src="/assets/img/logo.png" class="d-inline-block d-md-none" style="height:24px;" alt="Logo">
             <span class="d-none d-sm-inline"><?= htmlspecialchars($page_title ?? 'Dashboard') ?></span>
         </span>
     </div>

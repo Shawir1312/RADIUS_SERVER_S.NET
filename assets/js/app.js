@@ -157,18 +157,28 @@ function disconnectUser(username, sessionId, btn) {
 
 // ── Test Router API ────────────────────────────────────
 function testRouterApi(routerId, resultEl) {
-    if (resultEl) resultEl.textContent = 'Testing...';
+    if (resultEl) {
+        resultEl.textContent = 'Testing...';
+        resultEl.className = 'router-status-badge badge bg-secondary';
+    }
     fetch(`/ajax/test_api.php?id=${routerId}`)
         .then(r => r.json())
         .then(data => {
             if (resultEl) {
-                resultEl.innerHTML = data.success
-                    ? `<span class="text-success"><i class="bi bi-check-circle"></i> Connected — ${escHtml(data.identity || '')}</span>`
-                    : `<span class="text-danger"><i class="bi bi-x-circle"></i> Failed — ${escHtml(data.error || '')}</span>`;
+                if (data.success) {
+                    resultEl.className = 'router-status-badge badge bg-success';
+                    resultEl.innerHTML = `<i class="bi bi-check-circle"></i> Connected — ${escHtml(data.identity || '')}`;
+                } else {
+                    resultEl.className = 'router-status-badge badge bg-danger';
+                    resultEl.innerHTML = `<i class="bi bi-x-circle"></i> Failed — ${escHtml(data.error || '')}`;
+                }
             }
         })
         .catch(() => {
-            if (resultEl) resultEl.innerHTML = `<span class="text-danger">Request failed</span>`;
+            if (resultEl) {
+                resultEl.className = 'router-status-badge badge bg-danger';
+                resultEl.innerHTML = `<i class="bi bi-x-circle"></i> Request failed`;
+            }
         });
 }
 

@@ -84,7 +84,6 @@ img { max-width: 100%; }
 
 .sidebar-brand img {
   height: 36px;
-  filter: brightness(0) invert(1);
   object-fit: contain;
 }
 
