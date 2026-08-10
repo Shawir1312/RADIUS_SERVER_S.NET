@@ -57,7 +57,7 @@ if ($is_list) {
                     <span class="text-success">↓<?= htmlspecialchars($p['rate_down'] ?: '0') ?></span>
                 </td>
                 <td><?= format_price((float)$p['price']) ?></td>
-                <td><?= htmlspecialchars($p['router_name'] ?? '<span class="text-muted">Semua Router</span>') ?></td>
+                <td><?= $p['router_id'] ? htmlspecialchars($p['router_name'] ?? '') : '<span class="text-muted">Semua Router</span>' ?></td>
                 <td><?= $p['is_active'] ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-secondary">Nonaktif</span>' ?></td>
                 <td><span class="badge bg-primary"><?= $p['voucher_count'] ?></span></td>
                 <td>
