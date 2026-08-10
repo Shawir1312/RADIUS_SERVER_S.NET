@@ -85,8 +85,9 @@ img { max-width: 100%; }
 .sidebar-brand img {
   height: 36px;
   object-fit: contain;
-  filter: invert(1);
-  mix-blend-mode: screen;
+  background-color: #ffffff;
+  padding: 4px;
+  border-radius: 4px;
 }
 
 .sidebar-brand-text {

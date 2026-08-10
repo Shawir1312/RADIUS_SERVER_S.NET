@@ -31,7 +31,7 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
     <!-- Font Awesome 6 (free) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- App CSS -->
-    <link rel="stylesheet" href="/assets/css/app.css">
+    <link rel="stylesheet" href="/assets/css/app.css?v=<?= filemtime(__DIR__ . '/../assets/css/app.css') ?>">
     <!-- Print CSS -->
     <link rel="stylesheet" href="/assets/css/print.css" media="print">
 </head>
@@ -53,7 +53,7 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
         </button>
         <span class="topbar-title d-flex align-items-center gap-2">
             <!-- Mobile Logo -->
-            <img src="/assets/img/logo.png" class="d-inline-block d-md-none" style="height:24px; filter: invert(1); mix-blend-mode: screen;" alt="Logo">
+            <img src="/assets/img/logo.png" class="d-inline-block d-md-none" style="height:24px; background-color:#ffffff; padding:2px; border-radius:3px;" alt="Logo">
             <span class="d-none d-sm-inline"><?= htmlspecialchars($page_title ?? 'Dashboard') ?></span>
         </span>
     </div>
