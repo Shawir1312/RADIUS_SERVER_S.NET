@@ -63,10 +63,10 @@ if (empty($vouchers)) {
         .voucher-grid { display: grid; grid-template-columns: repeat(auto-fill, 27mm); gap: 1mm; justify-content: center; background: white; padding: 5mm; max-width: 210mm; margin: 0 auto; }
         
         .voucher-card { 
-            border: 1px solid #000; 
+            border: 1px dashed #000; 
             padding: 2px; 
             width: 28mm; 
-            height: 31mm; 
+            /* height: 31mm; dihapus agar fit content */
             box-sizing: border-box; 
             display: flex; 
             flex-direction: column; 
@@ -81,20 +81,20 @@ if (empty($vouchers)) {
             body { background: white; padding: 0; margin: 0; }
             .no-print { display: none !important; }
             
-            /* Saat print, paksa grid jadi 7 kolom x 9 baris = 63 */
+            /* Saat print, paksa grid jadi 7 kolom */
             .voucher-grid { 
                 padding: 0; 
                 margin: 0; 
                 max-width: none; 
                 display: grid !important; 
                 grid-template-columns: repeat(7, 28mm) !important; 
-                grid-auto-rows: 31mm !important; 
+                /* grid-auto-rows dihapus agar tidak memaksa tinggi ke bawah */
                 gap: 1mm !important; 
                 justify-content: start !important;
             }
             .voucher-card {
                 width: 100% !important;
-                height: 100% !important;
+                /* height: 100% !important; dihapus */
                 margin: 0 !important;
             }
         }
