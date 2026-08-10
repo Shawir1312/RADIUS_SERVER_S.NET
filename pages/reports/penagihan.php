@@ -354,7 +354,7 @@ function calculate() {
         resVoucher.innerHTML = estimasi + ' voucher <span class="text-danger fw-bold">' + statusText + '</span>';
         document.querySelector('input[name="catatan"]').required = true;
         document.querySelector('input[name="catatan"]').placeholder = 'Wajib diisi karena tekor...';
-        document.querySelector('label[for="catatanLabel"]').innerHTML = 'CATATAN (Wajib) <span class="text-danger">*</span>';
+        document.getElementById('catatanLabel').innerHTML = 'CATATAN (Wajib) <span class="text-danger">*</span>';
     } else {
         if (estimasi > unbilled) {
             statusText = ' (LEBIH, aktual: ' + unbilled + ')';
@@ -365,7 +365,7 @@ function calculate() {
         }
         document.querySelector('input[name="catatan"]').required = false;
         document.querySelector('input[name="catatan"]').placeholder = 'Keterangan penagihan...';
-        document.querySelector('label[for="catatanLabel"]').innerHTML = 'CATATAN (opsional)';
+        document.getElementById('catatanLabel').innerHTML = 'CATATAN (opsional)';
     }
     
     resLabelPercent.textContent = percent;
