@@ -146,7 +146,7 @@ try {
 
         // vouchers table
         $stmt_voucher->bind_param(
-            'ssiisssis',
+            'ssiissis',
             $u, $p, $profile_id, $router_id, $batch_id, $expired_at, $admin['id'], $now
         );
         $stmt_voucher->execute();
