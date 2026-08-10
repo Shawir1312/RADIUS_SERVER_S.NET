@@ -18,7 +18,7 @@ if (empty($_POST['csrf']) || $_POST['csrf'] !== $_SESSION['csrf_token']) {
 $id          = (int)post('id');
 $name        = sanitize(post('name'));
 $ip          = sanitize(post('ip_address'));
-$secret      = post('radius_secret');
+$secret      = trim(post('radius_secret'));
 $api_user    = sanitize(post('api_user', 'admin'));
 $api_pass    = post('api_password', '');
 $api_port    = (int)post('api_port', 8728);
