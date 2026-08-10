@@ -4,15 +4,13 @@
  */
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/auth.php';
 require_once __DIR__ . '/include/functions.php';
 
-// Cek apakah sudah login sebagai superadmin (opsional, tapi untuk keamanan)
-session_start();
-if (empty($_SESSION['admin_logged_in']) || $_SESSION['admin_role'] !== 'superadmin') {
-    die("Akses ditolak. Silakan login sebagai superadmin terlebih dahulu.");
-}
+// Cek apakah sudah login sebagai superadmin
+auth_require_superadmin();
 
-$admin_id = $_SESSION['admin_id'];
+$admin_id = current_admin()['id'];
 
 // Ambil profil reseller
 $profiles = db_fetch_all("SELECT id, router_id, price, reseller_percent FROM profiles WHERE reseller_percent > 0 AND is_active = 1");
