@@ -27,4 +27,11 @@ $sql = "SELECT id, name, price, reseller_percent
         ORDER BY name ASC";
 $profiles = db_fetch_all($sql, 'i', [$router_id]);
 
+foreach ($profiles as &$p) {
+    $pid = $p['id'];
+    $total_used = db_fetch_one("SELECT COUNT(*) as c FROM vouchers WHERE profile_id = ? AND status IN ('active', 'expired')", 'i', [$pid])['c'] ?? 0;
+    $total_billed = db_fetch_one("SELECT SUM(estimasi_voucher) as c FROM penagihan WHERE profile_id = ?", 'i', [$pid])['c'] ?? 0;
+    $p['unbilled_vouchers'] = max(0, $total_used - $total_billed);
+}
+
 echo json_encode($profiles);

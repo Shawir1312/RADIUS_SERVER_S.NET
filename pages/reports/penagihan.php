@@ -144,8 +144,8 @@ include __DIR__ . '/../../include/header.php';
                         <input type="number" class="form-control fw-bold fs-5" name="total_pendapatan" id="inputTotal" placeholder="Contoh: 500000" min="0" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" style="font-size:.8rem;font-weight:600">CATATAN (opsional)</label>
-                        <input type="text" class="form-control" name="catatan" placeholder="Keterangan penagihan...">
+                        <label id="catatanLabel" class="form-label" style="font-size:.8rem;font-weight:600" for="catatan">CATATAN (opsional)</label>
+                        <input type="text" id="catatan" class="form-control" name="catatan" placeholder="Keterangan penagihan...">
                     </div>
                 </div>
             </div>
@@ -182,6 +182,9 @@ include __DIR__ . '/../../include/header.php';
 <div class="card table-card">
     <div class="card-header bg-white pt-3 pb-2 border-bottom-0 d-flex justify-content-between align-items-center">
         <h5 class="card-title m-0"><i class="bi bi-clock-history me-2 text-secondary"></i> Semua Riwayat Penagihan</h5>
+        <a href="/process/export_penagihan.php?start_date=<?= $filter_start ?>&end_date=<?= $filter_end ?>&router_id=<?= $router_filter ?>" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+        </a>
     </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle">
@@ -196,6 +199,7 @@ include __DIR__ . '/../../include/header.php';
                     <th>Voucher</th>
                     <th>Status</th>
                     <th>Ditagih Oleh</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -231,6 +235,11 @@ include __DIR__ . '/../../include/header.php';
                             <div class="fw-600"><?= htmlspecialchars($h['admin_name']) ?></div>
                             <?php if ($h['ditagih_oleh'] == $admin['id']): ?>
                                 <span class="badge bg-success" style="font-size:0.6rem;">SAYA</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if (date('Y-m-d', strtotime($h['created_at'])) === date('Y-m-d') && $h['ditagih_oleh'] == $admin['id']): ?>
+                            <a href="/index.php?page=penagihan_delete&id=<?= $h['id'] ?>" class="btn btn-sm btn-outline-danger" data-confirm="Hapus data penagihan ini? Anda bisa menginputnya kembali setelah dihapus." title="Hapus"><i class="bi bi-trash"></i></a>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -329,6 +338,7 @@ function calculate() {
     const total = parseFloat(inputTotal.value) || 0;
     const percent = parseFloat(selectedProfile.reseller_percent) || 0;
     const price = parseFloat(selectedProfile.price) || 0;
+    const unbilled = parseInt(selectedProfile.unbilled_vouchers) || 0;
     
     const bagian = total * (percent / 100);
     const bersih = total - bagian;
@@ -337,7 +347,27 @@ function calculate() {
     resTotal.textContent = formatRp(total);
     resBagian.textContent = formatRp(bagian);
     resBersih.textContent = formatRp(bersih);
-    resVoucher.textContent = estimasi + ' voucher';
+    
+    let statusText = '';
+    if (estimasi < unbilled) {
+        statusText = ' (TEKOR, aktual: ' + unbilled + ')';
+        resVoucher.innerHTML = estimasi + ' voucher <span class="text-danger fw-bold">' + statusText + '</span>';
+        document.querySelector('input[name="catatan"]').required = true;
+        document.querySelector('input[name="catatan"]').placeholder = 'Wajib diisi karena tekor...';
+        document.querySelector('label[for="catatanLabel"]').innerHTML = 'CATATAN (Wajib) <span class="text-danger">*</span>';
+    } else {
+        if (estimasi > unbilled) {
+            statusText = ' (LEBIH, aktual: ' + unbilled + ')';
+            resVoucher.innerHTML = estimasi + ' voucher <span class="text-info fw-bold">' + statusText + '</span>';
+        } else {
+            statusText = ' (SESUAI)';
+            resVoucher.innerHTML = estimasi + ' voucher <span class="text-success fw-bold">' + statusText + '</span>';
+        }
+        document.querySelector('input[name="catatan"]').required = false;
+        document.querySelector('input[name="catatan"]').placeholder = 'Keterangan penagihan...';
+        document.querySelector('label[for="catatanLabel"]').innerHTML = 'CATATAN (opsional)';
+    }
+    
     resLabelPercent.textContent = percent;
     
     btnSubmit.disabled = total <= 0;
