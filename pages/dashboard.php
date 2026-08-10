@@ -42,7 +42,7 @@ $chart_data = db_fetch_all(
      GROUP BY DATE(sold_at) ORDER BY day ASC"
 );
 
-include __DIR__ . '/../../include/header.php';
+include __DIR__ . '/../include/header.php';
 ?>
 
 <!-- Page Header -->
@@ -276,4 +276,4 @@ new Chart(ctx, {
 });
 </script>
 
-<?php include __DIR__ . '/../../include/footer.php'; ?>
+<?php include __DIR__ . '/../include/footer.php'; ?>
