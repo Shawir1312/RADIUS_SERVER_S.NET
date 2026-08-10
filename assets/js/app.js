@@ -5,10 +5,20 @@
 
 // ── Sidebar Toggle ─────────────────────────────────────
 const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+function toggleSidebar() {
+    document.body.classList.toggle('sidebar-collapsed');
+    document.body.classList.toggle('sidebar-open');
+}
+
 if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', () => {
-        document.body.classList.toggle('sidebar-collapsed');
-        document.body.classList.toggle('sidebar-open');
+    sidebarToggle.addEventListener('click', toggleSidebar);
+}
+if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', () => {
+        document.body.classList.remove('sidebar-open');
+        document.body.classList.add('sidebar-collapsed');
     });
 }
 

@@ -209,6 +209,20 @@ img { max-width: 100%; }
   transition: var(--transition);
 }
 
+#sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1045;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+body.sidebar-open #sidebar-backdrop {
+  opacity: 1;
+  pointer-events: all;
+}
+
 .topbar-left {
   display: flex;
   align-items: center;
@@ -646,6 +660,7 @@ body.sidebar-collapsed #main-content {
   #sidebar {
     width: 260px;
     transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
   }
   body.sidebar-open #sidebar {
     transform: translateX(0);
@@ -653,6 +668,25 @@ body.sidebar-collapsed #main-content {
   #topbar, #main-content {
     margin-left: 0 !important;
     left: 0 !important;
+  }
+  #topbar {
+    background: var(--blue);
+  }
+  .topbar-title {
+    color: var(--white);
+  }
+  #sidebar-toggle {
+    color: var(--white);
+  }
+  #sidebar-toggle:hover {
+    background: rgba(255,255,255,.15);
+    color: var(--white);
+  }
+  .topbar-user {
+    border-color: rgba(255,255,255,.3);
+  }
+  .topbar-user i {
+    color: var(--white) !important;
   }
   #main-content { padding: 16px; }
   .stat-card { margin-bottom: 12px; }

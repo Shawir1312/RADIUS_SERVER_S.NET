@@ -39,6 +39,9 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
 <!-- Page Loader -->
 <div id="page-loader"><div class="spinner-ring"></div></div>
 
+<!-- Mobile Sidebar Backdrop -->
+<div id="sidebar-backdrop"></div>
+
 <!-- Sidebar -->
 <?php include __DIR__ . '/sidebar.php'; ?>
 
@@ -48,8 +51,10 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
         <button id="sidebar-toggle" title="Toggle Sidebar">
             <i class="bi bi-list"></i>
         </button>
-        <span class="topbar-title">
-            <?= htmlspecialchars($page_title ?? 'Dashboard') ?>
+        <span class="topbar-title d-flex align-items-center gap-2">
+            <!-- Mobile Logo -->
+            <img src="/assets/img/logo.png" class="d-inline-block d-md-none" style="height:24px; filter: brightness(0) invert(1);" alt="Logo">
+            <span class="d-none d-sm-inline"><?= htmlspecialchars($page_title ?? 'Dashboard') ?></span>
         </span>
     </div>
     <div class="topbar-right">
