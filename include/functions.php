@@ -215,15 +215,38 @@ function router_status_badge(bool $online): string {
         : "<span class='badge bg-danger'><i class='bi bi-circle-fill me-1'></i>Offline</span>";
 }
 
-/**
- * Sinkronisasi voucher yang sudah terpakai
- * Mengubah status voucher menjadi 'active' berdasarkan data radacct
- */
 function sync_active_vouchers() {
-    db_execute("
-        UPDATE vouchers v
+    $newly_active = db_fetch_all("
+        SELECT v.id, v.username, v.profile_id, p.name AS profile_name, p.price, v.router_id, ra.acctstarttime, p.duration_value, p.duration_unit
+        FROM vouchers v
         JOIN radacct ra ON v.username = ra.username
-        SET v.status = 'active', v.used_at = ra.acctstarttime
+        JOIN profiles p ON v.profile_id = p.id
         WHERE v.status = 'unused'
     ");
+
+    foreach ($newly_active as $v) {
+        db_begin();
+        try {
+            $duration_s = duration_to_seconds($v['duration_value'], $v['duration_unit']);
+            $used_at = $v['acctstarttime'];
+            $expired_at = date('Y-m-d H:i:s', strtotime($used_at) + $duration_s);
+
+            db_execute(
+                "UPDATE vouchers SET status = 'active', used_at = ?, expired_at = ? WHERE id = ?",
+                'ssi', [$used_at, $expired_at, $v['id']]
+            );
+
+            // Record sale
+            db_execute(
+                "INSERT INTO sales_log (voucher_id, voucher_username, profile_id, profile_name, router_id, price, sold_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)",
+                'isissds', 
+                [$v['id'], $v['username'], $v['profile_id'], $v['profile_name'], $v['router_id'], $v['price'], $used_at]
+            );
+
+            db_commit();
+        } catch(Throwable $e) {
+            db_rollback();
+        }
+    }
 }

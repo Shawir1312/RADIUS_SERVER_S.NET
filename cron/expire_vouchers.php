@@ -37,82 +37,55 @@ $log = function(string $msg) {
     file_put_contents($logdir . '/cron.log', $line . "\n", FILE_APPEND);
 };
 
-$log("=== expire_vouchers cron started ===");
+// ── Clear bogus expired_at for unused vouchers (from old generate_voucher bug) ──
+db_execute("UPDATE vouchers SET expired_at = NULL WHERE status = 'unused' AND expired_at IS NOT NULL");
+
+// ── Catch up missing expired_at for already active vouchers ─────────────────
+$missing_exp = db_fetch_all("
+    SELECT v.id, v.used_at, p.duration_value, p.duration_unit
+    FROM vouchers v JOIN profiles p ON v.profile_id = p.id
+    WHERE v.status = 'active' AND v.expired_at IS NULL AND v.used_at IS NOT NULL
+");
+foreach ($missing_exp as $m) {
+    $ds = duration_to_seconds($m['duration_value'], $m['duration_unit']);
+    $exp = date('Y-m-d H:i:s', strtotime($m['used_at']) + $ds);
+    db_execute("UPDATE vouchers SET expired_at = ? WHERE id = ?", 'si', [$exp, $m['id']]);
+}
 
 // ── Sync Active Vouchers ─────────────────────────────────────────────────────
 // Vouchers that have been used (have radacct entry) but status is still 'unused'
 sync_active_vouchers();
 $log("Synced active vouchers");
 
-// ── Find expired active sessions ─────────────────────────────────────────────
-// Sessions where acctstoptime IS NULL and they started longer ago than Session-Timeout
-// We use the Session-Timeout from radreply table.
-$expired_sessions = db_fetch_all(
-    "SELECT ra.username, ra.radacctid, ra.acctstarttime, ra.nasipaddress,
-            COALESCE(rr.value, 86400) AS session_timeout
-     FROM radacct ra
-     LEFT JOIN radreply rr ON rr.username = ra.username AND rr.attribute = 'Session-Timeout'
-     WHERE ra.acctstoptime IS NULL
-       AND ra.acctstarttime < DATE_SUB(NOW(), INTERVAL COALESCE(rr.value, 86400) SECOND)"
+// ── Find expired vouchers ─────────────────────────────────────────────
+// Vouchers that are 'active' but their time has passed expired_at
+$past_expired = db_fetch_all(
+    "SELECT id, username FROM vouchers WHERE status = 'active' AND expired_at < NOW() AND expired_at IS NOT NULL"
 );
 
-$log("Found " . count($expired_sessions) . " expired sessions");
+$log("Found " . count($past_expired) . " vouchers past expiry date");
 
-foreach ($expired_sessions as $session) {
-    $username = $session['username'];
-    $log("Expiring: {$username} (started: {$session['acctstarttime']}, timeout: {$session['session_timeout']}s)");
+foreach ($past_expired as $v) {
+    $username = $v['username'];
+    $log("Expiring: {$username}");
 
     db_begin();
     try {
-        // Mark radacct session as stopped
-        db_execute(
-            "UPDATE radacct SET acctstoptime = NOW(), acctterminatecause = 'Session-Timeout'
-             WHERE radacctid = ?",
-            'i', [(int)$session['radacctid']]
-        );
+        db_execute("UPDATE vouchers SET status = 'expired' WHERE id = ?", 'i', [(int)$v['id']]);
 
-        // Check if voucher exists and is still active
-        $voucher = db_fetch_one("SELECT id, status FROM vouchers WHERE username = ? LIMIT 1", 's', [$username]);
-        if ($voucher && $voucher['status'] === 'active') {
-            // Mark as expired
-            db_execute("UPDATE vouchers SET status = 'expired' WHERE id = ?", 'i', [(int)$voucher['id']]);
-
-            // Remove from radcheck and radreply (voucher spent)
-            db_execute("DELETE FROM radcheck WHERE username = ?", 's', [$username]);
-            db_execute("DELETE FROM radreply WHERE username = ?", 's', [$username]);
-
-            $log("  → Voucher expired and removed from RADIUS tables");
-        }
+        // Remove from radcheck and radreply (voucher spent)
+        db_execute("DELETE FROM radcheck WHERE username = ?", 's', [$username]);
+        db_execute("DELETE FROM radreply WHERE username = ?", 's', [$username]);
 
         // Audit entry
         db_execute(
             "INSERT INTO audit_log (admin_id, admin_name, action, target, ip_address, detail, created_at)
-             VALUES (0, 'CRON', 'auto_expire', ?, 'cron', ?, NOW())",
-            'ss', [$username, json_encode(['session_id' => $session['radacctid']])]
+             VALUES (0, 'CRON', 'auto_expire', ?, 'cron', 'Expired by date', NOW())",
+            's', [$username]
         );
 
         db_commit();
-    } catch (Throwable $e) {
-        db_rollback();
-        $log("  ERROR: " . $e->getMessage());
-    }
-}
-
-// ── Also mark vouchers past their expired_at date as expired ─────────────────
-$past_expired = db_fetch_all(
-    "SELECT id, username FROM vouchers WHERE status = 'unused' AND expired_at < NOW() AND expired_at IS NOT NULL"
-);
-
-$log("Found " . count($past_expired) . " vouchers past expiry date (unused)");
-
-foreach ($past_expired as $v) {
-    db_begin();
-    try {
-        db_execute("UPDATE vouchers SET status = 'expired' WHERE id = ?", 'i', [(int)$v['id']]);
-        db_execute("DELETE FROM radcheck WHERE username = ?", 's', [$v['username']]);
-        db_execute("DELETE FROM radreply WHERE username = ?", 's', [$v['username']]);
-        db_commit();
-        $log("  Expired (date): {$v['username']}");
+        $log("  → Voucher expired and removed from RADIUS tables");
     } catch (Throwable $e) {
         db_rollback();
         $log("  ERROR: " . $e->getMessage());

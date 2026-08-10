@@ -103,14 +103,13 @@ if (empty($generated)) {
 db_begin();
 try {
     $now = date('Y-m-d H:i:s');
-    $expired_at = date('Y-m-d H:i:s', time() + ($duration_s * 2)); // generous expiry window
 
     $stmt_check  = db()->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, 'Cleartext-Password', ':=', ?)");
     $stmt_reply1 = db()->prepare("INSERT INTO radreply (username, attribute, op, value) VALUES (?, 'Session-Timeout', ':=', ?)");
     $stmt_reply2 = db()->prepare("INSERT INTO radreply (username, attribute, op, value) VALUES (?, 'Mikrotik-Rate-Limit', '=', ?)");
     $stmt_voucher = db()->prepare(
-        "INSERT INTO vouchers (username, password, profile_id, router_id, batch_id, status, expired_at, generated_by, created_at)
-         VALUES (?, ?, ?, ?, ?, 'unused', ?, ?, ?)"
+        "INSERT INTO vouchers (username, password, profile_id, router_id, batch_id, status, generated_by, created_at)
+         VALUES (?, ?, ?, ?, ?, 'unused', ?, ?)"
     );
 
     $rate_limit_val = rate_limit_attr($rate_up, $rate_down);
@@ -146,8 +145,8 @@ try {
 
         // vouchers table
         $stmt_voucher->bind_param(
-            'ssiissis',
-            $u, $p, $profile_id, $router_id, $batch_id, $expired_at, $admin['id'], $now
+            'ssiisss',
+            $u, $p, $profile_id, $router_id, $batch_id, $admin['id'], $now
         );
         $stmt_voucher->execute();
     }
