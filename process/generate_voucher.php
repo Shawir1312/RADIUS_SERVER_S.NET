@@ -25,7 +25,6 @@ if (empty($_POST['csrf']) || $_POST['csrf'] !== ($_SESSION['csrf_token'] ?? ''))
 // ── Validate Input ───────────────────────────────────────
 $qty         = (int)post('qty', 0);
 $profile_id  = (int)post('profile_id', 0);
-$router_id   = post('router_id') !== '' ? (int)post('router_id') : null;
 $user_mode   = post('user_mode', 'vc');     // vc = username=password, up = separate
 $char_length = (int)post('char_length', 8);
 $char_type   = post('char_type', 'mix');
@@ -53,12 +52,13 @@ if (!$profile) {
     exit;
 }
 
-// Load router if specified
+// Router ID automatically derived from profile's router
+$router_id = $profile['router_id'];
 $router = null;
 if ($router_id) {
     $router = get_router($router_id);
     if (!$router || !can_access_router($router_id)) {
-        flash_set('error', 'Router tidak ditemukan atau akses ditolak.');
+        flash_set('error', 'Router untuk profil ini tidak ditemukan atau akses ditolak.');
         header('Location: /index.php?page=generate_voucher');
         exit;
     }

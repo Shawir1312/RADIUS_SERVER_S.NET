@@ -53,210 +53,43 @@ include __DIR__ . '/../../include/header.php';
                             <div class="form-text">Maksimal <?= VOUCHER_MAX_BATCH ?> per generate</div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Cabang / Lokasi Pembuatan <span class="text-danger">*</span></label>
-                            <select class="form-select" name="router_id" id="router_id" required>
-                                <option value="">— Pilih Cabang —</option>
-                                <?php foreach ($all_routers as $r): ?>
-                                <option value="<?= $r['id'] ?>">
-                                    <?= htmlspecialchars($r['name']) ?> — <?= htmlspecialchars($r['ip_address']) ?>
+                        <div class="col-md-12">
+                            <label class="form-label">Profil / Paket (Reseller) <span class="text-danger">*</span></label>
+                            <select class="form-select" name="profile_id" id="profile_id" required>
+                                <option value="">— Pilih Profil —</option>
+                                <?php foreach ($profiles as $p): ?>
+                                <?php 
+                                    $label = htmlspecialchars($p['name']);
+                                    if ($p['price'] > 0) $label .= ' — ' . format_price((float)$p['price']);
+                                    
+                                    // Append router name
+                                    if ($p['router_id']) {
+                                        $router_name = '';
+                                        foreach ($all_routers as $r) {
+                                            if ($r['id'] == $p['router_id']) {
+                                                $router_name = $r['name'];
+                                                break;
+                                            }
+                                        }
+                                        $label .= " [Cabang: " . htmlspecialchars($router_name) . "]";
+                                    } else {
+                                        $label .= " [Global / Semua Router]";
+                                    }
+                                ?>
+                                <option value="<?= $p['id'] ?>"
+                                    data-duration="<?= $p['duration_value'].' '.$p['duration_unit'] ?>"
+                                    data-quota="<?= $p['quota_mb'] > 0 ? format_bytes($p['quota_mb']*1048576) : 'Unlimited' ?>"
+                                    data-rate="<?= htmlspecialchars($p['rate_up'].'/'.$p['rate_down']) ?>"
+                                    data-price="<?= format_price((float)$p['price']) ?>"
+                                    <?= $p['id'] === $preselect_profile ? 'selected' : '' ?>>
+                                    <?= $label ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
-                            <div class="form-text">Voucher otomatis <strong>bisa dipakai di SEMUA router/cabang</strong> manapun.</div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Profil / Paket (Reseller) <span class="text-danger">*</span></label>
-                            <select class="form-select" name="profile_id" id="profile_id" required disabled>
-                                <option value="">— Pilih Cabang Terlebih Dahulu —</option>
-                            </select>
-                        </div>
-                        
                         <!-- Profile Info Box -->
                         <div class="col-12" id="profile-info"></div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Mode Voucher <span class="text-danger">*</span></label>
-                            <select class="form-select" name="user_mode" id="user_mode" required>
-                                <option value="vc">Username = Password (voucher card)</option>
-                                <option value="up">Username ≠ Password (user/pass terpisah)</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Panjang Karakter <span class="text-danger">*</span></label>
-                            <select class="form-select" name="char_length" id="char_length">
-                                <?php foreach ([4,5,6,7,8,10,12] as $l): ?>
-                                <option value="<?= $l ?>" <?= $l === 8 ? 'selected' : '' ?>><?= $l ?> karakter</option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Tipe Karakter</label>
-                            <select class="form-select" name="char_type">
-                                <option value="mix">Huruf kecil + angka (abc123)</option>
-                                <option value="mix1">Huruf besar + angka (ABC123)</option>
-                                <option value="mix2">Huruf campur + angka (aBc123)</option>
-                                <option value="lower">Huruf kecil (abcdef)</option>
-                                <option value="upper">Huruf besar (ABCDEF)</option>
-                                <option value="num">Angka saja (123456)</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Prefix (opsional)</label>
-                            <input type="text" class="form-control" name="prefix"
-                                   maxlength="8" placeholder="Contoh: HTS">
-                            <div class="form-text">Ditambahkan di depan username</div>
-                        </div>
-                    </div>
-
-                    <!-- Preview -->
-                    <div class="mt-3 p-3 rounded" style="background:var(--gray-50);border:1px solid var(--gray-200);">
-                        <div class="fw-600 mb-1" style="font-size:.8rem;">Preview username yang akan dibuat:</div>
-                        <code id="preview-user" class="text-blue" style="font-size:.88rem;">—</code>
-                        <span class="text-muted ms-2" style="font-size:.75rem;">(contoh acak)</span>
-                    </div>
-
-                    <div class="mt-4 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg" id="genBtn" onclick="showLoader()">
-                            <i class="bi bi-magic me-1"></i> Generate <?= '<span id="qty-label">10</span>' ?> Voucher
-                        </button>
-                        <button type="reset" class="btn btn-outline-secondary">Reset</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sidebar Info -->
-    <div class="col-12 col-lg-5">
-        <!-- Last Batch -->
-        <?php if ($last_batch): ?>
-        <div class="card mb-3">
-            <div class="card-header">
-                <h5 class="card-title"><i class="bi bi-clock-history"></i> Generate Terakhir Anda</h5>
-            </div>
-            <div class="card-body">
-                <table class="table table-sm mb-3">
-                    <tr><th>Batch ID</th><td class="font-mono fw-600"><?= htmlspecialchars($last_batch['batch_id']) ?></td></tr>
-                    <tr><th>Profil</th><td><?= htmlspecialchars($last_batch['profile_name']) ?></td></tr>
-                    <tr><th>Router</th><td><?= htmlspecialchars($last_batch['router_name'] ?? 'Semua Router') ?></td></tr>
-                    <tr><th>Jumlah</th><td><span class="badge bg-primary"><?= $last_batch['qty'] ?></span></td></tr>
-                    <tr><th>Waktu</th><td><?= date('d M Y H:i', strtotime($last_batch['created_at'])) ?></td></tr>
-                </table>
-                <div class="d-flex gap-2">
-                    <a href="/index.php?page=voucher_print&batch_id=<?= urlencode($last_batch['batch_id']) ?>"
-                       class="btn btn-primary btn-sm" target="_blank">
-                        <i class="bi bi-printer me-1"></i>Cetak Batch
-                    </a>
-                    <a href="/index.php?page=voucher_list&batch_id=<?= urlencode($last_batch['batch_id']) ?>"
-                       class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-list me-1"></i>Lihat Voucher
-                    </a>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- Tips -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title"><i class="bi bi-lightbulb"></i> Cara Kerja</h5>
-            </div>
-            <div class="card-body" style="font-size:.82rem;">
-                <ol class="mb-0">
-                    <li class="mb-2">Voucher di-generate secara lokal — <strong>tidak perlu koneksi ke router</strong></li>
-                    <li class="mb-2">Username & password disimpan ke <code>radcheck</code> (autentikasi) dan <code>radreply</code> (atribut: rate limit, timeout, quota)</li>
-                    <li class="mb-2">Saat pengguna konek ke hotspot MikroTik, router meneruskan autentikasi ke FreeRADIUS</li>
-                    <li class="mb-2">FreeRADIUS mengecek tabel <code>radcheck</code> lalu balasan dari <code>radreply</code></li>
-                    <li>Session dicatat di <code>radacct</code> untuk monitoring & laporan</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-// Update qty label
-const qtyInput = document.getElementById('qty');
-const qtyLabel = document.getElementById('qty-label');
-if (qtyInput && qtyLabel) {
-    qtyInput.addEventListener('input', () => qtyLabel.textContent = qtyInput.value);
-}
-
-// Profile info box & AJAX Loading
-const routerSel = document.getElementById('router_id');
-const profileSel = document.getElementById('profile_id');
-const profileInfo = document.getElementById('profile-info');
-
-// Format Price
-const formatRp = (num) => 'Rp ' + parseFloat(num).toLocaleString('id-ID', {minimumFractionDigits:0});
-// Format Bytes
-const formatBytes = (bytes) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
-
-function updateProfileInfo() {
-    const opt = profileSel.options[profileSel.selectedIndex];
-    if (!opt || !opt.value) { profileInfo.innerHTML = ''; return; }
-    profileInfo.innerHTML = `
-        <div class="p-3 rounded" style="background:var(--blue-pale);border-left:3px solid var(--blue);">
-            <div class="row g-2" style="font-size:.8rem;">
-                <div class="col-3"><strong>Durasi</strong><br>${opt.dataset.duration}</div>
-                <div class="col-3"><strong>Kuota</strong><br>${opt.dataset.quota}</div>
-                <div class="col-3"><strong>Rate Limit</strong><br><code>${opt.dataset.rate}</code></div>
-                <div class="col-3"><strong>Harga</strong><br><span class="fw-600 text-red">${opt.dataset.price}</span></div>
-            </div>
-        </div>`;
-}
-
-routerSel.addEventListener('change', async function() {
-    const rid = this.value;
-    profileSel.innerHTML = '<option value="">— Loading... —</option>';
-    profileSel.disabled = true;
-    updateProfileInfo();
-    
-    if(!rid) {
-        profileSel.innerHTML = '<option value="">— Pilih Cabang Terlebih Dahulu —</option>';
-        return;
-    }
-    
-    try {
-        const resp = await fetch('/process/get_resellers.php?type=all&router_id=' + rid);
-        const data = await resp.json();
-        
-        let defaultOption = '<option value="">— Pilih Profil / Paket —</option>';
-        if(data.length === 0) {
-            defaultOption = '<option value="">— Tidak ada paket untuk cabang ini —</option>';
-        } else {
-            profileSel.disabled = false;
-        }
-        
-        let optionsHtml = defaultOption;
-        data.forEach(p => {
-            let label = p.name;
-            if (p.price > 0) label += ' — ' + formatRp(p.price);
-            
-            // Reconstruct data attributes
-            const duration = p.duration_value + ' ' + p.duration_unit;
-            const quota = (p.quota_mb > 0) ? formatBytes(p.quota_mb * 1048576) : 'Unlimited';
-            const rate = (p.rate_up || '0') + '/' + (p.rate_down || '0');
-            const price = formatRp(p.price);
-            
-            optionsHtml += `<option value="${p.id}" data-duration="${duration}" data-quota="${quota}" data-rate="${rate}" data-price="${price}">${label}</option>`;
-        });
-        
-        profileSel.innerHTML = optionsHtml;
-    } catch (e) {
-        profileSel.innerHTML = '<option value="">— Gagal memuat data —</option>';
-    }
-});
 
 profileSel.addEventListener('change', updateProfileInfo);
 
