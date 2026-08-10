@@ -19,12 +19,13 @@ if ($router_id <= 0) {
 }
 
 // Fetch profiles that belong to this router (or all routers) and have reseller_percent > 0
-$sql = "SELECT id, name, price, reseller_percent 
-        FROM profiles 
-        WHERE (router_id = ? OR router_id IS NULL) 
-          AND reseller_percent > 0 
-          AND is_active = 1
-        ORDER BY name ASC";
+$sql = "SELECT p.id, p.name, p.price, p.reseller_percent, p.router_id, r.name as router_name
+        FROM profiles p
+        LEFT JOIN routers r ON p.router_id = r.id
+        WHERE (p.router_id = ? OR p.router_id IS NULL) 
+          AND p.reseller_percent > 0 
+          AND p.is_active = 1
+        ORDER BY p.name ASC";
 $profiles = db_fetch_all($sql, 'i', [$router_id]);
 
 foreach ($profiles as &$p) {

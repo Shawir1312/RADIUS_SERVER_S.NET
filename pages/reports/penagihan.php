@@ -302,14 +302,25 @@ selectRouter.addEventListener('change', function() {
         .then(r => r.json())
         .then(data => {
             currentProfiles = data;
-            selectProfile.innerHTML = '<option value="">— Pilih Reseller —</option>';
-            data.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = `${p.name} (${parseFloat(p.reseller_percent)}%)`;
-                selectProfile.appendChild(opt);
+            let defaultOption = '<option value="">— Pilih Reseller —</option>';
+            if(currentProfiles.length === 0) {
+                defaultOption = '<option value="">— Tidak ada data reseller —</option>';
+            } else {
+                selectProfile.disabled = false;
+            }
+            
+            let optionsHtml = defaultOption;
+            currentProfiles.forEach(prof => {
+                let label = prof.name + ` (${parseFloat(prof.reseller_percent)}%)`;
+                if (prof.router_id) {
+                    label += ` [Cabang ${prof.router_name}]`;
+                } else {
+                    label += ' [Global]';
+                }
+                optionsHtml += `<option value="${prof.id}">${label}</option>`;
             });
-            selectProfile.disabled = false;
+            
+            selectProfile.innerHTML = optionsHtml;
         })
         .catch(e => {
             selectProfile.innerHTML = '<option value="">— Gagal memuat data —</option>';
