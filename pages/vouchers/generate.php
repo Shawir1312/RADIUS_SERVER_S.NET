@@ -79,7 +79,6 @@ include __DIR__ . '/../../include/header.php';
                                     data-quota="<?= $p['quota_mb'] > 0 ? format_bytes($p['quota_mb']*1048576) : 'Unlimited' ?>"
                                     data-rate="<?= htmlspecialchars($p['rate_up'].'/'.$p['rate_down']) ?>"
                                     data-price="<?= format_price((float)$p['price']) ?>"
-                                    class="d-none"
                                     <?= $p['id'] === $preselect_profile ? 'selected' : '' ?>>
                                     <?= $label ?>
                                 </option>
@@ -238,6 +237,9 @@ if (routerSel && profileSel) {
         
         if (typeof window.updateProfileInfo === 'function') window.updateProfileInfo();
     });
+    
+    // Trigger change event on load to set initial state
+    routerSel.dispatchEvent(new Event('change'));
 }
 
 // Profile info box
