@@ -45,6 +45,17 @@ if (empty($vouchers)) {
     exit;
 }
 
+// Generate dynamic title for PDF file name
+if ($batch_id && !empty($vouchers)) {
+    $prof_name = $vouchers[0]['profile_name'] ?? 'Custom';
+    $qty = count($vouchers);
+    $print_title = "Voucher {$prof_name} - {$qty}pcs - Batch {$batch_id}";
+} elseif ($voucher_id && !empty($vouchers)) {
+    $print_title = "Voucher " . $vouchers[0]['username'];
+} else {
+    $print_title = "Cetak Voucher";
+}
+
 // Header for print page (minimal)
 ?>
 <!DOCTYPE html>
@@ -52,7 +63,7 @@ if (empty($vouchers)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Voucher — <?= APP_NAME ?></title>
+    <title><?= htmlspecialchars($print_title) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="/assets/css/print.css" media="print">
