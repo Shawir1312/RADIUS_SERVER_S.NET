@@ -29,7 +29,7 @@ function random_string(int $length, string $type = 'mix'): string {
 }
 
 function generate_batch_id(): string {
-    return date('H:i-d-m-y');
+    return date('H:i:s-d-m-y');
 }
 
 // ───── Bytes Formatting ────────────────────────────────────────────────
