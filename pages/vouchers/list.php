@@ -223,7 +223,19 @@ include __DIR__ . '/../../include/header.php';
                         <?= htmlspecialchars($v['batch_id'] ?? '-') ?>
                     </a>
                 </td>
-                <td><?= voucher_status_badge($v['status']) ?></td>
+                <td>
+                    <?= voucher_status_badge($v['status']) ?>
+                    <?php if ($v['used_at']): ?>
+                    <div style="font-size:0.7rem; color:var(--gray-600); margin-top:2px;">
+                        <i class="bi bi-box-arrow-in-right"></i> <?= date('d/m/y H:i', strtotime($v['used_at'])) ?>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ($v['expired_at']): ?>
+                    <div style="font-size:0.7rem; color:var(--red); margin-top:2px;">
+                        <i class="bi bi-clock-history"></i> <?= date('d/m/y H:i', strtotime($v['expired_at'])) ?>
+                    </div>
+                    <?php endif; ?>
+                </td>
                 <td style="font-size:.75rem;color:var(--gray-500);">
                     <?= date('d/m/Y H:i', strtotime($v['created_at'])) ?>
                 </td>
