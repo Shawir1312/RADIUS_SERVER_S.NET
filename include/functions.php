@@ -126,14 +126,14 @@ function pagination_html(array $p): string {
     $prev = $p['current'] - 1;
     $next = $p['current'] + 1;
     $disabled = $p['current'] <= 1 ? 'disabled' : '';
-    $html .= "<li class='page-item {$disabled}'><a class='page-link' href='{$p['url_base']}&page={$prev}'>«</a></li>";
+    $html .= "<li class='page-item {$disabled}'><a class='page-link' href='{$p['url_base']}&p={$prev}'>«</a></li>";
     $range = range(max(1, $p['current']-2), min($p['total_pages'], $p['current']+2));
     foreach ($range as $pg) {
         $active = $pg === $p['current'] ? 'active' : '';
-        $html .= "<li class='page-item {$active}'><a class='page-link' href='{$p['url_base']}&page={$pg}'>{$pg}</a></li>";
+        $html .= "<li class='page-item {$active}'><a class='page-link' href='{$p['url_base']}&p={$pg}'>{$pg}</a></li>";
     }
     $disabled2 = $p['current'] >= $p['total_pages'] ? 'disabled' : '';
-    $html .= "<li class='page-item {$disabled2}'><a class='page-link' href='{$p['url_base']}&page={$next}'>»</a></li>";
+    $html .= "<li class='page-item {$disabled2}'><a class='page-link' href='{$p['url_base']}&p={$next}'>»</a></li>";
     $html .= '</ul></nav>';
     return $html;
 }

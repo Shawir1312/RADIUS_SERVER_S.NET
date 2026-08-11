@@ -13,7 +13,7 @@ $filter_router   = (int)get('router_id');
 $filter_profile  = (int)get('profile_id');
 $filter_batch    = get('batch_id', '');
 $filter_search   = get('q', '');
-$page_num        = max(1, (int)get('page', 1));
+$page_num        = max(1, (int)get('p', 1));
 
 // Build WHERE
 $where  = ["v.status != 'deleted'"];
