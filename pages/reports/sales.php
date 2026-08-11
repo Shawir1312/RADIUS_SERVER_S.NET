@@ -203,11 +203,11 @@ include __DIR__ . '/../../include/header.php';
     <div class="table-responsive">
         <table class="table" id="data-table">
             <thead><tr>
-                <th>Waktu</th><th>Username Voucher</th><th>Profil</th><th>Router</th><th>Harga</th><th>Oleh</th>
+                <th>Waktu</th><th>Username Voucher</th><th>Profil</th><th>Router</th><th>Harga</th><th>Oleh</th><th class="text-end">Aksi</th>
             </tr></thead>
             <tbody>
             <?php if (empty($details)): ?>
-            <tr><td colspan="6" class="text-center text-muted py-4">Tidak ada data</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-4">Tidak ada data</td></tr>
             <?php else: ?>
             <?php foreach ($details as $d): ?>
             <tr>
@@ -217,6 +217,9 @@ include __DIR__ . '/../../include/header.php';
                 <td><?= htmlspecialchars($d['router_name'] ?? 'Semua') ?></td>
                 <td class="fw-600 text-red"><?= format_price((float)$d['price']) ?></td>
                 <td class="text-muted"><?= htmlspecialchars($d['sold_by_name'] ?? '-') ?></td>
+                <td class="text-end">
+                    <a href="/index.php?page=report_sales_delete&id=<?= $d['id'] ?>" class="btn btn-sm btn-outline-danger" data-confirm="Hapus data penjualan ini secara permanen?" title="Hapus"><i class="bi bi-trash"></i></a>
+                </td>
             </tr>
             <?php endforeach; ?>
             <?php endif; ?>

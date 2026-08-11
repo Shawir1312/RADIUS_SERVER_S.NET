@@ -46,6 +46,8 @@ $routes = [
     'report_sales'     => 'pages/reports/sales.php',
     'report_usage'     => 'pages/reports/usage.php',
     'report_export'    => 'pages/reports/export.php',
+    'report_sales_delete' => 'process/delete_sale.php',
+    'report_usage_delete' => 'process/delete_usage.php',
     'penagihan_report' => 'pages/reports/penagihan.php',
     'penagihan_delete' => 'process/delete_penagihan.php',
     // Admins (superadmin only)

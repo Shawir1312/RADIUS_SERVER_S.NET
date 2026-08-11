@@ -91,10 +91,10 @@ include __DIR__ . '/../../include/header.php';
     <div class="table-toolbar"><span class="fw-600">Top 50 Pengguna (berdasarkan download)</span></div>
     <div class="table-responsive">
         <table class="table" id="data-table">
-            <thead><tr><th>#</th><th>Username</th><th>Router</th><th>Sesi</th><th>Waktu Online</th><th>Download</th><th>Upload</th></tr></thead>
+            <thead><tr><th>#</th><th>Username</th><th>Router</th><th>Sesi</th><th>Waktu Online</th><th>Download</th><th>Upload</th><th class="text-end">Aksi</th></tr></thead>
             <tbody>
             <?php if (empty($top_users)): ?>
-            <tr><td colspan="7" class="text-center text-muted py-4">Tidak ada data</td></tr>
+            <tr><td colspan="8" class="text-center text-muted py-4">Tidak ada data</td></tr>
             <?php else: ?>
             <?php foreach ($top_users as $i => $u): ?>
             <tr>
@@ -105,6 +105,9 @@ include __DIR__ . '/../../include/header.php';
                 <td><?= seconds_to_human($u['total_secs']) ?></td>
                 <td class="text-success fw-600">↓ <?= format_bytes($u['dl']) ?></td>
                 <td class="text-primary">↑ <?= format_bytes($u['ul']) ?></td>
+                <td class="text-end">
+                    <a href="/index.php?page=report_usage_delete&username=<?= urlencode($u['username']) ?>&nasipaddress=<?= urlencode($u['nasipaddress']) ?>&from=<?= urlencode($filter_from) ?>&to=<?= urlencode($filter_to) ?>" class="btn btn-sm btn-outline-danger" data-confirm="Hapus data pemakaian untuk user ini secara permanen?" title="Hapus"><i class="bi bi-trash"></i></a>
+                </td>
             </tr>
             <?php endforeach; ?>
             <?php endif; ?>
