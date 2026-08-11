@@ -54,33 +54,32 @@ include __DIR__ . '/../../include/header.php';
                         </div>
 
                         <div class="col-md-12">
+                            <label class="form-label">Cabang / Router <span class="text-danger">*</span></label>
+                            <select class="form-select" id="filter_router_id" required>
+                                <option value="">— Pilih Cabang / Router —</option>
+                                <?php foreach ($all_routers as $r): ?>
+                                <option value="<?= $r['id'] ?>"><?= htmlspecialchars($r['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
                             <label class="form-label">Profil / Paket (Reseller) <span class="text-danger">*</span></label>
-                            <select class="form-select" name="profile_id" id="profile_id" required>
-                                <option value="">— Pilih Profil —</option>
+                            <select class="form-select" name="profile_id" id="profile_id" required disabled>
+                                <option value="">— Pilih Cabang Terlebih Dahulu —</option>
                                 <?php foreach ($profiles as $p): ?>
                                 <?php 
                                     $label = htmlspecialchars($p['name']);
                                     if ($p['price'] > 0) $label .= ' — ' . format_price((float)$p['price']);
-                                    
-                                    // Append router name
-                                    if ($p['router_id']) {
-                                        $router_name = '';
-                                        foreach ($all_routers as $r) {
-                                            if ($r['id'] == $p['router_id']) {
-                                                $router_name = $r['name'];
-                                                break;
-                                            }
-                                        }
-                                        $label .= " [Cabang: " . htmlspecialchars($router_name) . "]";
-                                    } else {
-                                        $label .= " [Global / Semua Router]";
-                                    }
+                                    $r_id = $p['router_id'] ?: 'all';
                                 ?>
                                 <option value="<?= $p['id'] ?>"
+                                    data-router="<?= $r_id ?>"
                                     data-duration="<?= $p['duration_value'].' '.$p['duration_unit'] ?>"
                                     data-quota="<?= $p['quota_mb'] > 0 ? format_bytes($p['quota_mb']*1048576) : 'Unlimited' ?>"
                                     data-rate="<?= htmlspecialchars($p['rate_up'].'/'.$p['rate_down']) ?>"
                                     data-price="<?= format_price((float)$p['price']) ?>"
+                                    class="d-none"
                                     <?= $p['id'] === $preselect_profile ? 'selected' : '' ?>>
                                     <?= $label ?>
                                 </option>
@@ -203,11 +202,47 @@ if (qtyInput && qtyLabel) {
     qtyInput.addEventListener('input', () => qtyLabel.textContent = qtyInput.value);
 }
 
-// Profile info box
 const profileSel  = document.getElementById('profile_id');
 const profileInfo = document.getElementById('profile-info');
+const routerSel   = document.getElementById('filter_router_id');
+
+// Router & Profile filter
+if (routerSel && profileSel) {
+    const allProfiles = Array.from(profileSel.options).slice(1); // Skip placeholder
+    
+    routerSel.addEventListener('change', function() {
+        const r_id = this.value;
+        profileSel.innerHTML = ''; // Clear current options
+        
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        
+        if (!r_id) {
+            profileSel.disabled = true;
+            placeholder.textContent = '— Pilih Cabang Terlebih Dahulu —';
+            profileSel.appendChild(placeholder);
+            if (typeof window.updateProfileInfo === 'function') window.updateProfileInfo();
+            return;
+        }
+        
+        profileSel.disabled = false;
+        placeholder.textContent = '— Pilih Profil —';
+        profileSel.appendChild(placeholder);
+        
+        allProfiles.forEach(opt => {
+            const optRouter = opt.getAttribute('data-router');
+            if (optRouter === r_id || optRouter === 'all') {
+                profileSel.appendChild(opt.cloneNode(true));
+            }
+        });
+        
+        if (typeof window.updateProfileInfo === 'function') window.updateProfileInfo();
+    });
+}
+
+// Profile info box
 if (profileSel && profileInfo) {
-    function updateProfileInfo() {
+    window.updateProfileInfo = function() {
         const opt = profileSel.options[profileSel.selectedIndex];
         if (!opt || !opt.value) { profileInfo.innerHTML = ''; return; }
         profileInfo.innerHTML = `
@@ -219,9 +254,9 @@ if (profileSel && profileInfo) {
                     <div class="col-3"><strong>Harga</strong><br><span class="fw-600 text-red">${opt.dataset.price || '-'}</span></div>
                 </div>
             </div>`;
-    }
-    profileSel.addEventListener('change', updateProfileInfo);
-    updateProfileInfo();
+    };
+    profileSel.addEventListener('change', window.updateProfileInfo);
+    window.updateProfileInfo();
 }
 
 // Preview username
