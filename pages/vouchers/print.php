@@ -8,7 +8,21 @@ $page_title = 'Cetak Voucher';
 $batch_id   = get('batch_id');
 $voucher_id = (int)get('voucher_id');
 
+$profile_id = (int)get('profile_id');
+
 if ($batch_id) {
+    $where = ['v.batch_id = ?'];
+    $params = [$batch_id];
+    $types = 's';
+    
+    if ($profile_id) {
+        $where[] = 'v.profile_id = ?';
+        $params[] = $profile_id;
+        $types .= 'i';
+    }
+    
+    $where_sql = 'WHERE ' . implode(' AND ', $where);
+    
     $vouchers = db_fetch_all(
         "SELECT v.*, p.name AS profile_name, p.display_name, p.duration_value, p.duration_unit,
                 p.validity_value, p.validity_unit,
@@ -17,8 +31,8 @@ if ($batch_id) {
          FROM vouchers v
          LEFT JOIN profiles p ON v.profile_id = p.id
          LEFT JOIN routers r ON v.router_id = r.id
-         WHERE v.batch_id = ? ORDER BY v.id ASC",
-        's', [$batch_id]
+         {$where_sql} ORDER BY v.id ASC",
+        $types, $params
     );
 } elseif ($voucher_id) {
     $row = db_fetch_one(

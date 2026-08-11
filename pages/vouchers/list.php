@@ -86,7 +86,7 @@ include __DIR__ . '/../../include/header.php';
     </div>
     <div class="d-flex gap-2">
         <?php if ($filter_batch): ?>
-        <a href="/index.php?page=voucher_print&batch_id=<?= urlencode($filter_batch) ?>" target="_blank"
+        <a href="/index.php?page=voucher_print&batch_id=<?= urlencode($filter_batch) ?><?= $filter_profile ? '&profile_id='.urlencode($filter_profile) : '' ?>" target="_blank"
            class="btn btn-primary">
             <i class="bi bi-printer me-1"></i>Cetak Batch Ini
         </a>
