@@ -28,6 +28,17 @@ $month_sales = db_fetch_one(
     "SELECT COUNT(*) AS cnt, COALESCE(SUM(price),0) AS total FROM sales_log WHERE MONTH(sold_at) = MONTH(CURDATE()) AND YEAR(sold_at) = YEAR(CURDATE())"
 ) ?? ['cnt' => 0, 'total' => 0];
 
+// Sales per router (Today and This Month)
+$router_sales = db_fetch_all(
+    "SELECT r.name,
+            COALESCE(SUM(CASE WHEN DATE(sl.sold_at) = CURDATE() THEN sl.price ELSE 0 END), 0) AS today_total,
+            COALESCE(SUM(CASE WHEN MONTH(sl.sold_at) = MONTH(CURDATE()) AND YEAR(sl.sold_at) = YEAR(CURDATE()) THEN sl.price ELSE 0 END), 0) AS month_total
+     FROM routers r
+     LEFT JOIN sales_log sl ON r.id = sl.router_id
+     GROUP BY r.id
+     ORDER BY r.name ASC"
+);
+
 // Recent voucher batches
 $recent_batches = db_fetch_all(
     "SELECT v.batch_id, v.created_at, v.router_id, r.name AS router_name, p.name AS profile_name,
@@ -212,6 +223,37 @@ include __DIR__ . '/../include/header.php';
                 <a href="/index.php?page=report_sales" class="btn btn-outline-primary btn-sm w-100">
                     <i class="bi bi-bar-chart me-1"></i>Lihat Laporan Lengkap
                 </a>
+            </div>
+        </div>
+
+        <!-- Pendapatan per Cabang -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"><i class="bi bi-shop"></i> Pendapatan per Cabang</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <?php if (empty($router_sales)): ?>
+                    <div class="list-group-item text-center text-muted py-4">Belum ada cabang/router</div>
+                    <?php else: ?>
+                    <?php foreach ($router_sales as $rs): ?>
+                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <h6 class="mb-1" style="font-size:0.9rem; font-weight:700; color:var(--blue);"><?= htmlspecialchars($rs['name']) ?></h6>
+                            <div class="text-muted" style="font-size:0.75rem;">
+                                Hari ini: <strong class="text-dark"><?= format_price((float)$rs['today_total']) ?></strong>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:#6c757d; margin-bottom:2px;">Bulan Ini</div>
+                            <div style="font-size:1.05rem; font-weight:800; color:var(--red); line-height:1;">
+                                <?= format_price((float)$rs['month_total']) ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
 
