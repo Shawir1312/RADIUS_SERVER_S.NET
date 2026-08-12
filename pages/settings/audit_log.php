@@ -100,4 +100,25 @@ include __DIR__ . '/../../include/header.php';
     </div>
 </div>
 
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h5 class="card-title"><i class="bi bi-arrow-repeat"></i> Sinkronisasi RADIUS</h5></div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Gunakan fitur ini <strong>HANYA</strong> jika Anda baru saja melakukan migrasi dari aplikasi versi lama atau saat voucher di dashboard tidak bisa digunakan untuk login.
+                </div>
+                <p class="text-muted">Fitur ini akan menghapus semua data password di mesin RADIUS dan membangunnya ulang dari nol berdasarkan daftar voucher yang ada di dashboard aplikasi ini.</p>
+                <form method="POST" action="/process/sync_radius.php">
+                    <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                    <button type="submit" class="btn btn-warning" data-confirm="Proses ini akan menimpa ulang semua data login di mesin RADIUS. Lanjutkan?">
+                        <i class="bi bi-arrow-repeat me-2"></i>Mulai Sinkronisasi Ulang
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php include __DIR__ . '/../../include/footer.php'; ?>
