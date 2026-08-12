@@ -2,6 +2,7 @@
 /**
  * Routers — Add/Edit Form
  */
+auth_require_superadmin();
 $is_edit   = ($page === 'router_edit');
 $page_title = $is_edit ? 'Edit Router' : 'Tambah Router';
 $router    = null;

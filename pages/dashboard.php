@@ -116,14 +116,18 @@ include __DIR__ . '/../include/header.php';
         <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title"><i class="bi bi-router"></i> Status Router</h5>
+                <?php if (is_superadmin()): ?>
                 <a href="/index.php?page=router_list" class="btn btn-sm btn-outline-primary">Kelola Router</a>
+                <?php endif; ?>
             </div>
             <div class="card-body">
                 <?php if (empty($all_routers)): ?>
                 <div class="text-center py-4 text-muted">
                     <i class="bi bi-router display-4 d-block mb-2"></i>
                     <p>Belum ada router terdaftar.</p>
+                    <?php if (is_superadmin()): ?>
                     <a href="/index.php?page=router_add" class="btn btn-primary btn-sm">+ Tambah Router</a>
+                    <?php endif; ?>
                 </div>
                 <?php else: ?>
                 <div class="row g-3">
