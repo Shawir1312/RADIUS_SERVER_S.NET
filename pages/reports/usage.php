@@ -27,9 +27,11 @@ $top_users = db_fetch_all(
     "SELECT ra.username, COUNT(*) AS sessions,
             COALESCE(SUM(ra.acctsessiontime),0) AS total_secs,
             COALESCE(SUM(ra.acctoutputoctets),0) AS dl, COALESCE(SUM(ra.acctinputoctets),0) AS ul,
-            ra.nasipaddress
+            ra.nasipaddress,
+            (SELECT name FROM routers WHERE ip_address = ra.nasipaddress OR nas_ip = ra.nasipaddress LIMIT 1) AS router_name
      FROM radacct ra {$where_sql}
-     GROUP BY ra.username, ra.nasipaddress ORDER BY dl DESC LIMIT 50",
+     GROUP BY ra.username, ra.nasipaddress 
+     ORDER BY router_name ASC, dl DESC LIMIT 150",
     $types, $params
 );
 
@@ -96,15 +98,26 @@ include __DIR__ . '/../../include/header.php';
             <?php if (empty($top_users)): ?>
             <tr><td colspan="8" class="text-center text-muted py-4">Tidak ada data</td></tr>
             <?php else: ?>
-            <?php foreach ($top_users as $i => $u): ?>
+            <?php 
+            $current_router = null;
+            foreach ($top_users as $i => $u): 
+                if ($current_router !== $u['router_name']):
+                    $current_router = $u['router_name'];
+            ?>
+            <tr class="table-light">
+                <td colspan="8" class="fw-bold text-dark" style="font-size:0.8rem; background-color:#f8f9fa;">
+                    <i class="bi bi-router me-1"></i> <?= htmlspecialchars($current_router ?: 'Tanpa Router (' . $u['nasipaddress'] . ')') ?>
+                </td>
+            </tr>
+            <?php endif; ?>
             <tr>
                 <td class="text-muted"><?= $i+1 ?></td>
-                <td class="font-mono fw-600"><?= htmlspecialchars($u['username']) ?></td>
+                <td class="font-mono fw-600 ps-3"><?= htmlspecialchars($u['username']) ?></td>
                 <td class="text-muted" style="font-size:.78rem;"><?= htmlspecialchars($u['nasipaddress']) ?></td>
                 <td><span class="badge bg-primary"><?= $u['sessions'] ?></span></td>
                 <td><?= seconds_to_human($u['total_secs']) ?></td>
-                <td class="text-success fw-600">↓ <?= format_bytes($u['dl']) ?></td>
-                <td class="text-primary">↑ <?= format_bytes($u['ul']) ?></td>
+                <td class="text-success fw-600">↓ <?= format_bytes((float)$u['dl']) ?></td>
+                <td class="text-primary">↑ <?= format_bytes((float)$u['ul']) ?></td>
                 <td class="text-end">
                     <a href="/index.php?page=report_usage_delete&username=<?= urlencode($u['username']) ?>&nasipaddress=<?= urlencode($u['nasipaddress']) ?>&from=<?= urlencode($filter_from) ?>&to=<?= urlencode($filter_to) ?>" class="btn btn-sm btn-outline-danger" data-confirm="Hapus data pemakaian untuk user ini secara permanen?" title="Hapus"><i class="bi bi-trash"></i></a>
                 </td>

@@ -7,13 +7,27 @@ $is_list    = ($page === 'profile_list');
 $page_title = $is_list ? 'Profil / Paket' : ($is_edit ? 'Edit Profil' : 'Tambah Profil');
 
 if ($is_list) {
+    $filter_router = (int)get('router_id');
+    $all_routers   = get_all_routers();
+    
+    $where_sql = "";
+    $params = [];
+    $types = "";
+    if ($filter_router) {
+        $where_sql = "WHERE p.router_id = ?";
+        $params[] = $filter_router;
+        $types = "i";
+    }
+
     // ── LIST ──
     $profiles = db_fetch_all(
         "SELECT p.*, r.name AS router_name,
                 (SELECT COUNT(*) FROM vouchers v WHERE v.profile_id = p.id AND v.status != 'deleted') AS voucher_count
          FROM profiles p
          LEFT JOIN routers r ON p.router_id = r.id
-         ORDER BY p.name ASC"
+         $where_sql
+         ORDER BY r.name ASC, p.name ASC",
+        $types, $params
     );
     include __DIR__ . '/../../include/header.php';
     ?>
@@ -28,8 +42,22 @@ if ($is_list) {
 </div>
 
 <div class="card table-card">
-    <div class="table-toolbar">
-        <span class="fw-600"><?= count($profiles) ?> Profil</span>
+    <div class="table-toolbar flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-600"><?= count($profiles) ?> Profil</span>
+            
+            <form method="GET" class="d-flex align-items-center gap-2 m-0">
+                <input type="hidden" name="page" value="profile_list">
+                <select name="router_id" class="form-select form-select-sm" style="width:200px" onchange="this.form.submit()">
+                    <option value="">Semua Cabang / Router</option>
+                    <?php foreach ($all_routers as $rt): ?>
+                    <option value="<?= $rt['id'] ?>" <?= $filter_router == $rt['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($rt['name']) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </form>
+        </div>
         <input type="text" id="table-search" class="form-control form-control-sm" style="width:220px" placeholder="Cari profil...">
     </div>
     <div class="table-responsive">

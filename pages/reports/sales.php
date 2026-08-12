@@ -48,12 +48,13 @@ $by_day = db_fetch_all(
     $types, $params
 );
 
-// By profile (Reseller)
 $by_profile = db_fetch_all(
-    "SELECT profile_name, COUNT(*) AS cnt, COALESCE(SUM(price),0) AS revenue
+    "SELECT profile_id, profile_name, router_id, 
+            (SELECT name FROM routers WHERE id = sales_log.router_id) AS router_name,
+            COUNT(*) AS cnt, COALESCE(SUM(price),0) AS revenue
      FROM sales_log {$where_sql} 
-     GROUP BY profile_name 
-     ORDER BY revenue DESC",
+     GROUP BY router_id, profile_id, profile_name 
+     ORDER BY router_name ASC, revenue DESC",
     $types, $params
 );
 
@@ -179,9 +180,24 @@ include __DIR__ . '/../../include/header.php';
                             <?php if (empty($by_profile)): ?>
                             <tr><td colspan="3" class="text-center text-muted py-3">Belum ada data penjualan</td></tr>
                             <?php else: ?>
-                            <?php foreach ($by_profile as $bp): ?>
+                            <?php 
+                            $current_router = null;
+                            foreach ($by_profile as $bp): 
+                                if ($current_router !== $bp['router_name']):
+                                    $current_router = $bp['router_name'];
+                            ?>
+                            <tr class="table-light">
+                                <td colspan="3" class="fw-bold text-dark" style="font-size:0.8rem; background-color:#f8f9fa;">
+                                    <i class="bi bi-router me-1"></i> <?= htmlspecialchars($current_router ?: 'Tanpa Router') ?>
+                                </td>
+                            </tr>
+                            <?php endif; ?>
                             <tr>
-                                <td class="fw-600"><?= htmlspecialchars($bp['profile_name'] ?: 'Tanpa Profil') ?></td>
+                                <td class="fw-600 ps-3">
+                                    <a href="?page=report_sales&profile_id=<?= $bp['profile_id'] ?>&router_id=<?= $filter_router ?>&from=<?= urlencode($filter_from) ?>&to=<?= urlencode($filter_to) ?>" class="text-decoration-none">
+                                        <?= htmlspecialchars($bp['profile_name'] ?: 'Tanpa Profil') ?>
+                                    </a>
+                                </td>
                                 <td class="text-center"><span class="badge bg-secondary"><?= number_format($bp['cnt']) ?></span></td>
                                 <td class="text-end text-success fw-bold"><?= format_price((float)$bp['revenue']) ?></td>
                             </tr>
