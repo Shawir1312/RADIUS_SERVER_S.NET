@@ -57,8 +57,12 @@ function sync_mac_queue($api, $mac, $name, $all_leases = null) {
     $lease = null;
     foreach ($all_leases as $l) {
         if (strtoupper($l['mac-address'] ?? '') === strtoupper($mac)) {
-            $lease = $l;
-            break;
+            if (($l['status'] ?? '') === 'bound') {
+                $lease = $l;
+                break;
+            } else if (!$lease) {
+                $lease = $l;
+            }
         }
     }
     
@@ -72,7 +76,9 @@ function sync_mac_queue($api, $mac, $name, $all_leases = null) {
     if (!$address) return false;
     
     $queues = $api->comm('/queue/simple/print');
+    $first_queue_id = !empty($queues) ? $queues[0]['.id'] : null;
     $queue_id = null;
+    
     foreach ($queues as $q) {
         if (strpos($q['target'] ?? '', $address) === 0) {
             $queue_id = $q['.id'];
@@ -86,12 +92,23 @@ function sync_mac_queue($api, $mac, $name, $all_leases = null) {
             'name' => $name,
             'max-limit' => '2M/2M'
         ]);
+        if ($first_queue_id && $first_queue_id !== $queue_id) {
+             // Move to top if it's not already
+             $api->comm('/queue/simple/move', [
+                 'numbers' => $queue_id,
+                 'destination' => $first_queue_id
+             ]);
+        }
     } else {
-        $api->comm('/queue/simple/add', [
+        $params = [
             'name' => $name,
             'target' => $address,
             'max-limit' => '2M/2M'
-        ]);
+        ];
+        if ($first_queue_id) {
+            $params['place-before'] = $first_queue_id;
+        }
+        $api->comm('/queue/simple/add', $params);
     }
     
     return true;
