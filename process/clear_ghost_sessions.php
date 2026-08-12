@@ -15,16 +15,31 @@ if (current_admin()['role'] !== 'superadmin') {
 }
 
 try {
+    $router_id = (int)get('router_id');
+    if (!$router_id) {
+        throw new Exception('Pilih router/cabang terlebih dahulu.');
+    }
+    
+    // Ambil IP NAS dari router tersebut
+    $router = db_fetch_one("SELECT ip_address, nas_ip FROM routers WHERE id = ?", 'i', [$router_id]);
+    if (!$router) throw new Exception('Router tidak ditemukan.');
+    
+    // radacct biasanya mencatat IP berdasarkan yang datang, bisa ip_address API atau nas_ip
+    // Kita gunakan keduanya untuk pencarian yang aman
+    $ip1 = $router['ip_address'];
+    $ip2 = $router['nas_ip'] && $router['nas_ip'] !== '0.0.0.0/0' ? $router['nas_ip'] : $ip1;
+    
     db_begin();
     
-    // Cari semua session nyangkut (baru terhubung 0 detik, 0 bytes, dan belum logoff)
+    // Cari semua session nyangkut khusus untuk router ini
     $ghosts = db_fetch_all("
         SELECT DISTINCT username 
         FROM radacct 
         WHERE acctstoptime IS NULL 
           AND acctsessiontime = 0 
           AND acctinputoctets = 0
-    ");
+          AND (nasipaddress = ? OR nasipaddress = ?)
+    ", 'ss', [$ip1, $ip2]);
     
     $count = 0;
     foreach ($ghosts as $g) {
