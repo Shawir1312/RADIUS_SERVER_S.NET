@@ -187,6 +187,16 @@ include __DIR__ . '/../include/header.php';
             </div>
             <?php endforeach; ?>
         </div>
+
+        <!-- Sales Chart -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title"><i class="bi bi-graph-up"></i> Penjualan 7 Hari Terakhir</h5>
+            </div>
+            <div class="card-body" style="height: 300px; position: relative;">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
     </div>
 
     <div class="col-12 col-lg-4 d-flex flex-column gap-3">
@@ -297,22 +307,6 @@ include __DIR__ . '/../include/header.php';
         </div>
     </div>
 </div>
-
-<div class="row g-3">
-    <!-- Sales Chart -->
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title"><i class="bi bi-graph-up"></i> Penjualan 7 Hari Terakhir</h5>
-            </div>
-            <div class="card-body" style="height: 300px; position: relative;">
-                <canvas id="salesChart"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
