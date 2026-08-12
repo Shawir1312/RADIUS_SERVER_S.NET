@@ -180,12 +180,12 @@ include __DIR__ . '/../include/header.php';
 
     <!-- Revenue -->
     <div class="col-12 col-lg-4">
-        <div class="card h-100">
+        <div class="card">
             <div class="card-header">
                 <h5 class="card-title"><i class="bi bi-cash-stack"></i> Ringkasan Penjualan</h5>
             </div>
             <div class="card-body p-0">
-                <div class="row g-0 h-100">
+                <div class="row g-0">
                     <!-- Hari Ini -->
                     <div class="col-6 border-end d-flex flex-column align-items-center justify-content-center text-center p-3">
                         <div class="text-muted mb-2" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Hari Ini</div>
