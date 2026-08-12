@@ -178,8 +178,8 @@ include __DIR__ . '/../include/header.php';
         </div>
     </div>
 
-    <!-- Revenue -->
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-lg-4 d-flex flex-column gap-3">
+        <!-- Revenue -->
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title"><i class="bi bi-cash-stack"></i> Ringkasan Penjualan</h5>
@@ -214,24 +214,8 @@ include __DIR__ . '/../include/header.php';
                 </a>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row g-3">
-    <!-- Sales Chart -->
-    <div class="col-12 col-lg-7">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title"><i class="bi bi-graph-up"></i> Penjualan 7 Hari Terakhir</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="salesChart" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Batches -->
-    <div class="col-12 col-lg-5">
+        <!-- Recent Batches -->
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title"><i class="bi bi-clock-history"></i> Generate Terakhir</h5>
@@ -267,6 +251,20 @@ include __DIR__ . '/../include/header.php';
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Sales Chart -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"><i class="bi bi-graph-up"></i> Penjualan 7 Hari Terakhir</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="salesChart" height="200"></canvas>
             </div>
         </div>
     </div>
