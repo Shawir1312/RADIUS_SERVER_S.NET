@@ -13,21 +13,37 @@ $action = post('action', '') ?: get('action', 'backup');
 
 // BACKUP — SQL dump of app tables
 if ($action === 'backup' && isset($_GET['csrf']) && $_GET['csrf'] === $_SESSION['csrf_token']) {
-    $tables = ['routers','profiles','vouchers','admins','audit_log','sales_log','nas'];
     $date   = date('Ymd_His');
     header('Content-Type: application/octet-stream');
     header("Content-Disposition: attachment; filename=snet_backup_{$date}.sql");
 
-    echo "-- S.NET RADIUS Manager Backup\n";
+    echo "-- S.NET RADIUS Manager Full Database Backup\n";
     echo "-- Generated: " . date('Y-m-d H:i:s') . "\n\n";
     echo "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n";
 
-    foreach ($tables as $table) {
-        $result = db()->query("SELECT * FROM `{$table}`");
-        if (!$result || $result->num_rows === 0) continue;
+    $tables = [];
+    $res = db()->query("SHOW TABLES");
+    while ($r = $res->fetch_row()) $tables[] = $r[0];
 
-        echo "-- Table: {$table}\n";
-        echo "TRUNCATE TABLE `{$table}`;\n";
+    foreach ($tables as $table) {
+        echo "-- --------------------------------------------------------\n";
+        echo "-- Table structure for table `{$table}`\n";
+        echo "-- --------------------------------------------------------\n";
+        echo "DROP TABLE IF EXISTS `{$table}`;\n";
+        
+        $res2 = db()->query("SHOW CREATE TABLE `{$table}`");
+        if ($res2 && $row2 = $res2->fetch_row()) {
+            echo $row2[1] . ";\n\n";
+        }
+        
+        $result = db()->query("SELECT * FROM `{$table}`");
+        if (!$result || $result->num_rows === 0) {
+            echo "\n";
+            continue;
+        }
+
+        echo "-- Dumping data for table `{$table}`\n";
+        
         $cols = [];
         $fi   = $result->fetch_fields();
         foreach ($fi as $f) $cols[] = '`' . $f->name . '`';

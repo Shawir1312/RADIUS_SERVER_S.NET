@@ -34,6 +34,18 @@ if ($step === 2 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $db_port = (int)($_POST['db_port'] ?? 3306);
 
     try {
+        // Connect WITHOUT db_name first to attempt creation
+        @$conn_init = new mysqli($db_host, $db_user, $db_pass, "", $db_port);
+        if ($conn_init->connect_error) throw new Exception($conn_init->connect_error);
+        
+        // Create database if not exists
+        $esc_db = $conn_init->real_escape_string($db_name);
+        if (!$conn_init->query("CREATE DATABASE IF NOT EXISTS `$esc_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")) {
+            throw new Exception("Gagal membuat database: " . $conn_init->error);
+        }
+        $conn_init->close();
+
+        // Now connect to the newly created database
         @$conn = new mysqli($db_host, $db_user, $db_pass, $db_name, $db_port);
         if ($conn->connect_error) throw new Exception($conn->connect_error);
         $conn->set_charset('utf8mb4');
