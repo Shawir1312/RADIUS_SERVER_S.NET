@@ -1,6 +1,4 @@
 <?php
-require_once __DIR__ . '/../../include/config.php';
-auth_require();
 
 $show_router_filter = true;
 $page_title = 'Daftar MAC (Bypass)';
