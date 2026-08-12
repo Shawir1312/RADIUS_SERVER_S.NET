@@ -38,6 +38,10 @@ $total_bersih = 0;
 $total_transaksi = count($history);
 
 $totals_per_router = [];
+// Initialize all routers so they show up even if revenue is 0
+foreach ($all_routers as $r) {
+    $totals_per_router[$r['name']] = ['kotor' => 0, 'bersih' => 0, 'transaksi' => 0];
+}
 
 foreach ($history as $h) {
     $total_kotor += (float)$h['total_pendapatan'];
@@ -106,7 +110,7 @@ include __DIR__ . '/../../include/header.php';
                 </div>
             </div>
             
-            <?php if (count($totals_per_router) > 0 && empty($router_filter)): ?>
+            <?php if (empty($router_filter)): ?>
             <div class="col-12 mt-4 mb-2">
                 <h6 class="fw-bold text-dark text-uppercase" style="font-size:0.85rem;"><i class="bi bi-building me-1"></i> Rincian Per Cabang</h6>
             </div>
