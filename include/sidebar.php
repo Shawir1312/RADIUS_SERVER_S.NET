@@ -39,7 +39,7 @@ function nav_active(string $page, string|array $match): string {
             </a>
         </li>
         <li>
-            <a href="/daftarmac/" class="nav-link" target="_blank">
+            <a href="/index.php?page=mac_list" class="nav-link <?= nav_active($current_page, 'mac_list') ?>">
                 <i class="bi bi-laptop"></i> Daftar MAC
             </a>
         </li>

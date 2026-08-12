@@ -42,6 +42,7 @@ $routes = [
     'voucher_delete'   => 'pages/vouchers/delete.php',
     // Monitoring
     'active_users'     => 'pages/monitoring/active.php',
+    'mac_list'         => 'pages/mac/list.php',
     // Reports
     'report_sales'     => 'pages/reports/sales.php',
     'report_usage'     => 'pages/reports/usage.php',
