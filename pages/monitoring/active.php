@@ -21,6 +21,11 @@ include __DIR__ . '/../../include/header.php';
         <button class="btn btn-outline-primary btn-sm ms-2" onclick="refreshActiveUsers()">
             <i class="bi bi-arrow-clockwise me-1"></i>Refresh
         </button>
+        <?php if (is_superadmin()): ?>
+        <a href="/process/clear_ghost_sessions.php" class="btn btn-outline-warning btn-sm ms-2" onclick="return confirm('Bersihkan semua sesi nyangkut (0 Detik / 0 Bytes) dan kembalikan vouchernya menjadi Belum Terpakai?');">
+            <i class="bi bi-magic me-1"></i>Bersihkan Sesi Nyangkut
+        </a>
+        <?php endif; ?>
     </div>
 </div>
 
