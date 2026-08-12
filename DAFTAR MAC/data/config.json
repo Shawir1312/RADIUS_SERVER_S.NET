@@ -1,0 +1,34 @@
+{
+    "routers": [
+        {
+            "id": "router_1785120975",
+            "name": "DESA LUSUO",
+            "host": "192.168.9.1",
+            "port": 8728,
+            "username": "admin",
+            "password": "ad1312"
+        },
+        {
+            "id": "router_1785469145",
+            "name": "DESA PANGEO",
+            "host": "srv3.shawir.id:60023",
+            "port": 8728,
+            "username": "admin",
+            "password": "ad1312"
+        }
+    ],
+    "users": [
+        {
+            "username": "admin",
+            "password": "$2y$10$HYD9fafEobf2nt0Z\/yy1buyxLR33PHZ3Rce8pyKYoz88thurbhypu",
+            "full_name": "Administrator",
+            "role": "admin"
+        },
+        {
+            "username": "ahwan",
+            "password": "$2y$10$ThyAAKH4Q0h1xFstIGyaBuIgU2nkcJ2spaEeSKlCZxcCxRD6pvyiq",
+            "full_name": "ahwan",
+            "role": "teknisi"
+        }
+    ]
+}

@@ -38,6 +38,11 @@ function nav_active(string $page, string|array $match): string {
                 <span id="active-users-badge" class="badge bg-danger ms-auto" style="display:none"></span>
             </a>
         </li>
+        <li>
+            <a href="/DAFTAR%20MAC/" class="nav-link" target="_blank">
+                <i class="bi bi-laptop"></i> Daftar MAC
+            </a>
+        </li>
 
         <!-- Vouchers -->
         <li class="nav-label">Voucher</li>
