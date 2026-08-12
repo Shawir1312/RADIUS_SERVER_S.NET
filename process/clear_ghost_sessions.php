@@ -49,7 +49,7 @@ try {
         db_execute("DELETE FROM radacct WHERE username = ? AND acctstoptime IS NULL AND acctsessiontime = 0 AND acctinputoctets = 0", 's', [$u]);
         
         // Cek apakah radacct untuk user ini sudah kosong sepenuhnya (artinya dia memang belum pernah pakai sama sekali)
-        $has_other_usage = db_fetch_one("SELECT id FROM radacct WHERE username = ?", 's', [$u]);
+        $has_other_usage = db_fetch_one("SELECT radacctid FROM radacct WHERE username = ?", 's', [$u]);
         
         if (!$has_other_usage) {
             // 2. Kembalikan status voucher ke unused
