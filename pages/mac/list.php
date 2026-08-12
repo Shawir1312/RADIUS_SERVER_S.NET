@@ -3,6 +3,7 @@
 $show_router_filter = true;
 $page_title = 'Daftar MAC (Bypass)';
 $router_id = (int)get('router_id');
+$all_routers = get_all_routers();
 
 include __DIR__ . '/../../include/header.php';
 ?>
