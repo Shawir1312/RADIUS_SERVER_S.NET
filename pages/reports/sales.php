@@ -163,51 +163,56 @@ include __DIR__ . '/../../include/header.php';
 
 <!-- Profile Breakdown & Detail -->
 <div class="row g-4 mb-4">
-    <div class="col-12 col-lg-5">
-        <div class="card h-100">
-            <div class="card-header"><h5 class="card-title"><i class="bi bi-pie-chart"></i> Penjualan per Profil (Reseller)</h5></div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Profil / Reseller</th>
-                                <th class="text-center">Terjual</th>
-                                <th class="text-end">Pendapatan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($by_profile)): ?>
-                            <tr><td colspan="3" class="text-center text-muted py-3">Belum ada data penjualan</td></tr>
-                            <?php else: ?>
-                            <?php 
-                            $current_router = null;
-                            foreach ($by_profile as $bp): 
-                                if ($current_router !== $bp['router_name']):
-                                    $current_router = $bp['router_name'];
-                            ?>
-                            <tr class="table-light">
-                                <td colspan="3" class="fw-bold text-dark" style="font-size:0.8rem; background-color:#f8f9fa;">
-                                    <i class="bi bi-router me-1"></i> <?= htmlspecialchars($current_router ?: 'Tanpa Router') ?>
-                                </td>
-                            </tr>
-                            <?php endif; ?>
-                            <tr>
-                                <td class="fw-600 ps-3">
-                                    <a href="?page=report_sales&profile_id=<?= $bp['profile_id'] ?>&router_id=<?= $filter_router ?>&from=<?= urlencode($filter_from) ?>&to=<?= urlencode($filter_to) ?>" class="text-decoration-none">
-                                        <?= htmlspecialchars($bp['profile_name'] ?: 'Tanpa Profil') ?>
-                                    </a>
-                                </td>
-                                <td class="text-center"><span class="badge bg-secondary"><?= number_format($bp['cnt']) ?></span></td>
-                                <td class="text-end text-success fw-bold"><?= format_price((float)$bp['revenue']) ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+    <div class="col-12 col-lg-5 d-flex flex-column gap-3">
+        <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;"><i class="bi bi-pie-chart text-primary me-1"></i> Penjualan per Profil</h5>
+        
+        <?php if (empty($by_profile)): ?>
+        <div class="card"><div class="card-body text-center text-muted py-4">Belum ada data penjualan</div></div>
+        <?php else: ?>
+        <?php 
+        // Group by router
+        $profiles_by_router = [];
+        foreach ($by_profile as $bp) {
+            $rname = $bp['router_name'] ?: 'Tanpa Router';
+            $profiles_by_router[$rname][] = $bp;
+        }
+
+        foreach ($profiles_by_router as $router_name => $profiles): 
+            $max_rev = 0;
+            foreach ($profiles as $p) { if ($p['revenue'] > $max_rev) $max_rev = $p['revenue']; }
+        ?>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-2">
+                <h6 class="card-title mb-0" style="font-size:0.85rem; font-weight:700; color:var(--blue);">
+                    <i class="bi bi-router"></i> <?= htmlspecialchars($router_name) ?>
+                </h6>
+            </div>
+            <div class="card-body p-3">
+                <?php 
+                $count = count($profiles);
+                foreach ($profiles as $i => $p): 
+                    $pct = $max_rev > 0 ? ($p['revenue'] / $max_rev) * 100 : 0;
+                    $is_last = ($i === $count - 1);
+                ?>
+                <div class="<?= $is_last ? '' : 'mb-3' ?>">
+                    <div class="d-flex justify-content-between mb-1" style="font-size:0.82rem;">
+                        <a href="?page=report_sales&profile_id=<?= $p['profile_id'] ?>&router_id=<?= $filter_router ?>&from=<?= urlencode($filter_from) ?>&to=<?= urlencode($filter_to) ?>" class="fw-bold text-decoration-none">
+                            <?= htmlspecialchars($p['profile_name'] ?: 'Tanpa Profil') ?>
+                        </a>
+                        <div class="fw-bold" style="color:var(--orange);">
+                            <?= format_price((float)$p['revenue']) ?> 
+                            <span class="text-muted fw-normal ms-1">(<?= number_format($p['cnt']) ?> vcr)</span>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 5px; background-color: var(--bs-gray-200);">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: <?= $pct ?>%; border-radius: 5px;"></div>
+                    </div>
                 </div>
+                <?php endforeach; ?>
             </div>
         </div>
+        <?php endforeach; ?>
+        <?php endif; ?>
     </div>
     
     <div class="col-12 col-lg-7">
