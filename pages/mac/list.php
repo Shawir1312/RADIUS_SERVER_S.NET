@@ -319,6 +319,9 @@ function renderCards(data) {
         <button class="act-btn edit-btn" onclick="openEdit('${ea(b.id)}','${ea(b.mac)}','${ea(b.comment)}')">
           <span>✏️</span> Ubah
         </button>
+        <button class="act-btn ${b.disabled ? 'edit-btn' : 'del-btn'}" onclick="toggleStatus('${ea(b.id)}', ${b.disabled})">
+          <span>${b.disabled ? '✅' : '🛑'}</span> ${b.disabled ? 'Aktifkan' : 'Nonaktifkan'}
+        </button>
         <button class="act-btn del-btn" onclick="openDel('${ea(b.id)}','${ea(b.mac)}','${ea(b.comment)}')">
           <span>🗑️</span> Hapus
         </button>
@@ -444,6 +447,21 @@ async function confirmDelete() {
     else btoast(d.message, 'danger');
   } catch(e) { btoast('Gagal menghapus', 'danger'); }
   finally { btn.disabled = false; btn.textContent = '🗑️ Ya, Hapus'; deleteId = ''; }
+}
+
+async function toggleStatus(id, currentlyDisabled) {
+  const fd = new FormData();
+  fd.append('action', 'toggle_status');
+  fd.append('router_id', ROUTER_ID);
+  fd.append('id', id);
+  fd.append('status', currentlyDisabled ? 'enable' : 'disable');
+
+  try {
+    const r = await fetch(API, {method:'POST', body:fd});
+    const d = await r.json();
+    if (d.success) { btoast(d.message, 'success'); loadData(); }
+    else btoast(d.message, 'danger');
+  } catch(e) { btoast('Gagal mengubah status', 'danger'); }
 }
 
 function openModal(id) { document.getElementById(id).classList.add('show'); }

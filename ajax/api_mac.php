@@ -126,6 +126,24 @@ try {
             send_json(true, 'Binding berhasil dihapus');
             break;
 
+        case 'toggle_status':
+            $id = trim($_POST['id'] ?? '');
+            $status = trim($_POST['status'] ?? '');
+            
+            if (!$id || !in_array($status, ['enable', 'disable'])) {
+                send_json(false, 'Parameter tidak valid');
+            }
+
+            $endpoint = $status === 'enable' ? '/ip/hotspot/ip-binding/enable' : '/ip/hotspot/ip-binding/disable';
+            $result = $api->comm($endpoint, ['.id' => $id]);
+
+            if (isset($result['!trap'])) {
+                send_json(false, $result['!trap'][0]['message'] ?? 'Error dari MikroTik');
+            }
+            
+            send_json(true, $status === 'enable' ? 'MAC berhasil diaktifkan' : 'MAC berhasil dinonaktifkan');
+            break;
+
         default:
             send_json(false, 'Action tidak valid');
     }
