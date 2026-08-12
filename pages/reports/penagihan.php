@@ -37,9 +37,19 @@ $total_kotor = 0;
 $total_bersih = 0;
 $total_transaksi = count($history);
 
+$totals_per_router = [];
+
 foreach ($history as $h) {
     $total_kotor += (float)$h['total_pendapatan'];
     $total_bersih += (float)$h['pendapatan_bersih'];
+    
+    $rname = $h['router_name'] ?: 'Tanpa Router';
+    if (!isset($totals_per_router[$rname])) {
+        $totals_per_router[$rname] = ['kotor' => 0, 'bersih' => 0, 'transaksi' => 0];
+    }
+    $totals_per_router[$rname]['kotor'] += (float)$h['total_pendapatan'];
+    $totals_per_router[$rname]['bersih'] += (float)$h['pendapatan_bersih'];
+    $totals_per_router[$rname]['transaksi']++;
 }
 
 include __DIR__ . '/../../include/header.php';
@@ -80,20 +90,50 @@ include __DIR__ . '/../../include/header.php';
         </form>
         
         <div class="row g-3 mt-2">
+            <!-- Totals Utama -->
             <div class="col-md-6 col-lg-4">
-                <div class="p-3 rounded stat-card-kotor">
-                    <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-cash-stack me-1"></i> TOTAL SEMUA CABANG (KOTOR)</div>
+                <div class="p-3 rounded stat-card-kotor border h-100">
+                    <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-wallet2 me-1"></i> TOTAL SEMUA CABANG (KOTOR)</div>
                     <div class="fs-4 fw-bold stat-value-kotor"><?= format_price($total_kotor) ?></div>
                     <div class="text-muted" style="font-size:0.85rem;"><?= $total_transaksi ?> transaksi penagihan</div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
-                <div class="p-3 rounded stat-card-bersih">
+                <div class="p-3 rounded stat-card-bersih border h-100">
                     <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-piggy-bank me-1"></i> TOTAL BERSIH PERUSAHAAN</div>
                     <div class="fs-4 fw-bold text-success"><?= format_price($total_bersih) ?></div>
                     <div class="text-muted" style="font-size:0.85rem;">Setelah dipotong bagian reseller</div>
                 </div>
             </div>
+            
+            <?php if (count($totals_per_router) > 0 && empty($router_filter)): ?>
+            <div class="col-12 mt-4 mb-2">
+                <h6 class="fw-bold text-dark text-uppercase" style="font-size:0.85rem;"><i class="bi bi-building me-1"></i> Rincian Per Cabang</h6>
+            </div>
+            
+            <?php foreach ($totals_per_router as $rname => $rtot): ?>
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-header bg-light py-2 border-bottom-0">
+                        <div class="fw-bold text-dark" style="font-size:0.8rem;"><i class="bi bi-router"></i> <?= htmlspecialchars($rname) ?></div>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="mb-2">
+                            <div class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase;">Pendapatan Kotor</div>
+                            <div class="fw-bold text-primary" style="font-size:1.1rem;"><?= format_price($rtot['kotor']) ?></div>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase;">Bersih Perusahaan</div>
+                            <div class="fw-bold text-success" style="font-size:1.1rem;"><?= format_price($rtot['bersih']) ?></div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0 pt-0 pb-3 text-muted" style="font-size:0.75rem;">
+                        <?= $rtot['transaksi'] ?> transaksi
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
