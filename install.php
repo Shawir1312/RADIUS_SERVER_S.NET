@@ -19,6 +19,19 @@ if (file_exists(CONFIG_PATH . '/.installed')) {
     </div>');
 }
 
+if (!is_writable(CONFIG_PATH)) {
+    die('<div style="font-family:sans-serif;text-align:center;padding:60px;color:#D32F2F;">
+        <h2><span style="font-size:3rem;">🔒</span><br> Akses Ditolak (Permission Denied)</h2>
+        <p>Folder <strong>config/</strong> tidak dapat ditulisi oleh sistem. Ini menyebabkan instalasi gagal menyimpan pengaturan.</p>
+        <p style="background:#f8d7da;padding:15px;border-radius:8px;display:inline-block;text-align:left;font-family:monospace;font-size:0.9rem;">
+        <strong>Cara mengatasi via SSH / Terminal:</strong><br><br>
+        chown -R www:www ' . BASE_PATH . '<br>
+        chmod -R 775 ' . CONFIG_PATH . '<br>
+        </p>
+        <p>Setelah menjalankan perintah di atas, silakan <em>refresh</em> halaman ini.</p>
+    </div>');
+}
+
 session_start();
 
 $step     = (int)($_GET['step'] ?? 1);
