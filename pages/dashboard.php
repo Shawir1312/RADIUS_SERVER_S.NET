@@ -112,8 +112,8 @@ include __DIR__ . '/../include/header.php';
 
 <div class="row g-3 mb-4">
     <!-- Router Status Cards -->
-    <div class="col-12 col-lg-8">
-        <div class="card h-100">
+    <div class="col-12 col-lg-8 d-flex flex-column gap-3">
+        <div class="card">
             <div class="card-header">
                 <h5 class="card-title"><i class="bi bi-router"></i> Status Router</h5>
                 <?php if (is_superadmin()): ?>
@@ -156,6 +156,25 @@ include __DIR__ . '/../include/header.php';
                 </div>
                 <?php endif; ?>
             </div>
+        </div>
+
+        <!-- Realtime Traffic Compact -->
+        <div class="row g-3" id="traffic-charts-container">
+            <?php foreach ($all_routers as $router): ?>
+            <div class="col-12 col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center p-2">
+                        <h5 class="card-title m-0 text-truncate pe-2" style="font-size:0.85rem;"><i class="bi bi-activity text-primary"></i> <?= htmlspecialchars($router['name']) ?></h5>
+                        <select class="form-select form-select-sm w-auto interface-select py-0 px-2" data-router-id="<?= $router['id'] ?>" style="font-size:0.75rem; height: 24px;">
+                            <option value="">Memuat...</option>
+                        </select>
+                    </div>
+                    <div class="card-body p-2">
+                        <canvas id="trafficChart_<?= $router['id'] ?>" height="110"></canvas>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 
@@ -253,23 +272,7 @@ include __DIR__ . '/../include/header.php';
     </div>
 </div>
 
-<div class="row g-3 mt-1 mb-4" id="traffic-charts-container">
-    <?php foreach ($all_routers as $router): ?>
-    <div class="col-12 col-lg-6">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title" style="font-size:1rem;"><i class="bi bi-activity"></i> Traffic: <?= htmlspecialchars($router['name']) ?></h5>
-                <select class="form-select form-select-sm w-auto interface-select" data-router-id="<?= $router['id'] ?>">
-                    <option value="">Memuat...</option>
-                </select>
-            </div>
-            <div class="card-body">
-                <canvas id="trafficChart_<?= $router['id'] ?>" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-    <?php endforeach; ?>
-</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
