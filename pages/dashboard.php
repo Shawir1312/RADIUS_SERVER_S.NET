@@ -253,6 +253,24 @@ include __DIR__ . '/../include/header.php';
     </div>
 </div>
 
+<div class="row g-3 mt-1 mb-4" id="traffic-charts-container">
+    <?php foreach ($all_routers as $router): ?>
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title" style="font-size:1rem;"><i class="bi bi-activity"></i> Traffic: <?= htmlspecialchars($router['name']) ?></h5>
+                <select class="form-select form-select-sm w-auto interface-select" data-router-id="<?= $router['id'] ?>">
+                    <option value="">Memuat...</option>
+                </select>
+            </div>
+            <div class="card-body">
+                <canvas id="trafficChart_<?= $router['id'] ?>" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
 (function() {
@@ -381,6 +399,128 @@ new Chart(ctxg, {
         },
     },
 });
+// --- Realtime Traffic Charts ---
+const routers = <?= json_encode(array_column($all_routers, 'id')) ?>;
+const trafficCharts = {};
+
+function formatBps(bits) {
+    if (bits >= 1000000000) return (bits / 1000000000).toFixed(2) + ' Gbps';
+    if (bits >= 1000000) return (bits / 1000000).toFixed(2) + ' Mbps';
+    if (bits >= 1000) return (bits / 1000).toFixed(2) + ' Kbps';
+    return bits + ' bps';
+}
+
+routers.forEach(async (rid) => {
+    const ctxT = document.getElementById('trafficChart_' + rid);
+    if (!ctxT) return;
+    
+    trafficCharts[rid] = new Chart(ctxT.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: Array(20).fill(''),
+            datasets: [
+                {
+                    label: 'RX (Download)',
+                    data: Array(20).fill(0),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                },
+                {
+                    label: 'TX (Upload)',
+                    data: Array(20).fill(0),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            animation: false,
+            scales: {
+                x: { display: false },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(v) { return formatBps(v); },
+                        font: { size: 10 }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ctx.dataset.label + ': ' + formatBps(ctx.raw); }
+                    }
+                },
+                legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+            }
+        }
+    });
+
+    const sel = document.querySelector(`.interface-select[data-router-id="${rid}"]`);
+    try {
+        const r = await fetch(`/ajax/api_traffic.php?action=interfaces&router_id=${rid}`);
+        const d = await r.json();
+        if (d.success && d.data) {
+            sel.innerHTML = '';
+            d.data.forEach(iface => {
+                const opt = document.createElement('option');
+                opt.value = iface.name;
+                opt.textContent = iface.name;
+                sel.appendChild(opt);
+            });
+            const saved = localStorage.getItem('traffic_iface_' + rid);
+            if (saved && d.data.find(i => i.name === saved)) {
+                sel.value = saved;
+            }
+        }
+    } catch(e) {}
+
+    sel.addEventListener('change', function() {
+        localStorage.setItem('traffic_iface_' + rid, this.value);
+        trafficCharts[rid].data.datasets[0].data.fill(0);
+        trafficCharts[rid].data.datasets[1].data.fill(0);
+        trafficCharts[rid].update();
+    });
+});
+
+setInterval(async () => {
+    for (const rid of routers) {
+        const sel = document.querySelector(`.interface-select[data-router-id="${rid}"]`);
+        if (!sel || !sel.value) continue;
+        
+        try {
+            const fd = new FormData();
+            fd.append('action', 'traffic');
+            fd.append('router_id', rid);
+            fd.append('interface', sel.value);
+            
+            const r = await fetch('/ajax/api_traffic.php', { method: 'POST', body: fd });
+            const d = await r.json();
+            
+            if (d.success) {
+                const chart = trafficCharts[rid];
+                chart.data.labels.push('');
+                chart.data.labels.shift();
+                
+                chart.data.datasets[0].data.push(d.rx || 0);
+                chart.data.datasets[0].data.shift();
+                
+                chart.data.datasets[1].data.push(d.tx || 0);
+                chart.data.datasets[1].data.shift();
+                
+                chart.update();
+            }
+        } catch(e) {}
+    }
+}, 3000);
+
 })();
 </script>
 
