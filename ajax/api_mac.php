@@ -49,19 +49,79 @@ function send_json($success, $data = []) {
     echo json_encode($response);
     exit;
 }
-
+function sync_mac_queue($api, $mac, $name, $all_leases = null) {
+    if ($all_leases === null) {
+        $all_leases = $api->comm('/ip/dhcp-server/lease/print');
+    }
+    
+    $lease = null;
+    foreach ($all_leases as $l) {
+        if (strtoupper($l['mac-address'] ?? '') === strtoupper($mac)) {
+            $lease = $l;
+            break;
+        }
+    }
+    
+    if (!$lease) return false;
+    
+    if (($lease['dynamic'] ?? 'false') === 'true') {
+        $api->comm('/ip/dhcp-server/lease/make-static', ['.id' => $lease['.id']]);
+    }
+    
+    $address = $lease['address'] ?? '';
+    if (!$address) return false;
+    
+    $queues = $api->comm('/queue/simple/print');
+    $queue_id = null;
+    foreach ($queues as $q) {
+        if (strpos($q['target'] ?? '', $address) === 0) {
+            $queue_id = $q['.id'];
+            break;
+        }
+    }
+    
+    if ($queue_id) {
+        $api->comm('/queue/simple/set', [
+            '.id' => $queue_id,
+            'name' => $name,
+            'max-limit' => '2M/2M'
+        ]);
+    } else {
+        $api->comm('/queue/simple/add', [
+            'name' => $name,
+            'target' => $address,
+            'max-limit' => '2M/2M'
+        ]);
+    }
+    
+    return true;
+}
 try {
     switch ($action) {
         case 'list':
             $bindings = $api->comm('/ip/hotspot/ip-binding/print');
+            $leases = $api->comm('/ip/dhcp-server/lease/print');
+            
+            $lease_map = [];
+            foreach ($leases as $l) {
+                if (!empty($l['mac-address'])) {
+                    $lease_map[strtoupper($l['mac-address'])] = $l;
+                }
+            }
+
             $list = [];
             foreach ($bindings as $b) {
+                $mac = strtoupper($b['mac-address'] ?? '');
+                $l = $lease_map[$mac] ?? null;
+                $is_static = ($l && ($l['dynamic'] ?? 'false') === 'false');
+                
                 $list[] = [
                     'id'       => $b['.id'] ?? '',
                     'mac'      => $b['mac-address'] ?? '',
                     'type'     => $b['type'] ?? '',
                     'comment'  => $b['comment'] ?? '',
                     'disabled' => ($b['disabled'] ?? 'false') === 'true',
+                    'is_static'=> $is_static,
                 ];
             }
             send_json(true, ['data' => $list]);
@@ -85,7 +145,13 @@ try {
                 send_json(false, $result['!trap'][0]['message'] ?? 'Error dari MikroTik');
             }
             
-            send_json(true, 'MAC berhasil ditambahkan');
+            $synced = sync_mac_queue($api, $mac, $name);
+            
+            if ($synced) {
+                send_json(true, 'Bypass berhasil, IP dibuat statik & Limit 2M/2M dibuat.');
+            } else {
+                send_json(true, 'Bypass berhasil, tetapi perangkat tidak aktif/tidak ada IP. Klik tombol Singkron nanti.');
+            }
             break;
 
         case 'update':
@@ -117,13 +183,56 @@ try {
                 send_json(false, 'ID tidak valid');
             }
 
+            $bindings = $api->comm('/ip/hotspot/ip-binding/print', ['?.id' => $id]);
+            if (!empty($bindings)) {
+                $mac = $bindings[0]['mac-address'] ?? '';
+                if ($mac) {
+                    $leases = $api->comm('/ip/dhcp-server/lease/print', ['?mac-address' => $mac]);
+                    if (!empty($leases)) {
+                        $address = $leases[0]['address'] ?? '';
+                        if ($address) {
+                            $queues = $api->comm('/queue/simple/print');
+                            foreach ($queues as $q) {
+                                if (strpos($q['target'] ?? '', $address) === 0) {
+                                    $api->comm('/queue/simple/remove', ['.id' => $q['.id']]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             $result = $api->comm('/ip/hotspot/ip-binding/remove', ['.id' => $id]);
 
             if (isset($result['!trap'])) {
                 send_json(false, $result['!trap'][0]['message'] ?? 'Error dari MikroTik');
             }
             
-            send_json(true, 'Binding berhasil dihapus');
+            send_json(true, 'Binding dan antrian berhasil dihapus');
+            break;
+
+        case 'sync_all':
+            $bindings = $api->comm('/ip/hotspot/ip-binding/print', ['?type' => 'bypassed']);
+            $leases = $api->comm('/ip/dhcp-server/lease/print');
+            
+            $synced_count = 0;
+            $failed_count = 0;
+            
+            foreach ($bindings as $b) {
+                $mac = $b['mac-address'] ?? '';
+                $name = $b['comment'] ?? 'Bypass MAC';
+                
+                if ($mac) {
+                    $is_synced = sync_mac_queue($api, $mac, $name, $leases);
+                    if ($is_synced) {
+                        $synced_count++;
+                    } else {
+                        $failed_count++;
+                    }
+                }
+            }
+            
+            send_json(true, "Sinkronisasi selesai. $synced_count berhasil, $failed_count gagal/offline.");
             break;
 
         case 'toggle_status':

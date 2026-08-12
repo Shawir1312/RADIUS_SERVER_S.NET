@@ -149,10 +149,16 @@ include __DIR__ . '/../../include/header.php';
   <?php else: ?>
 
     <!-- Action Hero -->
-    <button class="btn-daftar" onclick="openAdd()">
-      <span class="ico">➕</span>
-      Daftarkan MAC Baru
-    </button>
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <button class="btn-daftar" style="margin-bottom:0;" onclick="openAdd()">
+        <span class="ico">➕</span>
+        Daftarkan MAC Baru
+      </button>
+      <button class="btn-daftar" style="margin-bottom:0;background:linear-gradient(135deg,var(--mac-green),#14532D);" onclick="syncAll()" id="btnSync">
+        <span class="ico">🔄</span>
+        Singkron Limit (2M)
+      </button>
+    </div>
 
     <!-- Stats -->
     <div class="mac-stats">
@@ -312,6 +318,10 @@ function renderCards(data) {
               ? '<span class="bind-badge nonaktif"><span class="bind-badge-dot"></span> NONAKTIF</span>'
               : '<span class="bind-badge aktif"><span class="bind-badge-dot"></span> AKTIF</span>'
             }
+            ${b.is_static
+              ? '<span class="bind-badge" style="background:#F0FDF4;color:#166534;"><span class="bind-badge-dot"></span> STATIK</span>'
+              : '<span class="bind-badge" style="background:#FEF2F2;color:#991B1B;"><span class="bind-badge-dot"></span> BLUM STATIK</span>'
+            }
           </div>
         </div>
       </div>
@@ -462,6 +472,31 @@ async function toggleStatus(id, currentlyDisabled) {
     if (d.success) { btoast(d.message, 'success'); loadData(); }
     else btoast(d.message, 'danger');
   } catch(e) { btoast('Gagal mengubah status', 'danger'); }
+}
+
+async function syncAll() {
+  const btn = document.getElementById('btnSync');
+  if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="ico spinner-border spinner-border-sm"></span> Menyinkron...';
+  }
+  
+  const fd = new FormData();
+  fd.append('action', 'sync_all');
+  fd.append('router_id', ROUTER_ID);
+
+  try {
+    const r = await fetch(API, {method:'POST', body:fd});
+    const d = await r.json();
+    if (d.success) { btoast(d.message, 'success'); loadData(); }
+    else btoast(d.message, 'danger');
+  } catch(e) { btoast('Gagal menyinkron', 'danger'); }
+  finally { 
+      if (btn) {
+          btn.disabled = false; 
+          btn.innerHTML = '<span class="ico">🔄</span> Singkron Limit (2M)'; 
+      }
+  }
 }
 
 function openModal(id) { document.getElementById(id).classList.add('show'); }
