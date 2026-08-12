@@ -263,8 +263,8 @@ include __DIR__ . '/../include/header.php';
             <div class="card-header">
                 <h5 class="card-title"><i class="bi bi-graph-up"></i> Penjualan 7 Hari Terakhir</h5>
             </div>
-            <div class="card-body">
-                <canvas id="salesChart" height="200"></canvas>
+            <div class="card-body" style="height: 300px; position: relative;">
+                <canvas id="salesChart"></canvas>
             </div>
         </div>
     </div>
@@ -340,6 +340,7 @@ new Chart(ctxg, {
     },
     options: {
         responsive: true,
+        maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         animation: { duration: 800, easing: 'easeInOutQuart' },
         plugins: {
