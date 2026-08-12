@@ -675,19 +675,35 @@ body.sidebar-collapsed #main-content {
   }
   #topbar {
     background: var(--blue);
+    padding: 0 10px;
   }
+  .topbar-left { gap: 6px; }
+  .topbar-right { gap: 6px; }
+  .topbar-right .form-select {
+    max-width: 120px;
+    padding-left: 8px;
+    padding-right: 24px;
+    font-size: .75rem;
+  }
+  .theme-toggle.me-2 { margin-right: 0 !important; }
   .topbar-title {
     color: var(--white);
   }
   #sidebar-toggle {
     color: var(--white);
+    padding: 4px 6px;
   }
   #sidebar-toggle:hover {
     background: rgba(255,255,255,.15);
     color: var(--white);
   }
   .topbar-user {
+    padding: 4px 8px;
     border-color: rgba(255,255,255,.3);
+  }
+  .topbar-avatar {
+    width: 28px; height: 28px;
+    font-size: .75rem;
   }
   .topbar-user i {
     color: var(--white) !important;
