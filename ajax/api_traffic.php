@@ -12,6 +12,7 @@ if (empty($_SESSION['admin_id'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
+session_write_close(); // <-- RELEASE SESSION LOCK HERE
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 $router_id = (int)($_GET['router_id'] ?? $_POST['router_id'] ?? 0);
