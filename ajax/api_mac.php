@@ -7,7 +7,8 @@ require_once __DIR__ . '/../lib/routeros_api.class.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-if (!auth_check()) {
+auth_start();
+if (empty($_SESSION['admin_id'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
