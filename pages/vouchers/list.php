@@ -233,6 +233,16 @@ include __DIR__ . '/../../include/header.php';
                     <?php if ($v['expired_at']): ?>
                     <div style="font-size:0.7rem; color:var(--red); margin-top:2px;">
                         <i class="bi bi-clock-history"></i> <?= date('d/m/y H:i', strtotime($v['expired_at'])) ?>
+                        <?php 
+                        if ($v['status'] === 'active') {
+                            $rem = strtotime($v['expired_at']) - time();
+                            if ($rem > 0) {
+                                echo '<br><span class="badge bg-info text-dark mt-1" style="font-size:0.65rem;">Sisa: ' . seconds_to_human($rem) . '</span>';
+                            } else {
+                                echo '<br><span class="badge bg-danger mt-1" style="font-size:0.65rem;">Habis</span>';
+                            }
+                        }
+                        ?>
                     </div>
                     <?php endif; ?>
                 </td>
