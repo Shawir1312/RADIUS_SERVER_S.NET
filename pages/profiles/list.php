@@ -22,7 +22,7 @@ if ($is_list) {
     // ── LIST ──
     $profiles = db_fetch_all(
         "SELECT p.*, r.name AS router_name,
-                (SELECT COUNT(*) FROM vouchers v WHERE v.profile_id = p.id AND v.status != 'deleted') AS voucher_count
+                (SELECT COUNT(*) FROM vouchers v WHERE v.profile_id = p.id AND v.status IN ('unused', 'active')) AS voucher_count
          FROM profiles p
          LEFT JOIN routers r ON p.router_id = r.id
          $where_sql
