@@ -31,7 +31,9 @@ try {
     
     db_begin();
     
-    // Cari semua session nyangkut khusus untuk router ini
+    // ---------------------------------------------------------
+    // KASUS 1: False Start (0 Detik / 0 Bytes) -> Kembalikan Voucher
+    // ---------------------------------------------------------
     $ghosts = db_fetch_all("
         SELECT DISTINCT username 
         FROM radacct 
@@ -44,26 +46,48 @@ try {
     $count = 0;
     foreach ($ghosts as $g) {
         $u = $g['username'];
-        
-        // 1. Hapus dari radacct
         db_execute("DELETE FROM radacct WHERE username = ? AND acctstoptime IS NULL AND acctsessiontime = 0 AND acctinputoctets = 0", 's', [$u]);
         
-        // Cek apakah radacct untuk user ini sudah kosong sepenuhnya (artinya dia memang belum pernah pakai sama sekali)
         $has_other_usage = db_fetch_one("SELECT radacctid FROM radacct WHERE username = ?", 's', [$u]);
-        
         if (!$has_other_usage) {
-            // 2. Kembalikan status voucher ke unused
             db_execute("UPDATE vouchers SET status = 'unused', used_at = NULL, expired_at = NULL WHERE username = ? AND status = 'active'", 's', [$u]);
-            
-            // 3. Hapus log penjualan (sales_log) yang tercatat otomatis karena false-start ini
             db_execute("DELETE FROM sales_log WHERE voucher_username = ? ORDER BY id DESC LIMIT 1", 's', [$u]);
         }
-        
         $count++;
+    }
+
+    // ---------------------------------------------------------
+    // KASUS 2: Router Mati Listrik (Sesi Menggantung dengan Traffic)
+    // ---------------------------------------------------------
+    // Sesi masih NULL acctstoptime, tapi waktu/traffic > 0.
+    // Kita paksa tutup sesinya agar sisa waktu voucher tidak terpotong terus.
+    $active_ghosts = db_fetch_all("
+        SELECT radacctid, username 
+        FROM radacct 
+        WHERE acctstoptime IS NULL 
+          AND (acctsessiontime > 0 OR acctinputoctets > 0)
+          AND (nasipaddress = ? OR nasipaddress = ?)
+    ", 'ss', [$ip1, $ip2]);
+
+    $count_closed = 0;
+    foreach ($active_ghosts as $ag) {
+        // Jika acctsessiontime ada nilainya, acctstoptime = acctstarttime + acctsessiontime. 
+        // Kalau tidak, pakai NOW().
+        db_execute("
+            UPDATE radacct 
+            SET acctstoptime = CASE 
+                    WHEN acctsessiontime > 0 THEN DATE_ADD(acctstarttime, INTERVAL acctsessiontime SECOND)
+                    ELSE NOW() 
+                END,
+                acctterminatecause = 'NAS-Error'
+            WHERE radacctid = ?
+        ", 'i', [$ag['radacctid']]);
+        
+        $count_closed++;
     }
     
     db_commit();
-    flash_set('success', "Berhasil membersihkan {$count} sesi gantung (ghost). Voucher yang bersangkutan kini telah dikembalikan menjadi belum terpakai!");
+    flash_set('success', "Berhasil mereset {$count} sesi 0-detik (dikembalikan jadi unused) dan menutup paksa {$count_closed} sesi aktif (mencegah waktu voucher habis akibat router mati).");
 } catch (Exception $e) {
     db_rollback();
     flash_set('error', 'Gagal: ' . $e->getMessage());

@@ -81,7 +81,7 @@ function clearGhostSessions() {
         alert('Mohon pilih SATU cabang/router di kotak "Filter Router" terlebih dahulu sebelum membersihkan sesi!');
         return false;
     }
-    if (confirm('Bersihkan semua sesi nyangkut (0 Detik / 0 Bytes) KHUSUS untuk cabang ini dan kembalikan vouchernya menjadi Belum Terpakai?')) {
+    if (confirm('Aksi ini akan:\n1. Mereset sesi 0 Detik (voucher dikembalikan ke Belum Terpakai).\n2. Menutup paksa sesi aktif di database (berguna jika Router mati listrik agar sisa waktu voucher tidak terpotong terus).\n\nLanjutkan pembersihan untuk cabang ini?')) {
         window.location.href = '/process/clear_ghost_sessions.php?router_id=' + encodeURIComponent(router_id);
     }
     return false;
