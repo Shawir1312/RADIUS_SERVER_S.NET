@@ -94,7 +94,7 @@ function refreshActiveUsers() {
     const tbody  = document.querySelector('#active-users-table tbody');
     if (!tbody) return;
 
-    fetch(`/ajax/active_users.php?router_id=${encodeURIComponent(router)}`)
+    fetch(`/ajax/active_users.php?router_id=${encodeURIComponent(router)}&_t=${new Date().getTime()}`)
         .then(r => r.json())
         .then(data => {
             const count = document.getElementById('active-count');
@@ -120,7 +120,7 @@ function refreshActiveUsers() {
                         <span class="badge bg-primary">${escHtml(u.duration)}</span>
                     </td>
                     <td>
-                        <span class="badge bg-info text-dark">${escHtml(u.sisa_waktu || '-')}</span>
+                        ${u.sisa_waktu || '-'}
                     </td>
                     <td class="text-success">↓ ${escHtml(u.dl)}</td>
                     <td class="text-primary">↑ ${escHtml(u.ul)}</td>

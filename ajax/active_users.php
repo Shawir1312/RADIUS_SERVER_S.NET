@@ -70,27 +70,30 @@ $rows = db_fetch_all(
 );
 
 $users = array_map(function($row) {
-    $min_rem = null;
-    
+    $validity_text = '';
+    $duration_text = '';
+
     if (!empty($row['expired_at'])) {
-        $min_rem = strtotime($row['expired_at']) - time();
+        $val = strtotime($row['expired_at']) - time();
+        $validity_text = $val <= 0 ? 'Habis' : seconds_to_human($val);
     }
     
     if (isset($row['session_timeout']) && (int)$row['session_timeout'] > 0) {
         $st = (int)$row['session_timeout'];
         $spent = time() - strtotime($row['acctstarttime']);
         $dur_rem = $st - $spent;
-        if ($min_rem === null || $dur_rem < $min_rem) {
-            $min_rem = $dur_rem;
-        }
+        $duration_text = $dur_rem <= 0 ? 'Habis' : seconds_to_human($dur_rem);
     }
     
-    if ($min_rem === null) {
-        $sisa_waktu = 'Unlimited';
-    } elseif ($min_rem <= 0) {
-        $sisa_waktu = 'Habis';
-    } else {
-        $sisa_waktu = seconds_to_human($min_rem);
+    $sisa_waktu = '';
+    if ($duration_text) {
+        $sisa_waktu .= '<div style="font-size:0.7rem;margin-bottom:2px;" title="Sisa Kuota Waktu (Durasi)"><i class="bi bi-hourglass-split"></i> ' . $duration_text . '</div>';
+    }
+    if ($validity_text) {
+        $sisa_waktu .= '<div style="font-size:0.7rem;color:var(--red);" title="Sisa Masa Aktif (Validity)"><i class="bi bi-calendar-x"></i> ' . $validity_text . '</div>';
+    }
+    if ($sisa_waktu === '') {
+        $sisa_waktu = '<span style="font-size:0.75rem;">Unlimited</span>';
     }
 
     return [
