@@ -21,9 +21,9 @@ try {
         SELECT 
             v.username, 
             v.status, 
-            p.name AS profile_name, 
+            p.name      AS profile_name, 
             a.full_name AS reseller_name,
-            a.role     AS reseller_role
+            a.role      AS reseller_role
         FROM vouchers v
         LEFT JOIN profiles p ON v.profile_id = p.id
         LEFT JOIN admins   a ON v.generated_by = a.id
@@ -33,19 +33,13 @@ try {
     $voucher = db_fetch_one($sql, 's', [$username]);
 
     if ($voucher) {
-        // Jika generate oleh superadmin, tampilkan nama perusahaan bukan nama personal
-        if ($voucher['reseller_role'] === 'superadmin') {
-            $reseller_display = APP_COMPANY; // dari config.php
-        } else {
-            $reseller_display = $voucher['reseller_name'] ?: APP_COMPANY;
-        }
-
         echo json_encode([
             'success'        => true,
             'username'       => $voucher['username'],
             'status'         => $voucher['status'],
             'profile_name'   => $voucher['profile_name'] ?: '-',
-            'reseller_name'  => $reseller_display,
+            // Tampilkan nama admin yang generate (reseller/operator maupun superadmin)
+            'reseller_name'  => $voucher['reseller_name'] ?: '-',
         ]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Voucher not found']);
