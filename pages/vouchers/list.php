@@ -60,7 +60,8 @@ $pager = paginate($total_count, PER_PAGE, $page_num,
 
 // Fetch vouchers
 $vouchers = db_fetch_all(
-    "SELECT v.*, p.name AS profile_name, r.name AS router_name, a.username AS gen_by
+    "SELECT v.*, p.name AS profile_name, r.name AS router_name, a.username AS gen_by,
+            (SELECT rr.value FROM radreply rr WHERE rr.username = v.username AND rr.attribute = 'Session-Timeout' LIMIT 1) as session_timeout
      FROM vouchers v
      LEFT JOIN profiles p ON v.profile_id = p.id
      LEFT JOIN routers r ON v.router_id = r.id
@@ -237,10 +238,23 @@ include __DIR__ . '/../../include/header.php';
                         if ($v['status'] === 'active') {
                             $rem = strtotime($v['expired_at']) - time();
                             if ($rem > 0) {
-                                echo '<br><span class="badge bg-info text-dark mt-1" style="font-size:0.65rem;">Sisa: ' . seconds_to_human($rem) . '</span>';
+                                echo '<br><span class="badge bg-info text-dark mt-1" style="font-size:0.65rem;" title="Sisa Masa Aktif (Validity)"><i class="bi bi-calendar-x"></i> ' . seconds_to_human($rem) . '</span>';
                             } else {
-                                echo '<br><span class="badge bg-danger mt-1" style="font-size:0.65rem;">Habis</span>';
+                                echo '<br><span class="badge bg-danger mt-1" style="font-size:0.65rem;"><i class="bi bi-calendar-x"></i> Habis</span>';
                             }
+                        }
+                        ?>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($v['status'] === 'active' && isset($v['session_timeout'])): ?>
+                    <div style="font-size:0.7rem; margin-top:2px;">
+                        <?php 
+                        $rem_dur = (int)$v['session_timeout'];
+                        if ($rem_dur > 0) {
+                            echo '<span class="badge bg-primary mt-1" style="font-size:0.65rem;" title="Sisa Kuota Waktu (Durasi)"><i class="bi bi-hourglass-split"></i> ' . seconds_to_human($rem_dur) . '</span>';
+                        } else {
+                            echo '<span class="badge bg-danger mt-1" style="font-size:0.65rem;"><i class="bi bi-hourglass-split"></i> Habis</span>';
                         }
                         ?>
                     </div>
