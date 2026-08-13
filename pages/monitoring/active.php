@@ -60,13 +60,14 @@ include __DIR__ . '/../../include/header.php';
                 <th>MAC Address</th>
                 <th>IP Address</th>
                 <th>Durasi</th>
+                <th>Sisa Waktu</th>
                 <th>Download</th>
                 <th>Upload</th>
                 <th>Profil</th>
                 <th>Aksi</th>
             </tr></thead>
             <tbody>
-                <tr><td colspan="9" class="text-center text-muted py-4">
+                <tr><td colspan="10" class="text-center text-muted py-4">
                     <div class="spinner-border spinner-border-sm me-2"></div>Memuat data...
                 </td></tr>
             </tbody>
@@ -102,7 +103,7 @@ function refreshActiveUsers() {
             if (last)  last.textContent  = 'Diperbarui: ' + new Date().toLocaleTimeString('id-ID');
 
             if (!data.users || data.users.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-5">
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-5">
                     <i class="bi bi-wifi-off display-4 d-block mb-2"></i>Tidak ada user aktif</td></tr>`;
                 return;
             }
@@ -118,6 +119,9 @@ function refreshActiveUsers() {
                     <td>
                         <span class="badge bg-primary">${escHtml(u.duration)}</span>
                     </td>
+                    <td>
+                        <span class="badge bg-info text-dark">${escHtml(u.sisa_waktu || '-')}</span>
+                    </td>
                     <td class="text-success">↓ ${escHtml(u.dl)}</td>
                     <td class="text-primary">↑ ${escHtml(u.ul)}</td>
                     <td style="font-size:.78rem;">${escHtml(u.profile || '-')}</td>
@@ -131,7 +135,7 @@ function refreshActiveUsers() {
                 </tr>`).join('');
         })
         .catch(() => {
-            if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-3">
+            if (tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-3">
                 <i class="bi bi-exclamation-triangle me-2"></i>Gagal memuat data</td></tr>`;
         });
 }

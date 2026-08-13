@@ -55,12 +55,14 @@ if ($count_only) {
 $rows = db_fetch_all(
     "SELECT ra.radacctid, ra.username, ra.nasipaddress, ra.callingstationid, ra.framedipaddress,
             ra.acctstarttime, ra.acctinputoctets, ra.acctoutputoctets,
-            r.name AS router_name, v.profile_id,
-            p.name AS profile
+            r.name AS router_name, v.profile_id, v.expired_at,
+            p.name AS profile,
+            rr.value AS session_timeout
      FROM radacct ra
      LEFT JOIN routers r ON r.ip_address = ra.nasipaddress
      LEFT JOIN vouchers v ON v.username = ra.username
      LEFT JOIN profiles p ON p.id = v.profile_id
+     LEFT JOIN radreply rr ON rr.username = ra.username AND rr.attribute = 'Session-Timeout'
      {$where_sql}
      ORDER BY ra.acctstarttime DESC
      LIMIT 200",
@@ -68,6 +70,29 @@ $rows = db_fetch_all(
 );
 
 $users = array_map(function($row) {
+    $min_rem = null;
+    
+    if (!empty($row['expired_at'])) {
+        $min_rem = strtotime($row['expired_at']) - time();
+    }
+    
+    if (isset($row['session_timeout']) && (int)$row['session_timeout'] > 0) {
+        $st = (int)$row['session_timeout'];
+        $spent = time() - strtotime($row['acctstarttime']);
+        $dur_rem = $st - $spent;
+        if ($min_rem === null || $dur_rem < $min_rem) {
+            $min_rem = $dur_rem;
+        }
+    }
+    
+    if ($min_rem === null) {
+        $sisa_waktu = 'Unlimited';
+    } elseif ($min_rem <= 0) {
+        $sisa_waktu = 'Habis';
+    } else {
+        $sisa_waktu = seconds_to_human($min_rem);
+    }
+
     return [
         'radacctid'        => (string)$row['radacctid'],
         'username'         => $row['username'],
@@ -76,6 +101,7 @@ $users = array_map(function($row) {
         'callingstationid' => $row['callingstationid'],
         'framedipaddress'  => $row['framedipaddress'],
         'duration'         => session_duration_human($row['acctstarttime']),
+        'sisa_waktu'       => $sisa_waktu,
         'dl'               => format_bytes((int)$row['acctoutputoctets']),
         'ul'               => format_bytes((int)$row['acctinputoctets']),
         'profile'          => $row['profile'],
