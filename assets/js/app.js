@@ -100,47 +100,7 @@ if (document.querySelector('[data-router-id]')) {
     setInterval(pollRouterStatus, 30000);
 }
 
-// ── Active Users Auto-Refresh ──────────────────────────
-const activeUsersTable = document.getElementById('active-users-table');
-if (activeUsersTable) {
-    function refreshActiveUsers() {
-        const router = document.getElementById('filter-router')?.value || '';
-        fetch(`/ajax/active_users.php?router_id=${router}`)
-            .then(r => r.json())
-            .then(data => {
-                const tbody = activeUsersTable.querySelector('tbody');
-                if (!tbody) return;
-                if (!data.users || data.users.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">
-                        <i class="bi bi-wifi-off fs-3 d-block mb-2"></i>Tidak ada user aktif</td></tr>`;
-                    return;
-                }
-                tbody.innerHTML = data.users.map(u => `
-                    <tr>
-                        <td class="font-mono fw-600">${escHtml(u.username)}</td>
-                        <td>${escHtml(u.router_name || u.nasipaddress)}</td>
-                        <td>${escHtml(u.callingstationid || '-')}</td>
-                        <td>${escHtml(u.framedipaddress || '-')}</td>
-                        <td>${escHtml(u.duration)}</td>
-                        <td>${escHtml(u.dl)}</td>
-                        <td>${escHtml(u.ul)}</td>
-                        <td>${escHtml(u.profile || '-')}</td>
-                        <td>
-                            <button class="btn btn-danger btn-sm btn-icon"
-                                title="Disconnect"
-                                data-confirm="Disconnect ${escHtml(u.username)}?"
-                                onclick="disconnectUser('${escHtml(u.username)}', '${escHtml(u.radacctid)}', this)">
-                                <i class="bi bi-x-circle"></i>
-                            </button>
-                        </td>
-                    </tr>`).join('');
-                document.getElementById('active-count').textContent = data.users.length;
-            })
-            .catch(() => {});
-    }
-    refreshActiveUsers();
-    setInterval(refreshActiveUsers, 30000);
-}
+// Removed redundant refreshActiveUsers block that conflicted with pages/monitoring/active.php
 
 // ── Disconnect User ────────────────────────────────────
 function disconnectUser(username, sessionId, btn) {
