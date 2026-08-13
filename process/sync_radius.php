@@ -78,7 +78,7 @@ try {
     }
 
     // Log the action
-    log_activity($admin['id'], "Melakukan sinkronisasi RADIUS (Memulihkan {$count} voucher ke database radius)");
+    audit_log('sync_radius', '', 0, "Memulihkan {$count} voucher ke database radius");
 
     db_commit();
     flash_set('success', "Sinkronisasi Berhasil! {$count} voucher telah dipulihkan ke mesin RADIUS.");
