@@ -79,10 +79,10 @@ function seconds_to_human(int $secs): string {
     $h = intdiv($secs % 86400, 3600);
     $m = intdiv($secs % 3600, 60);
     $parts = [];
-    if ($d) $parts[] = "{$d}d";
-    if ($h) $parts[] = "{$h}h";
-    if ($m) $parts[] = "{$m}m";
-    return implode(' ', $parts) ?: '< 1m';
+    if ($d) $parts[] = "{$d} Hari";
+    if ($h) $parts[] = "{$h} Jam";
+    if ($m) $parts[] = "{$m} Menit";
+    return implode(' ', $parts) ?: '< 1 Menit';
 }
 
 function session_duration_human(?string $start, ?string $stop = null): string {
