@@ -102,7 +102,33 @@ foreach ($routers as $router) {
         
     } else {
         echo "GAGAL (Koneksi API bermasalah / Offline).\n";
-        echo "    [!] Melewati router ini. Sesi hantu akan dibersihkan nanti saat router kembali online dan API bisa diakses.\n";
+        
+        // Jika router mati total/listrik padam, maka SEMUA sesi aktif di RADIUS untuk router ini adalah HANTU
+        // Kita wajib menutupnya SEKARANG agar sisa waktu voucher klien tidak habis dimakan waktu!
+        $radius_active = db_fetch_all("
+            SELECT radacctid, username, acctstarttime, acctsessiontime 
+            FROM radacct 
+            WHERE acctstoptime IS NULL 
+              AND (nasipaddress = ? OR nasipaddress = ?)
+        ", 'ss', [$ip, $nas_ip]);
+        
+        $closed_count = 0;
+        foreach ($radius_active as $ra) {
+             db_execute("
+                UPDATE radacct 
+                SET acctstoptime = CASE 
+                        WHEN acctsessiontime > 0 THEN DATE_ADD(acctstarttime, INTERVAL acctsessiontime SECOND)
+                        ELSE NOW() 
+                    END,
+                    acctterminatecause = 'NAS-Down-PowerOff'
+                WHERE radacctid = ?
+            ", 'i', [$ra['radacctid']]);
+            $closed_count++;
+        }
+        
+        if ($closed_count > 0) {
+            echo "    [!] Router mati listrik! Menyelamatkan sisa waktu untuk $closed_count voucher yang tadinya aktif.\n";
+        }
     }
 }
 echo "[" . date('Y-m-d H:i:s') . "] Sinkronisasi API selesai.\n";
