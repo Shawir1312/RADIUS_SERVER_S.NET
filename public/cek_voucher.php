@@ -34,17 +34,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 p.duration_unit,
                 p.rate_up,
                 p.rate_down,
-                p.quota_mb,
-                a.full_name     AS reseller_name
+                p.quota_mb
             FROM vouchers v
             LEFT JOIN profiles p ON v.profile_id = p.id
-            LEFT JOIN admins   a ON v.generated_by = a.id
             WHERE v.username = ?
         ";
         $voucher = db_fetch_one($sql, 's', [$kode]);
 
         if (!$voucher) {
             $error = 'Voucher tidak ditemukan. Periksa kembali kode yang Anda masukkan.';
+        } else {
+            // Nama profil = nama reseller dalam sistem ini (FIKTAR, KICI, ULIS, dll)
+            $voucher['reseller_name'] = $voucher['profile_name'] ?: '-';
         }
     }
 }
