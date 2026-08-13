@@ -9,16 +9,22 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../include/functions.php';
 
 // Waktu toleransi (dalam menit). 
-// Jika Mikrotik diset Interim-Update setiap 1-3 menit, 
-// maka jika 10 menit tidak ada update, kita anggap routernya mati / koneksi terputus.
 $timeout_minutes = 10; 
 
 try {
     db_begin();
     
-    // ---------------------------------------------------------
-    // KASUS 1: False Start (0 Detik / 0 Bytes) yang nyangkut lama
-    // ---------------------------------------------------------
+    // PERHATIAN: 
+    // Fitur pembersihan otomatis (Cron) SEMENTARA DIMATIKAN karena Mikrotik Anda 
+    // belum dikonfigurasi untuk mengirimkan "Interim-Update" ke RADIUS.
+    // 
+    // Jika Interim-Update tidak dikirim oleh Mikrotik, RADIUS tidak bisa membedakan
+    // mana user yang MASIH AKTIF dan mana yang SUDAH MATI, karena data Download/Upload
+    // akan terlihat selalu "0" atau sama terus, sehingga user asli malah ikut terhapus.
+    
+    /* 
+    --- KODE DI BAWAH INI DINONAKTIFKAN DULU SAMPAI MIKROTIK DISETTING INTERIM-UPDATE ---
+
     $ghosts_0 = db_fetch_all("
         SELECT DISTINCT username 
         FROM radacct 
@@ -39,10 +45,6 @@ try {
         }
     }
     
-    // ---------------------------------------------------------
-    // KASUS 2: Router Mati Listrik (Sesi Menggantung dengan Traffic)
-    // ---------------------------------------------------------
-    // Cek last update (menggunakan acctupdatetime, jika NULL gunakan acctstarttime)
     $active_ghosts = db_fetch_all("
         SELECT radacctid, username, acctstarttime, acctsessiontime 
         FROM radacct 
@@ -52,7 +54,6 @@ try {
     ", 'i', [$timeout_minutes]);
 
     foreach ($active_ghosts as $ag) {
-        // Paksa tutup sesinya, amankan sisa waktu voucher!
         db_execute("
             UPDATE radacct 
             SET acctstoptime = CASE 
@@ -63,15 +64,10 @@ try {
             WHERE radacctid = ?
         ", 'i', [$ag['radacctid']]);
     }
+    */
     
     db_commit();
-    
-    // Output untuk log cron (hanya print jika ada eksekusi)
-    $total_0 = count($ghosts_0);
-    $total_active = count($active_ghosts);
-    if ($total_0 > 0 || $total_active > 0) {
-        echo "[" . date('Y-m-d H:i:s') . "] Auto-Clean Ghost: $total_0 sesi direset (unused), $total_active sesi aktif ditutup (router mati).\n";
-    }
+    echo "[" . date('Y-m-d H:i:s') . "] CRON Auto-Clean dinonaktifkan sementara karena Mikrotik Interim-Update belum disetting.\n";
     
 } catch (Exception $e) {
     db_rollback();
