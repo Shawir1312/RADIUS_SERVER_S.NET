@@ -42,7 +42,7 @@ try {
         SELECT v.username, v.password, p.duration_value, p.duration_unit, p.quota_mb, p.rate_up, p.rate_down 
         FROM vouchers v 
         JOIN profiles p ON v.profile_id = p.id 
-        WHERE v.status != 'deleted'
+        WHERE v.status IN ('unused', 'active')
     ");
 
     $count = 0;
