@@ -328,7 +328,18 @@ function run_auto_expire_vouchers($log = null) {
     ");
     foreach ($active_v as $v) {
         $limit = duration_to_seconds($v['duration_value'], $v['duration_unit']);
-        $used = (int)(db_fetch_one("SELECT SUM(acctsessiontime) as used FROM radacct WHERE username = ?", 's', [$v['username']])['used'] ?? 0);
+        
+        // Sum closed sessions (acctsessiontime is final)
+        $used_closed = (int)(db_fetch_one("SELECT SUM(acctsessiontime) as used FROM radacct WHERE username = ? AND acctstoptime IS NOT NULL", 's', [$v['username']])['used'] ?? 0);
+        
+        // Sum currently active sessions (elapsed time)
+        $active_sessions = db_fetch_all("SELECT acctstarttime FROM radacct WHERE username = ? AND acctstoptime IS NULL", 's', [$v['username']]);
+        $used_active = 0;
+        foreach ($active_sessions as $sess) {
+            $used_active += max(0, time() - strtotime($sess['acctstarttime']));
+        }
+        
+        $used = $used_closed + $used_active;
         $remaining = $limit - $used;
 
         if ($remaining <= 0) {
