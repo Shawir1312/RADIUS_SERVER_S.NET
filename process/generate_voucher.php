@@ -105,6 +105,7 @@ try {
     $now = date('Y-m-d H:i:s');
 
     $stmt_check  = db()->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, 'Cleartext-Password', ':=', ?)");
+    $stmt_check_simul = db()->prepare("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, 'Simultaneous-Use', ':=', '1')");
     $stmt_reply1 = db()->prepare("INSERT INTO radreply (username, attribute, op, value) VALUES (?, 'Session-Timeout', ':=', ?)");
     $stmt_reply2 = db()->prepare("INSERT INTO radreply (username, attribute, op, value) VALUES (?, 'Mikrotik-Rate-Limit', '=', ?)");
     $stmt_voucher = db()->prepare(
@@ -121,6 +122,9 @@ try {
         // radcheck
         $stmt_check->bind_param('ss', $u, $p);
         $stmt_check->execute();
+
+        $stmt_check_simul->bind_param('s', $u);
+        $stmt_check_simul->execute();
 
         // radreply: Session-Timeout
         if ($duration_s > 0) {

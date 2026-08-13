@@ -52,6 +52,7 @@ try {
 
         // radcheck
         db_execute("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, 'Cleartext-Password', ':=', ?)", 'ss', [$u, $p]);
+        db_execute("INSERT INTO radcheck (username, attribute, op, value) VALUES (?, 'Simultaneous-Use', ':=', '1')", 's', [$u]);
         
         // radreply: Session-Timeout
         $dur_s = duration_to_seconds($v['duration_value'], $v['duration_unit']);
