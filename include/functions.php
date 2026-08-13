@@ -270,12 +270,42 @@ function run_auto_expire_vouchers($log = null) {
     db_execute("UPDATE vouchers SET expired_at = NULL WHERE status = 'unused' AND expired_at IS NOT NULL");
 
     // ── Fix Stale Sessions globally ──
-    db_execute("
-        UPDATE radacct ra
+    $stale_sessions = db_fetch_all("
+        SELECT ra.radacctid, ra.username, ra.nasipaddress 
+        FROM radacct ra
         JOIN vouchers v ON ra.username = v.username
-        SET ra.acctstoptime = NOW(), ra.acctterminatecause = 'Admin-Reset'
         WHERE v.status IN ('expired', 'deleted') AND ra.acctstoptime IS NULL
     ");
+    
+    if (count($stale_sessions) > 0) {
+        require_once __DIR__ . '/../lib/routeros_api.class.php';
+        foreach ($stale_sessions as $stale) {
+            $username = $stale['username'];
+            $log("Stale/ghost session found for expired voucher: {$username}. Forcing kick.");
+            
+            // Kick dari Mikrotik
+            $router = db_fetch_one("SELECT ip_address, api_user, api_password, api_port FROM routers WHERE ip_address = ? OR nas_ip = ?", 'ss', [$stale['nasipaddress'], $stale['nasipaddress']]);
+            if ($router) {
+                try {
+                    $api = new RouterosAPI();
+                    $api->debug = false;
+                    if ($api->connect($router['ip_address'], $router['api_user'], $router['api_password'], (int)$router['api_port'])) {
+                        $active_users = $api->comm("/ip/hotspot/active/print", ["?user" => $username]);
+                        foreach ($active_users as $au) {
+                            $api->comm("/ip/hotspot/active/remove", [".id" => $au['.id']]);
+                            $log("  → Kicked stale user {$username} from Mikrotik ({$router['ip_address']})");
+                        }
+                        $api->disconnect();
+                    }
+                } catch (Throwable $e) {}
+            }
+            
+            // Tutup sesi di RADIUS & pastikan dihapus dari radcheck
+            db_execute("UPDATE radacct SET acctstoptime = NOW(), acctterminatecause = 'Admin-Reset' WHERE radacctid = ?", 'i', [$stale['radacctid']]);
+            db_execute("DELETE FROM radcheck WHERE username = ?", 's', [$username]);
+            db_execute("DELETE FROM radreply WHERE username = ?", 's', [$username]);
+        }
+    }
 
     // ── Catch up missing expired_at ──
     $missing_exp = db_fetch_all("
