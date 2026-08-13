@@ -1,0 +1,13 @@
+# public/ — Halaman yang dapat diakses tanpa autentikasi
+# Digunakan oleh template hotspot Mikrotik via iframe
+
+# Pastikan PHP session aktif
+<IfModule mod_php8.c>
+    php_value session.gc_maxlifetime 1800
+</IfModule>
+
+# Izinkan CORS untuk fetch dari halaman hotspot Mikrotik
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set X-Frame-Options "ALLOWALL"
+</IfModule>
