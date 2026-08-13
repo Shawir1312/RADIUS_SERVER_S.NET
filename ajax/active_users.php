@@ -56,7 +56,7 @@ $rows = db_fetch_all(
     "SELECT ra.radacctid, ra.username, ra.nasipaddress, ra.callingstationid, ra.framedipaddress,
             ra.acctstarttime, ra.acctinputoctets, ra.acctoutputoctets,
             r.name AS router_name, v.profile_id, v.expired_at,
-            p.name AS profile,
+            p.name AS profile, p.duration_value, p.duration_unit,
             rr.value AS session_timeout
      FROM radacct ra
      LEFT JOIN routers r ON r.ip_address = ra.nasipaddress
@@ -78,10 +78,15 @@ $users = array_map(function($row) {
         $validity_text = $val <= 0 ? 'Habis' : seconds_to_human($val);
     }
     
-    if (isset($row['session_timeout']) && (int)$row['session_timeout'] > 0) {
-        $st = (int)$row['session_timeout'];
-        $spent = time() - strtotime($row['acctstarttime']);
-        $dur_rem = $st - $spent;
+    if (!empty($row['duration_value']) && $row['duration_value'] > 0) {
+        $limit = duration_to_seconds((int)$row['duration_value'], $row['duration_unit']);
+        $used_closed = (int)(db_fetch_one("SELECT SUM(acctsessiontime) as used FROM radacct WHERE username = ? AND acctstoptime IS NOT NULL", 's', [$row['username']])['used'] ?? 0);
+        $used_active = 0;
+        $active_sessions = db_fetch_all("SELECT acctstarttime FROM radacct WHERE username = ? AND acctstoptime IS NULL", 's', [$row['username']]);
+        foreach ($active_sessions as $sess) {
+            $used_active += max(0, time() - strtotime($sess['acctstarttime']));
+        }
+        $dur_rem = $limit - $used_closed - $used_active;
         $duration_text = $dur_rem <= 0 ? 'Habis' : seconds_to_human($dur_rem);
     }
     
