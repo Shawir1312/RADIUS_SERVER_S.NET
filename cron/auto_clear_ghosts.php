@@ -17,7 +17,9 @@ foreach ($routers as $router) {
     $ip = $router['ip_address'];
     $nas_ip = !empty($router['nas_ip']) && $router['nas_ip'] !== '0.0.0.0/0' ? $router['nas_ip'] : $ip;
     $api = new RouterosAPI();
-    $api->timeout = 3; // Timeout cepat agar cron tidak menggantung jika router mati
+    $api->timeout = 2; // Timeout sangat cepat
+    $api->attempts = 1; // Hanya coba 1 kali, jangan diulang-ulang agar tidak macet
+    $api->delay = 0;
     
     echo " -> Mengecek Router: {$router['name']} ($ip) ... ";
     
