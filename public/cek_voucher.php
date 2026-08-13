@@ -35,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 p.rate_up,
                 p.rate_down,
                 p.quota_mb,
-                a.full_name     AS reseller_name
+                a.full_name     AS reseller_name,
+                a.role          AS reseller_role
             FROM vouchers v
             LEFT JOIN profiles p ON v.profile_id = p.id
             LEFT JOIN admins   a ON v.generated_by = a.id
@@ -45,6 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$voucher) {
             $error = 'Voucher tidak ditemukan. Periksa kembali kode yang Anda masukkan.';
+        } else {
+            // Jika generate oleh superadmin, tampilkan nama perusahaan bukan nama personal
+            if (($voucher['reseller_role'] ?? '') === 'superadmin') {
+                $voucher['reseller_name'] = APP_COMPANY;
+            } else {
+                $voucher['reseller_name'] = $voucher['reseller_name'] ?: APP_COMPANY;
+            }
         }
     }
 }

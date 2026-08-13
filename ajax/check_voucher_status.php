@@ -22,29 +22,35 @@ try {
             v.username, 
             v.status, 
             p.name AS profile_name, 
-            a.full_name AS reseller_name
+            a.full_name AS reseller_name,
+            a.role     AS reseller_role
         FROM vouchers v
         LEFT JOIN profiles p ON v.profile_id = p.id
-        LEFT JOIN admins a ON v.generated_by = a.id
+        LEFT JOIN admins   a ON v.generated_by = a.id
         WHERE v.username = ?
     ";
     
     $voucher = db_fetch_one($sql, 's', [$username]);
 
     if ($voucher) {
-        // Return details
+        // Jika generate oleh superadmin, tampilkan nama perusahaan bukan nama personal
+        if ($voucher['reseller_role'] === 'superadmin') {
+            $reseller_display = APP_COMPANY; // dari config.php
+        } else {
+            $reseller_display = $voucher['reseller_name'] ?: APP_COMPANY;
+        }
+
         echo json_encode([
             'success'        => true,
             'username'       => $voucher['username'],
-            'status'         => $voucher['status'], // 'unused', 'active', 'expired', 'deleted'
-            'profile_name'   => $voucher['profile_name'] ?: 'Unknown Profile',
-            'reseller_name'  => $voucher['reseller_name'] ?: 'Unknown Reseller'
+            'status'         => $voucher['status'],
+            'profile_name'   => $voucher['profile_name'] ?: '-',
+            'reseller_name'  => $reseller_display,
         ]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Voucher not found']);
     }
 
 } catch (Throwable $e) {
-    // Return standard error json
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
