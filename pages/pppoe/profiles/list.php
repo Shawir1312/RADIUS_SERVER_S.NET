@@ -26,7 +26,9 @@ if ($selRouter) {
         $api = new RouterosAPI();
         $api->debug = false;
         if ($api->connect($selRouter['ip_address'], $selRouter['api_user'], $selRouter['api_password'], (int)$selRouter['api_port'])) {
-            $profs = $api->comm('/ppp/profile/print');
+            $profs = $api->comm('/ppp/profile/print', [
+                ".proplist" => ".id,name,local-address,remote-address,rate-limit,only-one,comment"
+            ]);
             foreach ($profs as $p) {
                 // Ignore default profiles if you want, but better show all
                 $profiles[] = [
