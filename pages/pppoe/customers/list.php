@@ -140,6 +140,7 @@ include __DIR__ . '/../../../include/header.php';
                     <th>Status</th>
                     <th>Username PPPoE</th>
                     <th>Nama Pelanggan</th>
+                    <th>ONT SN</th>
                     <th>Profil</th>
                     <th>Jatuh Tempo</th>
                     <th>Harga / Bln</th>
@@ -173,6 +174,13 @@ include __DIR__ . '/../../../include/header.php';
                     <div class="fw-bold"><?= htmlspecialchars($c['full_name']) ?></div>
                     <?php if ($c['phone']): ?>
                     <small class="text-muted"><i class="bi bi-telephone"></i> <?= htmlspecialchars($c['phone']) ?></small>
+                    <?php endif; ?>
+                </td>
+                <td>
+                    <?php if (!empty($c['ont_sn'])): ?>
+                        <span class="font-mono" style="font-size:12px; color:var(--bs-primary)"><?= htmlspecialchars($c['ont_sn']) ?></span>
+                    <?php else: ?>
+                        <span class="text-muted" style="font-size:12px">-</span>
                     <?php endif; ?>
                 </td>
                 <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($c['profile'] ?: '-') ?></span></td>

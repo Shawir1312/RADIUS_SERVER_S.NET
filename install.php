@@ -375,6 +375,7 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             monthly_price INT DEFAULT 0,
             due_day TINYINT DEFAULT 1,
             status ENUM('active','isolated','suspended') DEFAULT 'active',
+            ont_sn VARCHAR(50) DEFAULT '',
             isolated_at DATETIME DEFAULT NULL,
             isolated_reason VARCHAR(255) DEFAULT '',
             last_paid_at DATE DEFAULT NULL,

@@ -67,12 +67,18 @@ if ($selServer) {
 }
 
 // Ambil pelanggan PPPoE untuk pemetaan SN ke nama pelanggan
-$customers = db_fetch_all("SELECT pppoe_username, full_name, notes FROM pppoe_customers");
+$customers = db_fetch_all("SELECT pppoe_username, full_name, ont_sn FROM pppoe_customers WHERE ont_sn != ''");
 $cust_map = [];
 foreach ($customers as $c) {
-    // Karena kita belum ada kolom SN, asumsikan teknisi menulis SN di kolom notes atau kita cari kecocokan lain
-    // Idealnya di database S.NET kita punya kolom 'ont_sn'.
-    // Sementara ini kita sediakan array untuk matching. Nanti kita update databasenya.
+    // Map berdasarkan ont_sn
+    // Ubah SN jadi uppercase untuk pencocokan yang lebih aman
+    $sn_upper = strtoupper(trim($c['ont_sn']));
+    if ($sn_upper) {
+        $cust_map[$sn_upper] = [
+            'username' => $c['pppoe_username'],
+            'name' => $c['full_name']
+        ];
+    }
 }
 
 include __DIR__ . '/../../include/header.php';
@@ -157,7 +163,19 @@ include __DIR__ . '/../../include/header.php';
                     </td>
                     <td>
                         <strong class="font-mono text-primary ont-sn"><?= htmlspecialchars($d['sn']) ?></strong>
-                        <div class="small text-muted">ID: <?= htmlspecialchars($d['_id']) ?></div>
+                        <?php 
+                            $sn_upper = strtoupper(trim($d['sn']));
+                            if (isset($cust_map[$sn_upper])): 
+                                $cm = $cust_map[$sn_upper];
+                        ?>
+                            <div class="mt-1" style="font-size: 12px; color: var(--bs-purple);">
+                                <i class="bi bi-person-check-fill me-1"></i>
+                                <strong><?= htmlspecialchars($cm['name']) ?></strong> 
+                                <span class="text-muted">(<?= htmlspecialchars($cm['username']) ?>)</span>
+                            </div>
+                        <?php else: ?>
+                            <div class="small text-muted mt-1">ID: <?= htmlspecialchars($d['_id']) ?></div>
+                        <?php endif; ?>
                     </td>
                     <td>
                         <span class="badge bg-dark"><?= htmlspecialchars($d['brand'] ?: 'Unknown') ?></span>

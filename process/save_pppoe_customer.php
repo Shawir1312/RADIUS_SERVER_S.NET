@@ -20,7 +20,8 @@ $address = trim(post('address'));
 $profile = trim(post('profile'));
 $monthly_price = (int)post('monthly_price');
 $due_day = (int)post('due_day');
-$status = post('status');
+$status = post('status') ?: 'active';
+$ont_sn = trim(post('ont_sn'));
 $notes = trim(post('notes'));
 $old_username = post('old_username');
 
@@ -109,8 +110,8 @@ try {
         // UPDATE
         $sql = "UPDATE pppoe_customers SET 
                 pppoe_username = ?, full_name = ?, phone = ?, address = ?, 
-                profile = ?, monthly_price = ?, due_day = ?, status = ?, notes = ?";
-        $params = [$username, $full_name, $phone, $address, $profile, $monthly_price, $due_day, $status, $notes];
+                profile = ?, monthly_price = ?, due_day = ?, status = ?, ont_sn = ?, notes = ?";
+        $params = [$username, $full_name, $phone, $address, $profile, $monthly_price, $due_day, $status, $ont_sn, $notes];
         
         if ($status === 'isolated') {
             $sql .= ", isolated_at = NOW(), isolated_reason = 'Manual isolated'";
@@ -120,17 +121,17 @@ try {
         
         $sql .= " WHERE id = ?";
         $params[] = $id;
-        $types = "sssssiissi";
+        $types = "sssssiisssi";
         
         db_execute($sql, $types, $params);
         flash_set('success', "Pelanggan {$full_name} berhasil diubah.");
     } else {
         // INSERT
         $sql = "INSERT INTO pppoe_customers (
-            router_id, pppoe_username, full_name, phone, address, profile, monthly_price, due_day, status, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $params = [$selRid, $username, $full_name, $phone, $address, $profile, $monthly_price, $due_day, $status, $notes];
-        $types = "isssssiiss";
+            router_id, pppoe_username, full_name, phone, address, profile, monthly_price, due_day, status, ont_sn, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $params = [$selRid, $username, $full_name, $phone, $address, $profile, $monthly_price, $due_day, $status, $ont_sn, $notes];
+        $types = "isssssiisss";
         
         db_execute($sql, $types, $params);
         flash_set('success', "Pelanggan {$full_name} berhasil ditambahkan. Pass PPPoE: {$password}");

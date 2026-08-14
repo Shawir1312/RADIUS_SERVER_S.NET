@@ -165,7 +165,15 @@ include __DIR__ . '/../../../include/header.php';
                     </select>
                 </div>
 
-                <div class="col-12">
+                <div class="col-md-6">
+                    <label class="form-label">Serial Number ONT (Opsional)</label>
+                    <input type="text" class="form-control" name="ont_sn"
+                           value="<?= htmlspecialchars($customer['ont_sn'] ?? '') ?>"
+                           placeholder="Contoh: ZTEGC1234567">
+                    <div class="form-text">Isi dengan SN modem pelanggan untuk dipetakan ke menu Monitor ONT (GenieACS).</div>
+                </div>
+
+                <div class="col-md-12">
                     <label class="form-label">Alamat / Detail Pemasangan</label>
                     <textarea class="form-control" name="address" rows="2"><?= htmlspecialchars($customer['address']) ?></textarea>
                 </div>
