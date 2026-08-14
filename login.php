@@ -121,10 +121,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </small>
     </div>
 
-    <div class="text-center mt-4">
-        <small class="text-muted" style="font-size: 0.75rem;">
-            copyright@Shawir2026
-        </small>
+    <div class="text-center mt-4 mb-2">
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--bs-secondary-color); letter-spacing: 0.5px;">
+            &copy; <?= date('Y') ?> <span style="background: linear-gradient(135deg, #0b5ed7, #20c997); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Shawir</span>
+        </div>
+        <div style="font-size: 0.7rem; color: var(--bs-tertiary-color); font-weight: 500; margin-top: 2px;">
+            S.NET MANAGER &bull; All Rights Reserved
+        </div>
     </div>
 </main>
 
