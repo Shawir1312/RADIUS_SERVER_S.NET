@@ -36,25 +36,27 @@ foreach ($routers as $r) {
 
 if ($selRouter) {
     try {
-        $api = MikrotikAPI::fromRouter($selRouter);
-        if ($api->connect()) {
+        require_once __DIR__ . '/../lib/routeros_api.class.php';
+        $api = new RouterosAPI();
+        $api->debug = false;
+        if ($api->connect($selRouter['ip_address'], $selRouter['api_user'], $selRouter['api_password'], (int)$selRouter['api_port'])) {
             $cmd = [];
+            $endpoint = $id ? '/ppp/profile/set' : '/ppp/profile/add';
+            
             if ($id) {
-                $cmd[] = '/ppp/profile/set';
-                $cmd[] = '=.id=' . $id;
+                $cmd['.id'] = $id;
             } else {
-                $cmd[] = '/ppp/profile/add';
-                $cmd[] = '=name=' . $name;
+                $cmd['name'] = $name;
             }
+            
+            if ($local) $cmd['local-address'] = $local;
+            if ($remote) $cmd['remote-address'] = $remote;
+            if ($rate) $cmd['rate-limit'] = $rate;
+            if ($only_one) $cmd['only-one'] = $only_one;
+            if ($comment) $cmd['comment'] = $comment;
 
-            if ($local) $cmd[] = '=local-address=' . $local;
-            if ($remote) $cmd[] = '=remote-address=' . $remote;
-            if ($rate) $cmd[] = '=rate-limit=' . $rate;
-            if ($only_one) $cmd[] = '=only-one=' . $only_one;
-            if ($comment) $cmd[] = '=comment=' . $comment;
-
-            $api->talk($cmd);
-            $api->close();
+            $api->comm($endpoint, $cmd);
+            $api->disconnect();
 
             flash_set('success', 'Profil PPPoE berhasil disimpan ke MikroTik.');
         }

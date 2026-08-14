@@ -34,9 +34,11 @@ $profile = [
 if ($id) {
     $page_title = 'Edit Profil PPPoE';
     try {
-        $api = MikrotikAPI::fromRouter($selRouter);
-        if ($api->connect()) {
-            $profs = $api->parse($api->talk(['/ppp/profile/print', '?*=id=' . $id]));
+        require_once __DIR__ . '/../../../lib/routeros_api.class.php';
+        $api = new RouterosAPI();
+        $api->debug = false;
+        if ($api->connect($selRouter['ip_address'], $selRouter['api_user'], $selRouter['api_password'], (int)$selRouter['api_port'])) {
+            $profs = $api->comm('/ppp/profile/print', ['?.id' => $id]);
             if (!empty($profs)) {
                 $p = $profs[0];
                 $profile['id'] = $p['.id'] ?? '';
@@ -47,7 +49,7 @@ if ($id) {
                 $profile['only_one'] = $p['only-one'] ?? 'default';
                 $profile['comment'] = $p['comment'] ?? '';
             }
-            $api->close();
+            $api->disconnect();
         }
     } catch (Exception $e) {
         flash_set('error', 'Gagal memuat profil: ' . $e->getMessage());
@@ -59,13 +61,15 @@ if ($id) {
 // Get pools for dropdown
 $pools = [];
 try {
-    $api = MikrotikAPI::fromRouter($selRouter);
-    if ($api->connect()) {
-        $pls = $api->parse($api->talk(['/ip/pool/print']));
+    require_once __DIR__ . '/../../../lib/routeros_api.class.php';
+    $api = new RouterosAPI();
+    $api->debug = false;
+    if ($api->connect($selRouter['ip_address'], $selRouter['api_user'], $selRouter['api_password'], (int)$selRouter['api_port'])) {
+        $pls = $api->comm('/ip/pool/print');
         foreach ($pls as $pl) {
             $pools[] = $pl['name'];
         }
-        $api->close();
+        $api->disconnect();
     }
 } catch (Exception $e) {}
 

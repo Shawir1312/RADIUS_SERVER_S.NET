@@ -16,10 +16,12 @@ foreach ($routers as $r) {
 
 if ($selRouter && $id) {
     try {
-        $api = MikrotikAPI::fromRouter($selRouter);
-        if ($api->connect()) {
-            $api->talk(['/ppp/profile/remove', '=.id=' . $id]);
-            $api->close();
+        require_once __DIR__ . '/../../../lib/routeros_api.class.php';
+        $api = new RouterosAPI();
+        $api->debug = false;
+        if ($api->connect($selRouter['ip_address'], $selRouter['api_user'], $selRouter['api_password'], (int)$selRouter['api_port'])) {
+            $api->comm('/ppp/profile/remove', ['.id' => $id]);
+            $api->disconnect();
             flash_set('success', 'Profil PPPoE berhasil dihapus dari MikroTik.');
         }
     } catch (Exception $e) {

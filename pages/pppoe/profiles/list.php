@@ -22,9 +22,11 @@ $api_error = '';
 
 if ($selRouter) {
     try {
-        $api = MikrotikAPI::fromRouter($selRouter);
-        if ($api->connect()) {
-            $profs = $api->parse($api->talk(['/ppp/profile/print']));
+        require_once __DIR__ . '/../../../lib/routeros_api.class.php';
+        $api = new RouterosAPI();
+        $api->debug = false;
+        if ($api->connect($selRouter['ip_address'], $selRouter['api_user'], $selRouter['api_password'], (int)$selRouter['api_port'])) {
+            $profs = $api->comm('/ppp/profile/print');
             foreach ($profs as $p) {
                 // Ignore default profiles if you want, but better show all
                 $profiles[] = [
@@ -37,7 +39,9 @@ if ($selRouter) {
                     'comment'        => $p['comment'] ?? ''
                 ];
             }
-            $api->close();
+            $api->disconnect();
+        } else {
+            $api_error = 'Koneksi API ditolak (Cek kredensial router).';
         }
     } catch (Exception $e) {
         $api_error = 'Gagal terhubung ke MikroTik: ' . $e->getMessage();
