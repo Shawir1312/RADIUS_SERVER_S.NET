@@ -119,6 +119,11 @@ function nav_active(string $page, string|array $match): string {
             </a>
         </li>
         <li>
+            <a href="/index.php?page=genieacs_servers" class="nav-link <?= nav_active($current_page, ['genieacs_servers','genieacs_add','genieacs_edit']) ?>">
+                <i class="bi bi-hdd-rack"></i> Config GenieACS
+            </a>
+        </li>
+        <li>
             <a href="/index.php?page=audit_log" class="nav-link <?= nav_active($current_page, 'audit_log') ?>">
                 <i class="bi bi-journal-text"></i> Audit Log
             </a>

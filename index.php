@@ -70,6 +70,12 @@ $routes = [
     'audit_log'        => 'pages/settings/audit_log.php',
     'backup'           => 'pages/settings/backup.php',
     'settings'         => 'pages/settings/general.php',
+    
+    // GenieACS
+    'genieacs_servers' => 'pages/genieacs/servers/list.php',
+    'genieacs_add'     => 'pages/genieacs/servers/add.php',
+    'genieacs_edit'    => 'pages/genieacs/servers/edit.php',
+    'genieacs_delete'  => 'pages/genieacs/servers/delete.php',
 ];
 
 $file = $routes[$page] ?? null;
