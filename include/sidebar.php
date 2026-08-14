@@ -14,9 +14,8 @@ function nav_active(string $page, string|array $match): string {
     <!-- Brand -->
     <div class="sidebar-brand">
         <img src="/assets/img/logo.png" alt="<?= APP_COMPANY ?>">
-        <div class="sidebar-brand-text">
-            S.NET RADIUS
-            <span>Voucher Manager</span>
+        <div class="sidebar-brand-text" style="line-height:1.2; font-size:1.1rem; padding-top:4px;">
+            <?= APP_NAME ?>
         </div>
     </div>
 
