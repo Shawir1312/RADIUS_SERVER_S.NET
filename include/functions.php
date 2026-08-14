@@ -441,26 +441,26 @@ function time_elapsed_string($datetime, $full = false) {
     $ago = new DateTime($datetime);
     $diff = $now->diff($ago);
 
-    $diff->w = floor($diff->d / 7);
-    $diff->d -= $diff->w * 7;
+    $weeks = floor($diff->d / 7);
+    $days = $diff->d - ($weeks * 7);
 
     $string = array(
-        'y' => 'tahun',
-        'm' => 'bulan',
-        'w' => 'minggu',
-        'd' => 'hari',
-        'h' => 'jam',
-        'i' => 'menit',
-        's' => 'detik',
+        'y' => array('val' => $diff->y, 'label' => 'tahun'),
+        'm' => array('val' => $diff->m, 'label' => 'bulan'),
+        'w' => array('val' => $weeks, 'label' => 'minggu'),
+        'd' => array('val' => $days, 'label' => 'hari'),
+        'h' => array('val' => $diff->h, 'label' => 'jam'),
+        'i' => array('val' => $diff->i, 'label' => 'menit'),
+        's' => array('val' => $diff->s, 'label' => 'detik'),
     );
-    foreach ($string as $k => &$v) {
-        if ($diff->$k) {
-            $v = $diff->$k . ' ' . $v;
-        } else {
-            unset($string[$k]);
+    
+    $result = [];
+    foreach ($string as $k => $v) {
+        if ($v['val']) {
+            $result[] = $v['val'] . ' ' . $v['label'];
         }
     }
 
-    if (!$full) $string = array_slice($string, 0, 1);
-    return $string ? implode(', ', $string) . ' yang lalu' : 'baru saja';
+    if (!$full) $result = array_slice($result, 0, 1);
+    return $result ? implode(', ', $result) . ' yang lalu' : 'baru saja';
 }

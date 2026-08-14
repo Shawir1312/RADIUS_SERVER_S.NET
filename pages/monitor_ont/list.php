@@ -29,8 +29,9 @@ if ($selServer) {
         $api = new GenieACS($selServer['url'], $selServer['username'], $selServer['password']);
         
         // Ambil semua device
-        // Untuk query pencarian, kita bisa tambahkan filter nantinya.
-        $raw_devices = $api->getDevices();
+        // Ambil semua device dengan projection agar loading lebih cepat (tidak mengambil parameter yang tidak perlu)
+        $projection = '_id,_lastInform,_deviceId,_tags,InternetGatewayDevice.DeviceInfo,InternetGatewayDevice.WANDevice.1,VirtualParameters,InternetGatewayDevice.X_ALU_OntOpticalParam';
+        $raw_devices = $api->getDevices('{}', $projection);
         
         if ($api->error) {
             throw new Exception($api->error);
