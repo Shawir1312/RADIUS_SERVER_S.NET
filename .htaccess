@@ -1,6 +1,14 @@
 # S.NET RADIUS Manager — Apache .htaccess
 Options -Indexes -MultiViews
 
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Check if not HTTPS and not forwarded as HTTPS by proxy (like Cloudflare)
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
 # Protect sensitive directories
 <FilesMatch "^(config|lib|cron|logs)">
     Require all denied
