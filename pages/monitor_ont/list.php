@@ -49,10 +49,10 @@ if ($selServer) {
             
             $devices[] = [
                 '_id' => $dev['_id'],
-                'sn' => $info['sn'] ?: ($dev['InternetGatewayDevice']['DeviceInfo']['SerialNumber']['_value'] ?? $dev['_id']),
+                'sn' => $info['serial'] ?: ($dev['_deviceId']['_SerialNumber'] ?? $dev['_id']),
                 'brand' => $api->detectBrandName($dev),
-                'ip' => $info['ip'],
-                'mac' => $info['mac'],
+                'ip' => $info['ip_wan'] ?? '-',
+                'mac' => '-', // Mac address is usually not readily available without digging
                 'rx' => $opt['rx'] ?? '-',
                 'tx' => $opt['tx'] ?? '-',
                 'last_inform' => $dev['_lastInform'] ?? null,
