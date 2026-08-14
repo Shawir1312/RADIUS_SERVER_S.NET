@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/database.php';
 
 // Cek apakah admin sudah login (Keamanan agar tidak sembarang orang bisa mengeksekusi)
