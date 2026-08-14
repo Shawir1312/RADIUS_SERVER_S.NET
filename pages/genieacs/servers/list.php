@@ -60,6 +60,10 @@ include __DIR__ . '/../../../include/header.php';
                 </td>
                 <td>
                     <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-sm btn-outline-success btn-icon test-conn-btn" 
+                                data-id="<?= $s['id'] ?>" title="Tes Koneksi">
+                            <i class="bi bi-wifi"></i>
+                        </button>
                         <a href="/index.php?page=genieacs_edit&id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary btn-icon" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </a>
@@ -75,5 +79,44 @@ include __DIR__ . '/../../../include/header.php';
         </table>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.test-conn-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const btnEl = e.currentTarget;
+            const id = btnEl.dataset.id;
+            const originalIcon = btnEl.innerHTML;
+            
+            btnEl.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            btnEl.disabled = true;
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('id', id);
+                formData.append('csrf', getCsrf()); // Helper function from app.js
+
+                const req = await fetch('/ajax/test_genieacs.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                });
+                const res = await req.json();
+                
+                if (res.success) {
+                    toast(res.message + ` (${res.devices_count} perangkat ditemukan)`);
+                } else {
+                    alert('Error: ' + res.error);
+                }
+            } catch (err) {
+                alert('Gagal menghubungi server lokal: ' + err.message);
+            } finally {
+                btnEl.innerHTML = originalIcon;
+                btnEl.disabled = false;
+            }
+        });
+    });
+});
+</script>
 
 <?php include __DIR__ . '/../../../include/footer.php'; ?>
