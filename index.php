@@ -43,6 +43,17 @@ $routes = [
     // Monitoring
     'active_users'     => 'pages/monitoring/active.php',
     'mac_list'         => 'pages/mac/list.php',
+    // PPPoE
+    'pppoe_customers'  => 'pages/pppoe/customers/list.php',
+    'pppoe_add'        => 'pages/pppoe/customers/add.php',
+    'pppoe_edit'       => 'pages/pppoe/customers/edit.php',
+    'pppoe_delete'     => 'pages/pppoe/customers/delete.php',
+    'pppoe_profiles'   => 'pages/pppoe/profiles/list.php',
+    'pppoe_profile_add'=> 'pages/pppoe/profiles/add.php',
+    'pppoe_profile_edit'=> 'pages/pppoe/profiles/edit.php',
+    'pppoe_profile_delete'=> 'pages/pppoe/profiles/delete.php',
+    // ONT & ACS
+    'monitor_ont'      => 'pages/monitor_ont/list.php',
     // Reports
     'report_sales'     => 'pages/reports/sales.php',
     'report_usage'     => 'pages/reports/usage.php',

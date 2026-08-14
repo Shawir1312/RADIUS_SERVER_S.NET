@@ -43,6 +43,24 @@ function nav_active(string $page, string|array $match): string {
             </a>
         </li>
 
+        <!-- PPPoE & ONT -->
+        <li class="nav-label">Broadband (PPPoE)</li>
+        <li>
+            <a href="/index.php?page=pppoe_customers" class="nav-link <?= nav_active($current_page, ['pppoe_customers','pppoe_add','pppoe_edit']) ?>">
+                <i class="bi bi-people"></i> Pelanggan PPPoE
+            </a>
+        </li>
+        <li>
+            <a href="/index.php?page=pppoe_profiles" class="nav-link <?= nav_active($current_page, ['pppoe_profiles','pppoe_profile_add','pppoe_profile_edit']) ?>">
+                <i class="bi bi-box"></i> Paket PPPoE
+            </a>
+        </li>
+        <li>
+            <a href="/index.php?page=monitor_ont" class="nav-link <?= nav_active($current_page, 'monitor_ont') ?>">
+                <i class="bi bi-hdd-network"></i> Monitor ONT
+            </a>
+        </li>
+
         <!-- Vouchers -->
         <li class="nav-label">Voucher</li>
         <li>
