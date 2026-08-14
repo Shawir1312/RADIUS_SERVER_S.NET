@@ -21,11 +21,6 @@ include __DIR__ . '/../../include/header.php';
         <button class="btn btn-outline-primary btn-sm ms-2" onclick="refreshActiveUsers()">
             <i class="bi bi-arrow-clockwise me-1"></i>Refresh
         </button>
-        <?php if (is_superadmin()): ?>
-        <a href="#" onclick="return clearGhostSessions()" class="btn btn-outline-warning btn-sm ms-2">
-            <i class="bi bi-magic me-1"></i>Bersihkan Sesi Nyangkut
-        </a>
-        <?php endif; ?>
     </div>
 </div>
 
@@ -76,18 +71,6 @@ include __DIR__ . '/../../include/header.php';
 </div>
 
 <script>
-function clearGhostSessions() {
-    const router_id = document.getElementById('filter-router')?.value || '';
-    if (!router_id) {
-        alert('Mohon pilih SATU cabang/router di kotak "Filter Router" terlebih dahulu sebelum membersihkan sesi!');
-        return false;
-    }
-    if (confirm('Aksi ini akan:\n1. Mereset sesi 0 Detik (voucher dikembalikan ke Belum Terpakai).\n2. Menutup paksa sesi aktif di database (berguna jika Router mati listrik agar sisa waktu voucher tidak terpotong terus).\n\nLanjutkan pembersihan untuk cabang ini?')) {
-        window.location.href = '/process/clear_ghost_sessions.php?router_id=' + encodeURIComponent(router_id);
-    }
-    return false;
-}
-
 // Override refreshActiveUsers to use our filter
 function refreshActiveUsers() {
     const router = document.getElementById('filter-router')?.value || '';

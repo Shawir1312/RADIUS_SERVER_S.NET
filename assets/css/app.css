@@ -818,6 +818,9 @@ table.dataTable thead th { background: var(--gray-50) !important; }
   --bs-table-striped-bg: #1b1b29;
   --bs-table-hover-bg: #2b2b40;
 }
+[data-bs-theme="dark"] .table tbody tr:hover {
+  background: var(--bs-table-hover-bg) !important;
+}
 [data-bs-theme="dark"] .form-control,
 [data-bs-theme="dark"] .form-select,
 [data-bs-theme="dark"] .input-group-text {
