@@ -10,12 +10,18 @@ define('APP_COMPANY',  'PT Network Inovation Solutions');
 define('APP_URL',      '');   // e.g. https://radius.snet.id — leave empty for relative
 
 // Auto-redirect to HTTPS (Supports Apache, Nginx, and Cloudflare)
-if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
-    if (empty($_SERVER['HTTP_X_FORWARDED_PROTO']) || $_SERVER['HTTP_X_FORWARDED_PROTO'] !== 'https') {
-        $redirect_url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        header('HTTP/1.1 301 Moved Permanently');
-        header('Location: ' . $redirect_url);
-        exit;
+if (php_sapi_name() !== 'cli') {
+    if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
+        if (empty($_SERVER['HTTP_X_FORWARDED_PROTO']) || $_SERVER['HTTP_X_FORWARDED_PROTO'] !== 'https') {
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+            $uri = $_SERVER['REQUEST_URI'] ?? '';
+            if ($host) {
+                $redirect_url = 'https://' . $host . $uri;
+                header('HTTP/1.1 301 Moved Permanently');
+                header('Location: ' . $redirect_url);
+                exit;
+            }
+        }
     }
 }
 
