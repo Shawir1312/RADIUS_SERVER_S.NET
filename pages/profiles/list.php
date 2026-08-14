@@ -175,6 +175,51 @@ include __DIR__ . '/../../include/header.php';
             <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
 
             <div class="row g-3">
+                <?php if (!$is_edit): ?>
+                <div class="col-12 mb-2">
+                    <label class="form-label text-primary fw-bold"><i class="bi bi-magic me-1"></i>Isi Otomatis dari Template</label>
+                    <select class="form-select border-primary bg-primary bg-opacity-10" id="profileTemplate" onchange="applyTemplate(this.value)">
+                        <option value="">-- Pilih Template Profil (Opsional) --</option>
+                        <option value="1jam">Paket 1 Jam (Rp 2.000)</option>
+                        <option value="3jam">Paket 3 Jam (Rp 3.000)</option>
+                        <option value="5jam">Paket 5 Jam (Rp 5.000)</option>
+                        <option value="12jam">Paket 12 Jam (Rp 10.000)</option>
+                        <option value="1hari">Paket 1 Hari / 24 Jam (Rp 15.000)</option>
+                        <option value="1minggu">Paket 1 Minggu (Rp 30.000)</option>
+                        <option value="1bulan">Paket 1 Bulan (Rp 100.000)</option>
+                    </select>
+                </div>
+                <script>
+                function applyTemplate(val) {
+                    if(!val) return;
+                    const f = document.querySelector('form[action="/process/save_profile.php"]');
+                    const t = {
+                        '1jam':   {n:'1 Jam', d:'1 JAM', vv:1, vu:'days', dv:1, du:'hours', p:2000, q:0, ru:'2M', rd:'3M'},
+                        '3jam':   {n:'3 Jam', d:'3 JAM', vv:1, vu:'days', dv:3, du:'hours', p:3000, q:0, ru:'2M', rd:'3M'},
+                        '5jam':   {n:'5 Jam', d:'5 JAM', vv:1, vu:'days', dv:5, du:'hours', p:5000, q:0, ru:'2M', rd:'3M'},
+                        '12jam':  {n:'12 Jam', d:'12 JAM', vv:1, vu:'days', dv:12, du:'hours', p:10000, q:0, ru:'2M', rd:'3M'},
+                        '1hari':  {n:'1 Hari', d:'1 HARI', vv:1, vu:'days', dv:24, du:'hours', p:15000, q:0, ru:'2M', rd:'3M'},
+                        '1minggu':{n:'1 Minggu', d:'1 MINGGU', vv:7, vu:'days', dv:7, du:'days', p:30000, q:0, ru:'2M', rd:'3M'},
+                        '1bulan': {n:'1 Bulan', d:'1 BULAN', vv:30, vu:'days', dv:30, du:'days', p:100000, q:0, ru:'2M', rd:'3M'}
+                    }[val];
+                    
+                    if(t) {
+                        f.querySelector('[name="name"]').value = t.n;
+                        f.querySelector('[name="display_name"]').value = t.d;
+                        f.querySelector('[name="validity_value"]').value = t.vv;
+                        f.querySelector('[name="validity_unit"]').value = t.vu;
+                        f.querySelector('[name="duration_value"]').value = t.dv;
+                        f.querySelector('[name="duration_unit"]').value = t.du;
+                        f.querySelector('[name="price"]').value = t.p;
+                        f.querySelector('[name="quota_mb"]').value = t.q;
+                        f.querySelector('[name="rate_up"]').value = t.ru;
+                        f.querySelector('[name="rate_down"]').value = t.rd;
+                        f.querySelector('[name="reseller_percent"]').value = 20;
+                    }
+                }
+                </script>
+                <?php endif; ?>
+
                 <div class="col-md-6">
                     <label class="form-label">Nama Profil <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="name" required
