@@ -21,6 +21,7 @@ include __DIR__ . '/../../include/header.php';
   --mac-card-bg:#fff;--mac-card-border:var(--mac-g200);
 }
 [data-bs-theme="dark"] {
+  --mac-blue-d: #60A5FA;
   --mac-g50:#151521;--mac-g100:#1b1b29;--mac-g200:#2b2b40;--mac-g300:#323248;
   --mac-g400:#5e6278;--mac-g500:#a1a5b7;--mac-g600:#e4e6ef;--mac-g700:#e4e6ef;--mac-g900:#ffffff;
   --mac-card-bg:#1e1e2d;--mac-card-border:#2b2b40;
@@ -63,6 +64,7 @@ include __DIR__ . '/../../include/header.php';
   background-image:url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='11' cy='11' r='7' stroke='%238A95B8' stroke-width='2'/%3E%3Cpath d='M16 16l4 4' stroke='%238A95B8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:14px center}
 .mac-search-input:focus{border-color:var(--mac-blue);box-shadow:0 0 0 3px rgba(27,63,166,.08)}
+[data-bs-theme="dark"] .mac-search-input:focus{background:#1e1e2d}
 .mac-search-input::placeholder{color:var(--mac-g400)}
 
 /* ── BINDING CARDS ── */
@@ -148,6 +150,7 @@ include __DIR__ . '/../../include/header.php';
 .mac-field label{display:block;font-size:.75rem;font-weight:700;color:var(--mac-g600);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
 .mac-field input{width:100%;padding:14px 16px;border:1.5px solid var(--mac-g200);border-radius:12px;font-family:inherit;font-size:1.05rem;color:var(--mac-g700);background:var(--mac-g50);outline:none;transition:.2s}
 .mac-field input:focus{border-color:var(--mac-blue);background:#fff;box-shadow:0 0 0 3px rgba(27,63,166,.08)}
+[data-bs-theme="dark"] .mac-field input:focus{background:#1e1e2d}
 .mac-field .hint{font-size:.75rem;color:var(--mac-g400);margin-top:6px;line-height:1.4}
 
 .del-info{background:var(--mac-g50);border:1px solid var(--mac-g200);border-radius:12px;padding:16px;margin:10px 0}
