@@ -20,6 +20,11 @@ include __DIR__ . '/../../include/header.php';
   --mac-g400:#8A95B8;--mac-g500:#6270A0;--mac-g600:#5A6490;--mac-g700:#3A4468;--mac-g900:#1A2040;
   --mac-card-bg:#fff;--mac-card-border:var(--mac-g200);
 }
+[data-bs-theme="dark"] {
+  --mac-g50:#151521;--mac-g100:#1b1b29;--mac-g200:#2b2b40;--mac-g300:#323248;
+  --mac-g400:#5e6278;--mac-g500:#a1a5b7;--mac-g600:#e4e6ef;--mac-g700:#e4e6ef;--mac-g900:#ffffff;
+  --mac-card-bg:#1e1e2d;--mac-card-border:#2b2b40;
+}
 
 .mac-main {
     max-width: 900px;
@@ -84,6 +89,13 @@ include __DIR__ . '/../../include/header.php';
 .bind-badge.aktif{background:#DCFCE7;color:#15803D}
 .bind-badge.nonaktif{background:#FEE2E2;color:var(--mac-red)}
 .bind-badge.bypass{background:#DBEAFE;color:#1D4ED8}
+.bind-badge.statik{background:#F0FDF4;color:#166534}
+.bind-badge.blum-statik{background:#FEF2F2;color:#991B1B}
+[data-bs-theme="dark"] .bind-badge.aktif{background:rgba(21,128,61,.2);color:#4ADE80}
+[data-bs-theme="dark"] .bind-badge.nonaktif{background:rgba(212,43,43,.2);color:#F87171}
+[data-bs-theme="dark"] .bind-badge.bypass{background:rgba(29,78,216,.2);color:#60A5FA}
+[data-bs-theme="dark"] .bind-badge.statik{background:rgba(21,128,61,.2);color:#4ADE80}
+[data-bs-theme="dark"] .bind-badge.blum-statik{background:rgba(212,43,43,.2);color:#F87171}
 .bind-badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
 
 /* ── ACTION BUTTONS ── */
@@ -97,6 +109,8 @@ include __DIR__ . '/../../include/header.php';
 .bind-actions .act-btn:first-child{border-right:1px solid var(--mac-g100)}
 .bind-actions .act-btn.edit-btn:hover{background:#EFF6FF;color:var(--mac-blue)}
 .bind-actions .act-btn.del-btn:hover{background:#FEF2F2;color:var(--mac-red)}
+[data-bs-theme="dark"] .bind-actions .act-btn.edit-btn:hover{background:rgba(27,63,166,.15);color:#60A5FA}
+[data-bs-theme="dark"] .bind-actions .act-btn.del-btn:hover{background:rgba(212,43,43,.15);color:#F87171}
 
 /* ── STATES ── */
 .mac-state-box{text-align:center;padding:60px 20px;color:var(--mac-g400);background:var(--mac-card-bg);border-radius:14px;border:1px dashed var(--mac-card-border)}
@@ -319,8 +333,8 @@ function renderCards(data) {
               : '<span class="bind-badge aktif"><span class="bind-badge-dot"></span> AKTIF</span>'
             }
             ${b.is_static
-              ? '<span class="bind-badge" style="background:#F0FDF4;color:#166534;"><span class="bind-badge-dot"></span> STATIK</span>'
-              : '<span class="bind-badge" style="background:#FEF2F2;color:#991B1B;"><span class="bind-badge-dot"></span> BLUM STATIK</span>'
+              ? '<span class="bind-badge statik"><span class="bind-badge-dot"></span> STATIK</span>'
+              : '<span class="bind-badge blum-statik"><span class="bind-badge-dot"></span> BLUM STATIK</span>'
             }
           </div>
         </div>
