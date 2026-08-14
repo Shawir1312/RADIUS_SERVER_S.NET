@@ -104,12 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await req.json();
                 
                 if (res.success) {
-                    toast(res.message + ` (${res.devices_count} perangkat ditemukan)`);
+                    showToast(res.message + ` (${res.devices_count} perangkat ditemukan)`, 'success');
                 } else {
-                    alert('Error: ' + res.error);
+                    showToast('Error: ' + res.error, 'error');
                 }
             } catch (err) {
-                alert('Gagal menghubungi server lokal: ' + err.message);
+                showToast('Gagal menghubungi server lokal: ' + err.message, 'error');
             } finally {
                 btnEl.innerHTML = originalIcon;
                 btnEl.disabled = false;
