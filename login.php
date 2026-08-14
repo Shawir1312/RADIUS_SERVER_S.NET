@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content="S.NET, S.NET LUSUO, S.NET MOROTAI, SNET MANAGER, WIFI, HOTSPOT">
+    <meta name="keywords" content="S.NET, S.NET LUSUO, S.NET MOROTAI, SNET MANAGER, WIFI, HOTSPOT, snet manager, snet desa lusuo, snet lusuo, snet morotai, snet wifi, wifi snet, wifi morotai, snet manger, aplikasi snet, s.net manager, s.net desa lusuo, s.net wifi, wifi s.net, aplikasi s.net">
     <meta name="description" content="APLIKASI S.NET MANAGER, ALAMAT : PULAU MOROTAI, MOROTAI UTARA DESA LUSUO">
     <meta name="author" content="S.NET">
     <meta name="robots" content="index, follow">
