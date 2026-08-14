@@ -120,6 +120,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Belum setup? <a href="/install.php" style="color: #0b5ed7; font-weight: 500;">Klik di sini untuk instalasi</a>
         </small>
     </div>
+
+    <div class="text-center mt-4">
+        <small class="text-muted" style="font-size: 0.75rem;">
+            copyright@Shawir2026
+        </small>
+    </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
