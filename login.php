@@ -63,15 +63,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="login-body">
 
-<button type="button" class="btn btn-outline-secondary theme-toggle theme-toggle-login" title="Ganti Tema">
+<button type="button" class="btn btn-outline-secondary theme-toggle theme-toggle-login" title="Ganti Tema" aria-label="Ganti Tema">
     <i class="bi bi-moon-fill dark-icon d-none"></i>
     <i class="bi bi-sun-fill light-icon"></i>
 </button>
 
-<div class="login-card">
+<main class="login-card">
     <!-- Logo -->
     <div class="login-logo">
-        <img src="/assets/img/logo.png" alt="<?= APP_COMPANY ?>">
+        <img src="/assets/img/logo.png" alt="<?= APP_COMPANY ?>" width="178" height="56">
         <h5><?= APP_NAME ?></h5>
         <p><?= APP_COMPANY ?></p>
     </div>
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="input-group">
                 <input type="password" class="form-control" id="password" name="password"
                        placeholder="Masukkan password" required>
-                <button class="btn btn-outline-secondary" type="button" id="togglePwd" tabindex="-1">
+                <button class="btn btn-outline-secondary" type="button" id="togglePwd" tabindex="-1" aria-label="Tampilkan password">
                     <i class="bi bi-eye" id="eyeIcon"></i>
                 </button>
             </div>
@@ -117,10 +117,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="text-center mt-3">
         <small class="text-muted">
-            Belum setup? <a href="/install.php">Klik di sini untuk instalasi</a>
+            Belum setup? <a href="/install.php" style="color: #0b5ed7; font-weight: 500;">Klik di sini untuk instalasi</a>
         </small>
     </div>
-</div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/app.js?v=<?= filemtime(__DIR__ . '/assets/js/app.js') ?>"></script>
