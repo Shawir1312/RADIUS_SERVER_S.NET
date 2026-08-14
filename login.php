@@ -40,6 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="S.NET, S.NET LUSUO, S.NET MOROTAI, SNET MANAGER, WIFI, HOTSPOT">
+    <meta name="description" content="APLIKASI S.NET MANAGER, ALAMAT : PULAU MOROTAI, MOROTAI UTARA DESA LUSUO">
+    <meta name="author" content="S.NET">
+    <meta name="robots" content="index, follow">
     <title>Login — <?= APP_NAME ?></title>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">

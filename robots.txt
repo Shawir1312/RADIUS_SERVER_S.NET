@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://snetwork.online/sitemap.xml
