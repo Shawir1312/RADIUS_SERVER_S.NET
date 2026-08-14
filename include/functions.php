@@ -416,3 +416,18 @@ function run_auto_expire_vouchers($log = null) {
         $log("Error auto-deleting old vouchers: " . $e->getMessage());
     }
 }
+
+/**
+ * Verify CSRF Token
+ */
+function csrf_verify() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    $token = $_POST['csrf'] ?? $_GET['csrf'] ?? '';
+    if (empty($token) || $token !== ($_SESSION['csrf_token'] ?? '')) {
+        flash_set('error', 'Invalid CSRF token.');
+        header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? '/index.php'));
+        exit;
+    }
+}
