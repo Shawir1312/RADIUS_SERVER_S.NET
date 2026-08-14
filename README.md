@@ -1,4 +1,4 @@
-# S.NET RADIUS Hotspot Voucher Management System
+# S.NET RADIUS MANAGER
 
 **PT Network Inovation Solutions**  
 RADIUS-based WiFi Hotspot Voucher Manager — PHP Native, Multi-Router
