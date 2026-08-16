@@ -464,3 +464,15 @@ function time_elapsed_string($datetime, $full = false) {
     if (!$full) $result = array_slice($result, 0, 1);
     return $result ? implode(', ', $result) . ' yang lalu' : 'baru saja';
 }
+
+// Helper for V1 Portal Migration
+if (!function_exists('h')) {
+    function h($str) {
+        return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
+    }
+}
+if (!function_exists('csrfField')) {
+    function csrfField() {
+        return '<input type="hidden" name="csrf" value="' . ($_SESSION['csrf_token'] ?? '') . '">';
+    }
+}
