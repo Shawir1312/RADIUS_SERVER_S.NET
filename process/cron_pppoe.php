@@ -28,12 +28,11 @@ echo "[" . date('Y-m-d H:i:s') . "] Memulai pengecekan auto-isolir...\n";
 echo "Grace days: $grace | Hari ini: $todayDate | Profil isolir: $isoProfile\n";
 
 function check_payment($customer_id, $month, $year) {
-    global $conn;
-    $stmt = $conn->prepare("SELECT COUNT(*) as c FROM pppoe_payments WHERE customer_id = ? AND period_month = ? AND period_year = ? AND midtrans_status NOT IN ('pending','cancel','deny','expire')");
-    $stmt->bind_param("iii", $customer_id, $month, $year);
-    $stmt->execute();
-    $res = $stmt->get_result()->fetch_assoc();
-    return (int)$res['c'] > 0;
+    $res = db_fetch_one(
+        "SELECT COUNT(*) as c FROM pppoe_payments WHERE customer_id = ? AND period_month = ? AND period_year = ? AND midtrans_status NOT IN ('pending','cancel','deny','expire')",
+        'iii', [$customer_id, $month, $year]
+    );
+    return $res && (int)$res['c'] > 0;
 }
 
 $routers = db_fetch_all("SELECT * FROM routers WHERE status = 'active'");
