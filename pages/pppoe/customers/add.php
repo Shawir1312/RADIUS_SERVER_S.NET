@@ -23,6 +23,7 @@ $customer = [
     'monthly_price' => '',
     'due_day' => '1',
     'status' => 'active',
+    'portal_username' => '',
     'notes' => ''
 ];
 
@@ -108,6 +109,21 @@ include __DIR__ . '/../../../include/header.php';
                     <input type="text" class="form-control" name="pppoe_password" <?= !$is_edit ? 'required' : '' ?>
                            value="<?= htmlspecialchars($mikrotik_password) ?>"
                            placeholder="<?= $is_edit ? '(Kosongkan jika tidak ingin diubah)' : 'Password' ?>">
+                           <small class="text-muted">Untuk dial-up MikroTik.</small>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Username Portal</label>
+                    <input type="text" class="form-control" name="portal_username"
+                           value="<?= htmlspecialchars($customer['portal_username'] ?? '') ?>"
+                           placeholder="Kosongkan jika tidak butuh akses portal">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Password Portal</label>
+                    <input type="text" class="form-control" name="portal_password"
+                           placeholder="<?= $is_edit ? '(Kosongkan jika tidak ingin diubah)' : 'Password Portal' ?>">
+                           <small class="text-muted">Kredensial pelanggan untuk login ke /portal.</small>
                 </div>
 
                 <div class="col-md-6">

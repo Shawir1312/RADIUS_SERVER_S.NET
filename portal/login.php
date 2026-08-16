@@ -39,15 +39,15 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     if($maintenanceMode){$err='Portal sedang dalam maintenance. Silakan coba beberapa saat lagi.';}
     $cid=trim($_POST['customer_id']??'');$pw=$_POST['password']??'';
     if($cid&&$pw){
-        $c = db_fetch_one("SELECT * FROM pppoe_customers WHERE LOWER(pppoe_username)=LOWER(?) AND status='active'", 's', [$cid]);
+        $c = db_fetch_one("SELECT * FROM pppoe_customers WHERE LOWER(portal_username)=LOWER(?) AND status='active'", 's', [$cid]);
         if($c&&!empty($c['portal_password'])&&password_verify($pw,$c['portal_password'])){
             session_regenerate_id(true);
             $_SESSION['portal_customer_id']=$c['id'];
-            $_SESSION['portal_username']=$c['pppoe_username'];
+            $_SESSION['portal_username']=$c['portal_username'];
             $_SESSION['portal_name']=$c['full_name'];
             header('Location: index.php');exit;
         } else {
-            $err='Username PPPoE atau password salah, atau belum diset!';
+            $err='Username Portal atau password salah, atau belum diset!';
         }
     } else {$err='Harap isi Username dan password!';}
 }
@@ -155,8 +155,9 @@ input.cid{font-family:'JetBrains Mono',monospace;font-size:1rem;letter-spacing:2
         <?php if($err):?><div class="err">⚠️ <?=h($err)?></div><?php endif;?>
         <form method="POST">
             <?=csrfField()?>
-            <div class="fg"><label class="fl">Username PPPoE</label>
-                <input type="text" name="customer_id" id="customer_id" class="fc cid" placeholder="Masukkan Username PPPoE Anda" required autocomplete="username" autofocus value="<?=h($_POST['customer_id']??'')?>">
+            <div class="fg">
+                <label class="fl">Username Portal</label>
+                <input type="text" name="customer_id" class="fc" placeholder="Masukkan Username Portal" required autocomplete="username" autofocus value="<?=h($_POST['customer_id']??'')?>">
             </div>
             <div class="fg"><label class="fl">Password</label>
                 <input type="password" name="password" class="fc" placeholder="••••••••" required autocomplete="current-password">
