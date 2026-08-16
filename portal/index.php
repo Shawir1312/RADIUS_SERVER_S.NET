@@ -213,7 +213,7 @@ body{font-family:'Exo 2',sans-serif;min-height:100vh;background:var(--g50);color
     <?php if($logo):?><img src="<?=$logo?>" alt="S.NET" class="h-logo"><?php endif;?>
     <div style="flex:1;min-width:0">
         <div class="h-n"><?=h($custRow['full_name'])?></div>
-        <div class="h-id"><?=h($cust['customer_id'])?></div>
+        <div class="h-id"><?=h($custRow['pppoe_username'])?></div>
     </div>
     <a href="/portal/logout.php" class="h-lo">⏻ Keluar</a>
 </header>
