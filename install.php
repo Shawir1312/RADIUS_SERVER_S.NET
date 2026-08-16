@@ -368,6 +368,7 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             id INT AUTO_INCREMENT PRIMARY KEY,
             router_id INT NOT NULL,
             pppoe_username VARCHAR(100) NOT NULL,
+            portal_password VARCHAR(255) DEFAULT '',
             full_name VARCHAR(150) NOT NULL DEFAULT '',
             phone VARCHAR(25) DEFAULT '',
             address TEXT,

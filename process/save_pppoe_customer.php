@@ -112,6 +112,13 @@ try {
                 pppoe_username = ?, full_name = ?, phone = ?, address = ?, 
                 profile = ?, monthly_price = ?, due_day = ?, status = ?, ont_sn = ?, notes = ?";
         $params = [$username, $full_name, $phone, $address, $profile, $monthly_price, $due_day, $status, $ont_sn, $notes];
+        $types = "sssssiisss";
+        
+        if ($password !== '') {
+            $sql .= ", portal_password = ?";
+            $params[] = password_hash($password, PASSWORD_DEFAULT);
+            $types .= "s";
+        }
         
         if ($status === 'isolated') {
             $sql .= ", isolated_at = NOW(), isolated_reason = 'Manual isolated'";
@@ -121,17 +128,17 @@ try {
         
         $sql .= " WHERE id = ?";
         $params[] = $id;
-        $types = "sssssiisssi";
+        $types .= "i";
         
         db_execute($sql, $types, $params);
         flash_set('success', "Pelanggan {$full_name} berhasil diubah.");
     } else {
         // INSERT
         $sql = "INSERT INTO pppoe_customers (
-            router_id, pppoe_username, full_name, phone, address, profile, monthly_price, due_day, status, ont_sn, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $params = [$selRid, $username, $full_name, $phone, $address, $profile, $monthly_price, $due_day, $status, $ont_sn, $notes];
-        $types = "isssssiisss";
+            router_id, pppoe_username, portal_password, full_name, phone, address, profile, monthly_price, due_day, status, ont_sn, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $params = [$selRid, $username, password_hash($password, PASSWORD_DEFAULT), $full_name, $phone, $address, $profile, $monthly_price, $due_day, $status, $ont_sn, $notes];
+        $types = "issssssiisss";
         
         db_execute($sql, $types, $params);
         flash_set('success', "Pelanggan {$full_name} berhasil ditambahkan. Pass PPPoE: {$password}");
