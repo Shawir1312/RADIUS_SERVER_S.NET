@@ -4,6 +4,7 @@ define('IN_APP',true);
 require_once __DIR__.'/../config/config.php';
 require_once __DIR__.'/../config/database.php';
 require_once __DIR__.'/../include/functions.php';
+if(empty($_SESSION['csrf_token'])){ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); }
 if(isset($_SESSION['portal_customer_id'])){header('Location: index.php');exit;}
 // ── Baca pengumuman aktif dari DB ─────────────────────────────────
 $announcements=[];$maintenanceMode=false;$maintenanceMsg=null;
