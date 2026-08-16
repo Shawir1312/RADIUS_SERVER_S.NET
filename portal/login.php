@@ -53,7 +53,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 }
 if(isset($_GET['err'])&&$_GET['err']==='disabled')$err='Akun Anda tidak aktif. Hubungi admin S.NET.';
 $_csrf=$_SESSION['csrf_token'] ?? '';
-$logo='';
+$logo=logoB64();
 ?>
 <!DOCTYPE html>
 <html lang="id">

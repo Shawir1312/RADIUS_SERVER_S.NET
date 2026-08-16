@@ -116,7 +116,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     }
 }
 
-$logo='';
+$logo=logoB64();
 ?>
 <!DOCTYPE html>
 <html lang="id">

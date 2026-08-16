@@ -476,3 +476,10 @@ if (!function_exists('csrfField')) {
         return '<input type="hidden" name="csrf" value="' . ($_SESSION['csrf_token'] ?? '') . '">';
     }
 }
+
+if (!function_exists('logoB64')) {
+    function logoB64() {
+        $p = __DIR__ . '/../assets/img/logo.png';
+        return file_exists($p) ? 'data:image/png;base64,' . base64_encode(file_get_contents($p)) : '';
+    }
+}
