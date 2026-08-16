@@ -40,7 +40,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     if($maintenanceMode){$err='Portal sedang dalam maintenance. Silakan coba beberapa saat lagi.';}
     $cid=trim($_POST['customer_id']??'');$pw=$_POST['password']??'';
     if($cid&&$pw){
-        $c = db_fetch_one("SELECT * FROM pppoe_customers WHERE LOWER(portal_username)=LOWER(?) AND status='active'", 's', [$cid]);
+        $c = db_fetch_one("SELECT * FROM pppoe_customers WHERE LOWER(portal_username)=LOWER(?) AND status IN ('active', 'isolated')", 's', [$cid]);
         if($c&&!empty($c['portal_password'])&&password_verify($pw,$c['portal_password'])){
             session_regenerate_id(true);
             $_SESSION['portal_customer_id']=$c['id'];

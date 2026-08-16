@@ -13,7 +13,7 @@ $msg='';$mtype='ok';
 
 $custRow = db_fetch_one("SELECT * FROM pppoe_customers WHERE id=?", 'i', [$cid]);
 if(!$custRow){session_destroy();header('Location: login.php');exit;}
-if($custRow['status'] !== 'active'){session_destroy();header('Location: login.php?err=disabled');exit;}
+if(!in_array($custRow['status'], ['active', 'isolated'])){session_destroy();header('Location: login.php?err=disabled');exit;}
 
 $genie_server = db_fetch_one("SELECT * FROM genie_config LIMIT 1");
 $genie = null;
