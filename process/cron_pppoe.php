@@ -36,7 +36,7 @@ function check_payment($customer_id, $month, $year) {
     return (int)$res['c'] > 0;
 }
 
-$routers = db_fetch_all("SELECT * FROM routers WHERE is_active = 1");
+$routers = db_fetch_all("SELECT * FROM routers WHERE status = 'active'");
 $router_apis = [];
 
 $genie_server = db_fetch_one("SELECT * FROM genie_config LIMIT 1");
