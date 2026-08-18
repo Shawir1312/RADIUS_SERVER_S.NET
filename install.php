@@ -12,6 +12,10 @@ define('APP_COMPANY', 'PT Network Inovation Solutions');
 define('APP_TIMEZONE', 'Asia/Jayapura');
 date_default_timezone_set(APP_TIMEZONE);
 
+if (!is_dir(CONFIG_PATH)) {
+    @mkdir(CONFIG_PATH, 0775, true);
+}
+
 if (file_exists(CONFIG_PATH . '/.installed')) {
     die('<div style="font-family:sans-serif;text-align:center;padding:60px;color:#1565C0;">
         <h2>✓ Sudah Terinstal</h2>
@@ -562,9 +566,10 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
     <!-- Step 2: Create Tables -->
     <h6 class="fw-700 mb-3"><i class="bi bi-table me-2 text-blue"></i>Buat Tabel Database</h6>
     <p class="text-muted">Klik tombol di bawah untuk membuat semua tabel yang diperlukan (FreeRADIUS + aplikasi).</p>
-    <div class="bg-light rounded p-3 mb-3" style="font-size:.75rem;font-family:monospace;">
-        radcheck, radreply, radgroupcheck, radgroupreply, radusergroup,<br>
-        radacct, nas, routers, profiles, vouchers, admins, audit_log, sales_log, penagihan
+    <div class="bg-light rounded p-3 mb-3" style="font-size:.75rem;font-family:monospace;line-height:1.6;">
+        <b>FreeRADIUS:</b> radcheck, radreply, radgroupcheck, radgroupreply, radusergroup, radacct, radpostauth, nas<br>
+        <b>Hotspot:</b> routers, profiles, vouchers, admins, audit_log, sales_log, penagihan<br>
+        <b>Broadband &amp; ACS:</b> genie_config, customers, ont_configs, pppoe_customers, pppoe_payments, pppoe_settings
     </div>
     <form method="POST" action="/install.php?step=4">
         <button class="btn btn-primary w-100">Buat Tabel <i class="bi bi-arrow-right ms-2"></i></button>
