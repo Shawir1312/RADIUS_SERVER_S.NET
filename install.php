@@ -131,8 +131,18 @@ if ($step === 2 && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($conn->connect_error) throw new Exception($conn->connect_error);
         $conn->set_charset('utf8mb4');
 
-        // Save to session
+        // Save to session & write db_local.php immediately
         $_SESSION['install_db'] = compact('db_host','db_user','db_pass','db_name','db_port');
+
+        $env = "<?php\n"
+            . "define('DB_HOST', '" . addslashes($db_host) . "');\n"
+            . "define('DB_USER', '" . addslashes($db_user) . "');\n"
+            . "define('DB_PASS', '" . addslashes($db_pass) . "');\n"
+            . "define('DB_NAME', '" . addslashes($db_name) . "');\n"
+            . "define('DB_PORT', " . (int)$db_port . ");\n"
+            . "define('DB_CHARSET', 'utf8mb4');\n";
+        @file_put_contents(CONFIG_PATH . '/db_local.php', $env);
+
         $success[] = 'Koneksi database berhasil!';
         $step = 3;
     } catch (Exception $e) {
@@ -142,10 +152,31 @@ if ($step === 2 && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Step 2: Create Tables ───────────────────────────────
-if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['install_db'])) {
-    $dbc = $_SESSION['install_db'];
-    $conn = new mysqli($dbc['db_host'], $dbc['db_user'], $dbc['db_pass'], $dbc['db_name'], $dbc['db_port']);
-    $conn->set_charset('utf8mb4');
+if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $dbc = $_SESSION['install_db'] ?? null;
+    if (!$dbc && file_exists(CONFIG_PATH . '/db_local.php')) {
+        @include CONFIG_PATH . '/db_local.php';
+        if (defined('DB_HOST')) {
+            $dbc = [
+                'db_host' => DB_HOST,
+                'db_user' => DB_USER,
+                'db_pass' => DB_PASS,
+                'db_name' => DB_NAME,
+                'db_port' => DB_PORT
+            ];
+            $_SESSION['install_db'] = $dbc;
+        }
+    }
+
+    if (!$dbc) {
+        $errors[] = 'Data koneksi database belum tersedia. Silakan masukkan data database kembali.';
+        $step = 1;
+    } else {
+        try {
+            $conn = new mysqli($dbc['db_host'], $dbc['db_user'], $dbc['db_pass'], $dbc['db_name'], $dbc['db_port']);
+            if ($conn->connect_error) throw new Exception($conn->connect_error);
+            $conn->set_charset('utf8mb4');
+            $conn->query("SET FOREIGN_KEY_CHECKS = 0");
 
     $sqls = [
         // FreeRADIUS standard tables
@@ -495,31 +526,55 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             ('company_address', '')"
     ];
 
-    $failed = false;
-    foreach ($sqls as $sql) {
-        if (!$conn->query($sql)) {
-            $errors[] = 'SQL Error: ' . $conn->error;
-            $failed = true;
-            break;
-        }
-    }
+            $failed = false;
+            foreach ($sqls as $sql) {
+                if (!$conn->query($sql)) {
+                    $errors[] = 'SQL Error: ' . $conn->error;
+                    $failed = true;
+                    break;
+                }
+            }
+            $conn->query("SET FOREIGN_KEY_CHECKS = 1");
 
-    if (!$failed) {
-        $success[] = 'Semua tabel berhasil dibuat!';
-        $step = 5;
-    } else {
-        $step = 4;
+            if (!$failed) {
+                $success[] = 'Semua 20 tabel berhasil dibuat!';
+                $step = 5;
+            } else {
+                $step = 4;
+            }
+        } catch (Exception $e) {
+            $errors[] = 'Gagal membuat tabel: ' . $e->getMessage();
+            $step = 4;
+        }
     }
 }
 
 // ── Step 3: Create first admin ──────────────────────────
-if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['install_db'])) {
+if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $dbc = $_SESSION['install_db'] ?? null;
+    if (!$dbc && file_exists(CONFIG_PATH . '/db_local.php')) {
+        @include CONFIG_PATH . '/db_local.php';
+        if (defined('DB_HOST')) {
+            $dbc = [
+                'db_host' => DB_HOST,
+                'db_user' => DB_USER,
+                'db_pass' => DB_PASS,
+                'db_name' => DB_NAME,
+                'db_port' => DB_PORT
+            ];
+            $_SESSION['install_db'] = $dbc;
+        }
+    }
+
     $adm_user = trim($_POST['adm_user'] ?? '');
     $adm_name = trim($_POST['adm_name'] ?? '');
     $adm_pass = $_POST['adm_pass'] ?? '';
     $adm_pass2 = $_POST['adm_pass2'] ?? '';
 
-    if (!$adm_user || !$adm_pass) {
+    if (!$dbc) {
+        $errors[] = 'Data koneksi database belum tersedia. Silakan masukkan data database kembali.';
+        $step = 1;
+    } elseif (!$adm_user || !$adm_pass) {
         $errors[] = 'Username dan password admin wajib diisi.';
         $step = 6;
     } elseif ($adm_pass !== $adm_pass2) {
@@ -529,31 +584,36 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
         $errors[] = 'Password minimal 6 karakter.';
         $step = 6;
     } else {
-        $dbc = $_SESSION['install_db'];
-        $conn = new mysqli($dbc['db_host'], $dbc['db_user'], $dbc['db_pass'], $dbc['db_name'], $dbc['db_port']);
-        $conn->set_charset('utf8mb4');
-        $hash = password_hash($adm_pass, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("INSERT INTO admins (username, password, full_name, role) VALUES (?,?,?,'superadmin') ON DUPLICATE KEY UPDATE password=VALUES(password), full_name=VALUES(full_name), role='superadmin'");
-        $stmt->bind_param('sss', $adm_user, $hash, $adm_name);
-        if ($stmt->execute()) {
-            // Write config
-            $env = "<?php\n"
-                . "define('DB_HOST', '" . addslashes($dbc['db_host']) . "');\n"
-                . "define('DB_USER', '" . addslashes($dbc['db_user']) . "');\n"
-                . "define('DB_PASS', '" . addslashes($dbc['db_pass']) . "');\n"
-                . "define('DB_NAME', '" . addslashes($dbc['db_name']) . "');\n"
-                . "define('DB_PORT', " . (int)$dbc['db_port'] . ");\n"
-                . "define('DB_CHARSET', 'utf8mb4');\n";
-            file_put_contents(CONFIG_PATH . '/db_local.php', $env);
-            touch(CONFIG_PATH . '/.installed');
+        try {
+            $conn = new mysqli($dbc['db_host'], $dbc['db_user'], $dbc['db_pass'], $dbc['db_name'], $dbc['db_port']);
+            if ($conn->connect_error) throw new Exception($conn->connect_error);
+            $conn->set_charset('utf8mb4');
+            $hash = password_hash($adm_pass, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare("INSERT INTO admins (username, password, full_name, role) VALUES (?,?,?,'superadmin') ON DUPLICATE KEY UPDATE password=VALUES(password), full_name=VALUES(full_name), role='superadmin'");
+            $stmt->bind_param('sss', $adm_user, $hash, $adm_name);
+            if ($stmt->execute()) {
+                // Write config
+                $env = "<?php\n"
+                    . "define('DB_HOST', '" . addslashes($dbc['db_host']) . "');\n"
+                    . "define('DB_USER', '" . addslashes($dbc['db_user']) . "');\n"
+                    . "define('DB_PASS', '" . addslashes($dbc['db_pass']) . "');\n"
+                    . "define('DB_NAME', '" . addslashes($dbc['db_name']) . "');\n"
+                    . "define('DB_PORT', " . (int)$dbc['db_port'] . ");\n"
+                    . "define('DB_CHARSET', 'utf8mb4');\n";
+                file_put_contents(CONFIG_PATH . '/db_local.php', $env);
+                touch(CONFIG_PATH . '/.installed');
 
-            // Auto-configure FreeRADIUS SQL connection
-            $fr_res = auto_configure_freeradius($dbc);
-            $_SESSION['fr_install_res'] = $fr_res;
+                // Auto-configure FreeRADIUS SQL connection
+                $fr_res = auto_configure_freeradius($dbc);
+                $_SESSION['fr_install_res'] = $fr_res;
 
-            $step = 7; // done
-        } else {
-            $errors[] = 'Gagal buat admin: ' . $conn->error;
+                $step = 7; // done
+            } else {
+                $errors[] = 'Gagal buat admin: ' . $conn->error;
+                $step = 6;
+            }
+        } catch (Exception $e) {
+            $errors[] = 'Gagal membuat admin: ' . $e->getMessage();
             $step = 6;
         }
     }
@@ -637,7 +697,7 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
     </div>
 
     <h6 class="fw-700 mb-3"><i class="bi bi-database me-2 text-blue"></i>Konfigurasi Database MySQL</h6>
-    <form method="POST" action="/install.php?step=2">
+    <form method="POST" action="install.php?step=2">
         <div class="mb-3">
             <label class="form-label">Host DB</label>
             <input type="text" class="form-control" name="db_host" value="localhost" required>
@@ -674,14 +734,14 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
         <b>Hotspot:</b> routers, profiles, vouchers, admins, audit_log, sales_log, penagihan<br>
         <b>Broadband &amp; ACS:</b> genie_config, customers, ont_configs, pppoe_customers, pppoe_payments, pppoe_settings
     </div>
-    <form method="POST" action="/install.php?step=4">
+    <form method="POST" action="install.php?step=4">
         <button class="btn btn-primary w-100">Buat Tabel <i class="bi bi-arrow-right ms-2"></i></button>
     </form>
 
     <?php elseif ($step === 5 || $step === 6): ?>
     <!-- Step 3: First Admin -->
     <h6 class="fw-700 mb-3"><i class="bi bi-person-plus me-2 text-blue"></i>Buat Akun Superadmin</h6>
-    <form method="POST" action="/install.php?step=6">
+    <form method="POST" action="install.php?step=6">
         <div class="mb-3">
             <label class="form-label">Username</label>
             <input type="text" class="form-control" name="adm_user" value="admin" required>
