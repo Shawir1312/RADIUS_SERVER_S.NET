@@ -112,36 +112,24 @@ include __DIR__ . '/../../include/header.php';
 <!-- Stat Cards -->
 <div class="row g-3 mb-4">
     <div class="col-12 col-md-4">
-        <div class="stat-card">
-            <div class="stat-icon bg-success-subtle text-success">
-                <i class="bi bi-cash-stack"></i>
-            </div>
-            <div>
-                <div class="stat-value text-success"><?= format_price((float)($stats['total_paid'] ?? 0)) ?></div>
-                <div class="stat-label">Total Terbayar (Filter)</div>
-            </div>
+        <div class="stat-card green h-100">
+            <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+            <div class="stat-value"><?= format_price((float)($stats['total_paid'] ?? 0)) ?></div>
+            <div class="stat-label">Total Terbayar (Filter)</div>
         </div>
     </div>
     <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-icon bg-primary-subtle text-primary">
-                <i class="bi bi-check-circle"></i>
-            </div>
-            <div>
-                <div class="stat-value"><?= number_format((int)($stats['count_paid'] ?? 0)) ?></div>
-                <div class="stat-label">Transaksi Lunas</div>
-            </div>
+        <div class="stat-card blue h-100">
+            <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value"><?= number_format((int)($stats['count_paid'] ?? 0)) ?></div>
+            <div class="stat-label">Transaksi Lunas</div>
         </div>
     </div>
     <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-icon bg-warning-subtle text-warning">
-                <i class="bi bi-hourglass-split"></i>
-            </div>
-            <div>
-                <div class="stat-value text-warning"><?= number_format((int)($stats['count_pending'] ?? 0)) ?></div>
-                <div class="stat-label">Transaksi Pending</div>
-            </div>
+        <div class="stat-card orange h-100">
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-value"><?= number_format((int)($stats['count_pending'] ?? 0)) ?></div>
+            <div class="stat-label">Transaksi Pending</div>
         </div>
     </div>
 </div>
