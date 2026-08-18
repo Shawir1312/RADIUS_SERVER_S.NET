@@ -146,15 +146,18 @@ ln -sf /etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-enabled/s
 echo -e "${YELLOW}[4/5] Mengaktifkan SQL di default site FreeRADIUS...${NC}"
 DEFAULT_SITE="/etc/freeradius/3.0/sites-available/default"
 if [ -f "$DEFAULT_SITE" ]; then
-    # Enable sql in authorize, accounting, session, post-auth if not yet enabled
-    sed -i 's/^[[:space:]]*#[[:space:]]*sql/    sql/g' "$DEFAULT_SITE" || true
-    sed -i 's/^[[:space:]]*-sql/    sql/g' "$DEFAULT_SITE" || true
+    # Matikan sqlippool jika sempat aktif
+    sed -i 's/^[[:space:]]*sqlippool/#    sqlippool/g' "$DEFAULT_SITE" || true
+    # Aktifkan hanya kata 'sql' (word boundary)
+    sed -i -E 's/^[[:space:]]*#[[:space:]]*sql([[:space:]]*$)/    sql\1/g' "$DEFAULT_SITE" || true
+    sed -i -E 's/^[[:space:]]*-sql([[:space:]]*$)/    sql\1/g' "$DEFAULT_SITE" || true
 fi
 
 INNER_SITE="/etc/freeradius/3.0/sites-available/inner-tunnel"
 if [ -f "$INNER_SITE" ]; then
-    sed -i 's/^[[:space:]]*#[[:space:]]*sql/    sql/g' "$INNER_SITE" || true
-    sed -i 's/^[[:space:]]*-sql/    sql/g' "$INNER_SITE" || true
+    sed -i 's/^[[:space:]]*sqlippool/#    sqlippool/g' "$INNER_SITE" || true
+    sed -i -E 's/^[[:space:]]*#[[:space:]]*sql([[:space:]]*$)/    sql\1/g' "$INNER_SITE" || true
+    sed -i -E 's/^[[:space:]]*-sql([[:space:]]*$)/    sql\1/g' "$INNER_SITE" || true
 fi
 
 echo -e "${YELLOW}[5/5] Merestart dan Mengaktifkan Service FreeRADIUS...${NC}"
