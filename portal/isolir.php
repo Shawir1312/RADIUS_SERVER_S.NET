@@ -17,8 +17,8 @@ $midClientKey=$settings['midtrans_client_key']??'';
 $midMode=$settings['midtrans_mode']??'sandbox';
 $midServerKey=$settings['midtrans_server_key']??'';
 
-$logoPath='/assets/logo.png';
-$logoExists=file_exists(__DIR__.'/../assets/logo.png');
+$logoPath='/assets/img/logo.png';
+$logoExists=file_exists(__DIR__.'/../assets/img/logo.png');
 
 // Detect pelanggan dari IP atau query param
 $clientIp=$_SERVER['HTTP_X_FORWARDED_FOR']??$_SERVER['REMOTE_ADDR']??'';

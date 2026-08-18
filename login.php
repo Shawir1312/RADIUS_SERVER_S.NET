@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="login-card">
     <!-- Logo -->
     <div class="login-logo">
-        <img src="/assets/img/logo.png" alt="<?= APP_COMPANY ?>" width="178" height="56">
+        <img src="/assets/img/logo.png" alt="<?= APP_COMPANY ?>" style="height: 56px; width: auto; max-width: 100%; object-fit: contain;">
         <h5><?= APP_NAME ?></h5>
         <p><?= APP_COMPANY ?></p>
     </div>
