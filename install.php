@@ -501,7 +501,9 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
 <body class="login-body" style="align-items:flex-start;padding:40px 20px;">
 <div class="login-card" style="max-width:520px;margin:auto;">
     <div class="login-logo">
-        <img src="/assets/img/logo.png?v=2" alt="Logo">
+        <div style="display:inline-flex;align-items:center;justify-content:center;background:#ffffff;padding:8px 18px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);margin-bottom:8px;">
+            <img src="/assets/img/logo.png?v=<?= filemtime(__DIR__ . '/assets/img/logo.png') ?>" alt="Logo" style="height:50px;object-fit:contain;display:block;">
+        </div>
         <h5>Instalasi <?= APP_NAME ?></h5>
         <p><?= APP_COMPANY ?></p>
     </div>

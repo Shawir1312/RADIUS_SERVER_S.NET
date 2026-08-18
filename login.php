@@ -50,9 +50,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/assets/css/app.css?v=<?= filemtime(__DIR__ . '/assets/css/app.css') ?>">
     <style>
-    <style>
         body { margin: 0; padding: 0; }
         .theme-toggle-login { position: fixed; top: 15px; right: 15px; }
+        .login-logo-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff !important;
+            padding: 8px 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            margin-bottom: 8px;
+        }
+        .login-logo-box img {
+            height: 52px;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            display: block;
+        }
     </style>
     <script>
         (function() {
@@ -71,7 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="login-card">
     <!-- Logo -->
     <div class="login-logo">
-        <img src="/assets/img/logo.png?v=2" alt="<?= APP_COMPANY ?>" style="height: 56px; width: auto; max-width: 100%; object-fit: contain;">
+        <div class="login-logo-box">
+            <img src="/assets/img/logo.png?v=<?= filemtime(__DIR__ . '/assets/img/logo.png') ?>" alt="<?= APP_COMPANY ?>">
+        </div>
         <h5><?= APP_NAME ?></h5>
         <p><?= APP_COMPANY ?></p>
     </div>
