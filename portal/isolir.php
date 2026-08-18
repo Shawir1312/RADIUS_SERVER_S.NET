@@ -268,8 +268,11 @@ body{font-family:'Exo 2',-apple-system,BlinkMacSystemFont,sans-serif;background:
             </span>
         </div>
     </div>
-    <div class="card-body">
-        <div class="info-row"><span class="info-label">Tagihan Bulan</span><span class="info-val"><?=date('F Y')?></span></div>
+<?php
+$indMonths = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+$currentMonthInd = $indMonths[(int)date('n')] . ' ' . date('Y');
+?>
+        <div class="info-row"><span class="info-label">Tagihan Bulan</span><span class="info-val"><?=$currentMonthInd?></span></div>
         <div class="info-row"><span class="info-label">Jatuh Tempo</span><span class="info-val">Tgl <?=$cust['due_day']?> setiap bulan</span></div>
         <div class="info-row"><span class="info-label">Jumlah Tagihan</span><span class="amount">Rp <?=number_format($cust['monthly_price'],0,',','.')?></span></div>
         <?php if($cust['isolated_reason']): ?>
@@ -277,17 +280,21 @@ body{font-family:'Exo 2',-apple-system,BlinkMacSystemFont,sans-serif;background:
         <?php endif; ?>
         
         <?php if($paidThisMonth>0): ?>
-        <div style="background:#C6F6D5;border-radius:8px;padding:10px 14px;text-align:center;color:#276749;font-weight:700;margin:12px 0">
-            ✅ Sudah dibayar bulan ini
+        <div style="background:#C6F6D5;border-radius:8px;padding:12px 14px;text-align:center;color:#276749;font-weight:700;margin:14px 0">
+            ✅ Tagihan bulan ini sudah lunas. Jika internet belum aktif, silakan restart router/modem Anda.
         </div>
         <?php elseif($midClientKey&&$cust['monthly_price']>0): ?>
         <button class="btn-pay" id="payBtn" onclick="startPayment()">
-            💳 Bayar Sekarang — Rp <?=number_format($cust['monthly_price'],0,',','.')?>
+            💳 Bayar Sekarang Online — Rp <?=number_format($cust['monthly_price'],0,',','.')?>
         </button>
+        <?php else: ?>
+        <div style="background:var(--g100);border:1px dashed var(--g400);border-radius:10px;padding:12px 14px;text-align:center;color:var(--g700);font-size:.84rem;margin:14px 0">
+            ℹ️ Silakan lakukan pembayaran tagihan melalui kasir / transfer atau hubungi admin untuk konfirmasi aktivasi.
+        </div>
         <?php endif; ?>
         
         <?php if($compPhone): ?>
-        <a href="https://wa.me/<?=preg_replace('/\D/','',$compPhone)?>?text=Halo+admin%2C+saya+<?=urlencode($cust['full_name'])?>+username+<?=urlencode($cust['pppoe_username'])?>+ingin+konfirmasi+pembayaran+tagihan+bulan+<?=urlencode(date('F Y'))?>." class="btn-wa">📱 Konfirmasi Bayar via WhatsApp</a>
+        <a href="https://wa.me/<?=preg_replace('/\D/','',$compPhone)?>?text=Halo+admin%2C+saya+<?=urlencode($cust['full_name'])?>+username+<?=urlencode($cust['pppoe_username'])?>+ingin+konfirmasi+pembayaran+tagihan+bulan+<?=urlencode($currentMonthInd)?>." class="btn-wa">📱 Konfirmasi Bayar via WhatsApp</a>
         <?php endif; ?>
     </div>
 </div>
@@ -298,7 +305,7 @@ body{font-family:'Exo 2',-apple-system,BlinkMacSystemFont,sans-serif;background:
     <div style="padding:14px 20px;font-weight:700;font-size:.88rem;border-bottom:1px solid var(--g100);background:var(--g50);color:var(--g900)">📋 Riwayat Pembayaran</div>
     <div style="padding:12px 20px">
         <?php foreach($payments as $p): 
-            $mName=date('F',mktime(0,0,0,$p['period_month'],1));
+            $mName = $indMonths[(int)$p['period_month']] ?? $p['period_month'];
             $isPaid=$p['midtrans_status']!=='pending'||$p['payment_method']==='cash';
         ?>
         <div class="history-row">
