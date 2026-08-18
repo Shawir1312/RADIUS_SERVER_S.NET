@@ -275,8 +275,13 @@ $currentMonthInd = $indMonths[(int)date('n')] . ' ' . date('Y');
         <div class="info-row"><span class="info-label">Tagihan Bulan</span><span class="info-val"><?=$currentMonthInd?></span></div>
         <div class="info-row"><span class="info-label">Jatuh Tempo</span><span class="info-val">Tgl <?=$cust['due_day']?> setiap bulan</span></div>
         <div class="info-row"><span class="info-label">Jumlah Tagihan</span><span class="amount">Rp <?=number_format($cust['monthly_price'],0,',','.')?></span></div>
-        <?php if($cust['isolated_reason']): ?>
-        <div class="due-warn">⚠️ <?=h($cust['isolated_reason'])?></div>
+        <?php if($cust['isolated_reason']): 
+            $reasonTxt = $cust['isolated_reason'];
+            if(stripos($reasonTxt, 'manual isolated') !== false) {
+                $reasonTxt = 'Layanan diisolir sementara karena tagihan belum diselesaikan.';
+            }
+        ?>
+        <div class="due-warn">⚠️ <?=h($reasonTxt)?></div>
         <?php endif; ?>
         
         <?php if($paidThisMonth>0): ?>
