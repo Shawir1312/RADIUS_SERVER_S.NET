@@ -129,7 +129,7 @@ if ($batch_id && !empty($vouchers)) {
 
 <!-- Toolbar (hidden on print) -->
 <div class="no-print mb-3 d-flex gap-2 align-items-center flex-wrap p-3 bg-white rounded shadow-sm">
-    <img src="/assets/img/logo.png" height="36" alt="Logo">
+    <img src="/assets/img/logo.png?v=2" height="36" alt="Logo">
     <div class="flex-fill">
         <div class="fw-700"><?= count($vouchers) ?> Voucher
             <?= $batch_id ? '— Batch: <span class="font-mono">' . htmlspecialchars($batch_id) . '</span>' : '' ?>
@@ -167,7 +167,7 @@ if ($batch_id && !empty($vouchers)) {
             <?= htmlspecialchars($v['display_name'] ?: $v['profile_name']) ?>
         </div>
         <div style="width: 30%; text-align: center;">
-            <img src="/assets/img/logo.png" style="max-height: 11px; max-width: 100%; display: inline-block;" alt="Logo">
+            <img src="/assets/img/logo.png?v=2" style="max-height: 11px; max-width: 100%; display: inline-block;" alt="Logo">
         </div>
         <div style="font-size: 4pt; font-family: monospace; font-weight: bold; line-height: 1; width: 35%; text-align: right;">
             No: <?= $index + 1 ?>

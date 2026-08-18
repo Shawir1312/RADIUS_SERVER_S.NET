@@ -17,7 +17,7 @@ $midClientKey=$settings['midtrans_client_key']??'';
 $midMode=$settings['midtrans_mode']??'sandbox';
 $midServerKey=$settings['midtrans_server_key']??'';
 
-$logoPath='/assets/img/logo.png';
+$logoPath='/assets/img/logo.png?v=2';
 $logoExists=file_exists(__DIR__.'/../assets/img/logo.png');
 
 // Detect pelanggan dari IP atau query param

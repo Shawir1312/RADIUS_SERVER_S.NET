@@ -23,7 +23,7 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
     <meta name="description" content="S.NET RADIUS Hotspot Voucher Management System">
     <title><?= htmlspecialchars($page_title ?? 'Dashboard') ?> — <?= APP_NAME ?></title>
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/assets/img/logo.png">
+    <link rel="icon" type="image/png" href="/assets/img/logo.png?v=2">
     <!-- Bootstrap 5 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <!-- Bootstrap Icons -->
@@ -60,7 +60,7 @@ $initials = strtoupper(substr($admin['name'] ?: $admin['username'], 0, 1));
         </button>
         <span class="topbar-title d-flex align-items-center gap-2">
             <!-- Mobile Logo -->
-            <img src="/assets/img/logo.png" class="d-inline-block d-md-none" style="height:24px; background-color:#ffffff; padding:2px; border-radius:3px;" alt="Logo">
+            <img src="/assets/img/logo.png?v=2" class="d-inline-block d-md-none" style="height:24px; background-color:#ffffff; padding:2px; border-radius:3px;" alt="Logo">
             <span class="d-none d-sm-inline"><?= htmlspecialchars($page_title ?? 'Dashboard') ?></span>
         </span>
     </div>
