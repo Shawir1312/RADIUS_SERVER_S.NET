@@ -34,7 +34,7 @@ function generate_batch_id(): string {
 
 // ───── Bytes Formatting ────────────────────────────────────────────────
 
-function format_bytes(int|float $bytes, int $precision = 2): string {
+function format_bytes($bytes, int $precision = 2): string {
     if ($bytes <= 0) return '0 B';
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
     $pow   = min((int) floor(log($bytes, 1024)), count($units) - 1);
@@ -149,11 +149,11 @@ function sanitize_username(string $str): string {
     return substr(preg_replace('/[^a-zA-Z0-9\-_]/', '', trim($str)), 0, 64);
 }
 
-function post(string $key, mixed $default = ''): mixed {
+function post(string $key, $default = '') {
     return $_POST[$key] ?? $default;
 }
 
-function get(string $key, mixed $default = ''): mixed {
+function get(string $key, $default = '') {
     return $_GET[$key] ?? $default;
 }
 
@@ -224,9 +224,24 @@ function router_status_badge(bool $online): string {
         : "<span class='badge bg-danger'><i class='bi bi-circle-fill me-1'></i>Offline</span>";
 }
 
+function ensure_profile_columns(): void {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    try {
+        $chk = db()->query("SHOW COLUMNS FROM profiles LIKE 'include_in_sales'");
+        if ($chk && $chk->num_rows === 0) {
+            db()->query("ALTER TABLE profiles ADD COLUMN include_in_sales TINYINT(1) DEFAULT 1 AFTER price");
+        }
+    } catch (Throwable $e) {}
+}
+
 function sync_active_vouchers() {
+    ensure_profile_columns();
     $newly_active = db_fetch_all("
-        SELECT v.id, v.username, v.profile_id, p.name AS profile_name, p.price, v.router_id, ra.acctstarttime, p.validity_value, p.validity_unit
+        SELECT v.id, v.username, v.profile_id, p.name AS profile_name, p.price,
+               COALESCE(p.include_in_sales, 1) AS include_in_sales,
+               v.router_id, ra.acctstarttime, p.validity_value, p.validity_unit
         FROM vouchers v
         JOIN radacct ra ON v.username = ra.username
         JOIN profiles p ON v.profile_id = p.id
@@ -245,13 +260,15 @@ function sync_active_vouchers() {
                 'ssi', [$used_at, $expired_at, $v['id']]
             );
 
-            // Record sale
-            db_execute(
-                "INSERT INTO sales_log (voucher_id, voucher_username, profile_id, profile_name, router_id, price, sold_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)",
-                'isissds', 
-                [$v['id'], $v['username'], $v['profile_id'], $v['profile_name'], $v['router_id'], $v['price'], $used_at]
-            );
+            // Record sale only if profile is configured to be included in sales
+            if ((int)$v['include_in_sales'] === 1) {
+                db_execute(
+                    "INSERT INTO sales_log (voucher_id, voucher_username, profile_id, profile_name, router_id, price, sold_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    'isissds', 
+                    [$v['id'], $v['username'], $v['profile_id'], $v['profile_name'], $v['router_id'], $v['price'], $used_at]
+                );
+            }
 
             db_commit();
         } catch(Throwable $e) {

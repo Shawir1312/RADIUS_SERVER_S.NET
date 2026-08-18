@@ -6,6 +6,8 @@ $is_edit    = ($page === 'profile_edit');
 $is_list    = ($page === 'profile_list');
 $page_title = $is_list ? 'Profil / Paket' : ($is_edit ? 'Edit Profil' : 'Tambah Profil');
 
+ensure_profile_columns();
+
 if ($is_list) {
     $filter_router = (int)get('router_id');
     $all_routers   = get_all_routers();
@@ -102,7 +104,12 @@ if ($is_list) {
                     <span class="text-success">↓<?= htmlspecialchars($p['rate_down'] ?: '0') ?></span>
                 </td>
                 <td>
-                    <?= format_price((float)$p['price']) ?>
+                    <div class="fw-bold"><?= format_price((float)$p['price']) ?></div>
+                    <?php if (isset($p['include_in_sales']) && (int)$p['include_in_sales'] === 0): ?>
+                    <span class="badge bg-secondary-subtle text-secondary border mt-1" style="font-size:.68rem;" title="Tidak dicatat ke data/laporan penjualan"><i class="bi bi-cart-x me-1"></i>Non-Penjualan</span>
+                    <?php else: ?>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle mt-1" style="font-size:.68rem;" title="Dicatat ke data & laporan penjualan"><i class="bi bi-cart-check me-1"></i>Masuk Penjualan</span>
+                    <?php endif; ?>
                     <?php if ($p['reseller_percent'] > 0): ?>
                     <br><small class="text-success"><i class="bi bi-tag"></i> Reseller: <?= (float)$p['reseller_percent'] ?>%</small>
                     <?php endif; ?>
@@ -215,6 +222,9 @@ include __DIR__ . '/../../include/header.php';
                         f.querySelector('[name="rate_up"]').value = t.ru;
                         f.querySelector('[name="rate_down"]').value = t.rd;
                         f.querySelector('[name="reseller_percent"]').value = 20;
+                        if (f.querySelector('[name="include_in_sales"]')) {
+                            f.querySelector('[name="include_in_sales"]').value = '1';
+                        }
                     }
                 }
                 </script>
@@ -265,6 +275,19 @@ include __DIR__ . '/../../include/header.php';
                     <label class="form-label">Harga Jual (Rp)</label>
                     <input type="number" class="form-control" name="price" min="0" step="500"
                            value="<?= $profile['price'] ?? 0 ?>">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Pencatatan Penjualan <span class="text-danger">*</span></label>
+                    <select class="form-select" name="include_in_sales">
+                        <option value="1" <?= (!isset($profile['include_in_sales']) || (int)$profile['include_in_sales'] === 1) ? 'selected' : '' ?>>
+                            Ya — Masuk ke Data Penjualan (Komersial)
+                        </option>
+                        <option value="0" <?= (isset($profile['include_in_sales']) && (int)$profile['include_in_sales'] === 0) ? 'selected' : '' ?>>
+                            Tidak — Jangan Masukkan ke Data Penjualan (Non-Komersial / Free / Internal)
+                        </option>
+                    </select>
+                    <div class="form-text">Jika "Tidak", voucher aktif dari profil ini tidak akan dihitung di Laporan Penjualan/Omset.</div>
                 </div>
                 
                 <div class="col-md-6">

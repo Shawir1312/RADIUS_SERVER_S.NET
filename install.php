@@ -224,6 +224,7 @@ if ($step === 4 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
             rate_up varchar(20) DEFAULT '0',
             rate_down varchar(20) DEFAULT '0',
             price decimal(10,2) DEFAULT 0.00,
+            include_in_sales tinyint(1) DEFAULT 1,
             reseller_percent decimal(5,2) DEFAULT 0.00,
             router_id int(11) DEFAULT NULL,
             description text DEFAULT NULL,
