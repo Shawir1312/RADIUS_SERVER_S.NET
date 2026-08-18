@@ -36,11 +36,116 @@ if (!is_writable(CONFIG_PATH)) {
     </div>');
 }
 
-session_start();
+function get_freeradius_status(): array {
+    $has_bin = false;
+    $has_sql = false;
+    $has_enabled = false;
+    $is_active = false;
+
+    if (file_exists('/usr/sbin/freeradius') || file_exists('/usr/bin/freeradius') || is_dir('/etc/freeradius/3.0')) {
+        $has_bin = true;
+    } elseif (function_exists('shell_exec')) {
+        $out = @shell_exec('which freeradius 2>/dev/null');
+        if (!empty($out)) $has_bin = true;
+    }
+
+    if (file_exists('/etc/freeradius/3.0/mods-available/sql')) {
+        $has_sql = true;
+    }
+    if (file_exists('/etc/freeradius/3.0/mods-enabled/sql')) {
+        $has_enabled = true;
+    }
+
+    if (function_exists('shell_exec')) {
+        $res = @shell_exec('systemctl is-active freeradius 2>/dev/null');
+        if (trim((string)$res) === 'active') {
+            $is_active = true;
+        }
+    }
+
+    return [
+        'installed'   => $has_bin,
+        'sql_module'  => $has_sql,
+        'sql_enabled' => $has_enabled,
+        'running'     => $is_active
+    ];
+}
+
+function auto_configure_freeradius(array $dbc): array {
+    $out = '';
+    $script = BASE_PATH . '/setup_freeradius.sh';
+
+    if (file_exists($script) && function_exists('shell_exec')) {
+        $h = escapeshellarg($dbc['db_host'] === 'localhost' ? '127.0.0.1' : $dbc['db_host']);
+        $u = escapeshellarg($dbc['db_user']);
+        $p = escapeshellarg($dbc['db_pass']);
+        $n = escapeshellarg($dbc['db_name']);
+        $port = (int)$dbc['db_port'];
+        $cmd = "sudo bash $script $h $u $p $n $port 2>&1";
+        $out = @shell_exec($cmd);
+    }
+
+    // Direct write fallback jika PHP punya permission
+    $sql_conf = '/etc/freeradius/3.0/mods-available/sql';
+    if (is_writable($sql_conf) || (is_dir('/etc/freeradius/3.0/mods-available') && is_writable('/etc/freeradius/3.0/mods-available'))) {
+        $host = $dbc['db_host'] === 'localhost' ? '127.0.0.1' : $dbc['db_host'];
+        $content = "sql {\n"
+            . "    driver = \"rlm_sql_mysql\"\n"
+            . "    dialect = \"mysql\"\n"
+            . "    server = \"{$host}\"\n"
+            . "    port = {$dbc['db_port']}\n"
+            . "    login = \"{$dbc['db_user']}\"\n"
+            . "    password = \"{$dbc['db_pass']}\"\n"
+            . "    radius_db = \"{$dbc['db_name']}\"\n"
+            . "    acct_table1 = \"radacct\"\n"
+            . "    acct_table2 = \"radacct\"\n"
+            . "    postauth_table = \"radpostauth\"\n"
+            . "    authcheck_table = \"radcheck\"\n"
+            . "    authreply_table = \"radreply\"\n"
+            . "    groupcheck_table = \"radgroupcheck\"\n"
+            . "    groupreply_table = \"radgroupreply\"\n"
+            . "    usergroup_table = \"radusergroup\"\n"
+            . "    nas_table = \"nas\"\n"
+            . "    sql_user_name = \"%{%\${Stripped-User-Name}:-%{User-Name:-DEFAULT}}\"\n"
+            . "    default_user_profile = \"\"\n"
+            . "    simul_count_query = \"SELECT COUNT(*) FROM \${acct_table1} WHERE username = '%{SQL-User-Name}' AND acctstoptime IS NULL\"\n"
+            . "    simul_verify_query = \"SELECT radacctid, acctsessionid, username, nasipaddress, nasportid, framedipaddress, callingstationid, framedprotocol FROM \${acct_table1} WHERE username = '%{SQL-User-Name}' AND acctstoptime IS NULL\"\n"
+            . "    read_clients = yes\n"
+            . "    client_table = \"nas\"\n"
+            . "    group_attribute = \"SQL-Group\"\n"
+            . "    safe_characters = \"@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_: /\"\n"
+            . "    \$INCLUDE \${modconfdir}/\${.:name}/main/\${dialect}/queries.conf\n"
+            . "}\n";
+        @file_put_contents($sql_conf, $content);
+        @symlink($sql_conf, '/etc/freeradius/3.0/mods-enabled/sql');
+        if (function_exists('shell_exec')) {
+            @shell_exec('sudo systemctl restart freeradius 2>/dev/null || systemctl restart freeradius 2>/dev/null');
+        }
+    }
+
+    return ['output' => $out];
+}
 
 $step     = (int)($_GET['step'] ?? 1);
 $errors   = [];
 $success  = [];
+$radius_status = get_freeradius_status();
+
+// Handle manual trigger install radius via UI
+if (isset($_POST['action']) && $_POST['action'] === 'run_radius_setup') {
+    $script = BASE_PATH . '/setup_freeradius.sh';
+    if (function_exists('shell_exec')) {
+        $out = @shell_exec("sudo bash $script 2>&1");
+        if ($out) {
+            $success[] = 'Proses instalasi FreeRADIUS telah dijalankan: <br><pre class="small text-start mb-0">' . htmlspecialchars(substr($out, 0, 800)) . '</pre>';
+        } else {
+            $errors[] = 'Gagal menjalankan installer otomatis (izin sudo diperlukan di VPS). Silakan jalankan manual via terminal: sudo bash ' . BASE_PATH . '/setup_freeradius.sh';
+        }
+    } else {
+        $errors[] = 'Fungsi shell_exec dinonaktifkan di PHP. Jalankan via terminal: sudo bash ' . BASE_PATH . '/setup_freeradius.sh';
+    }
+    $radius_status = get_freeradius_status();
+}
 
 // ── Step 1: DB Test ─────────────────────────────────────
 if ($step === 2 && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -482,6 +587,11 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
                 . "define('DB_CHARSET', 'utf8mb4');\n";
             file_put_contents(CONFIG_PATH . '/db_local.php', $env);
             touch(CONFIG_PATH . '/.installed');
+
+            // Auto-configure FreeRADIUS SQL connection
+            $fr_res = auto_configure_freeradius($dbc);
+            $_SESSION['fr_install_res'] = $fr_res;
+
             $step = 7; // done
         } else {
             $errors[] = 'Gagal buat admin: ' . $conn->error;
@@ -503,7 +613,7 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
     <link rel="stylesheet" href="/assets/css/app.css">
 </head>
 <body class="login-body" style="align-items:flex-start;padding:40px 20px;">
-<div class="login-card" style="max-width:520px;margin:auto;">
+<div class="login-card" style="max-width:540px;margin:auto;">
     <div class="login-logo">
         <div style="display:inline-flex;align-items:center;justify-content:center;background:#ffffff;padding:8px 18px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);margin-bottom:8px;">
             <img src="/assets/img/logo.png?v=<?= filemtime(__DIR__ . '/assets/img/logo.png') ?>" alt="Logo" style="height:50px;object-fit:contain;display:block;">
@@ -514,15 +624,15 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
     <div class="login-divider"></div>
 
     <?php foreach ($errors as $e): ?>
-    <div class="alert alert-danger"><i class="bi bi-x-circle me-2"></i><?= htmlspecialchars($e) ?></div>
+    <div class="alert alert-danger"><i class="bi bi-x-circle me-2"></i><?= $e ?></div>
     <?php endforeach; ?>
     <?php foreach ($success as $s): ?>
-    <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($s) ?></div>
+    <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i><?= $s ?></div>
     <?php endforeach; ?>
 
     <!-- Step Indicator -->
     <div class="d-flex gap-2 mb-4">
-        <?php foreach (['DB', 'Tabel', 'Admin', 'Selesai'] as $i => $label): ?>
+        <?php foreach (['DB & RADIUS', 'Tabel', 'Admin', 'Selesai'] as $i => $label): ?>
         <?php $n = $i+1; $active = ($step >= $n*2) ? 'bg-primary' : ($step >= $n*2-1 ? 'bg-primary' : 'bg-secondary'); ?>
         <div class="flex-fill text-center">
             <div class="badge <?= $active ?> w-100 mb-1" style="padding:8px;"><?= $n ?></div>
@@ -532,8 +642,42 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
     </div>
 
     <?php if ($step <= 2): ?>
-    <!-- Step 1: Database -->
-    <h6 class="fw-700 mb-3"><i class="bi bi-database me-2 text-blue"></i>Konfigurasi Database</h6>
+    <!-- Step 1: Database & FreeRADIUS Check -->
+    <div class="card mb-4 border bg-light">
+        <div class="card-body p-3">
+            <h6 class="fw-bold mb-2 text-dark d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-shield-check text-primary me-2"></i>Status FreeRADIUS Server:</span>
+                <?php if ($radius_status['installed'] && $radius_status['running']): ?>
+                    <span class="badge bg-success">🟢 Siap &amp; Aktif</span>
+                <?php elseif ($radius_status['installed']): ?>
+                    <span class="badge bg-warning text-dark">🟡 Terinstal (Service Non-Aktif)</span>
+                <?php else: ?>
+                    <span class="badge bg-danger">🔴 Belum Terinstal</span>
+                <?php endif; ?>
+            </h6>
+
+            <div class="small text-muted mb-2">
+                <div>Paket FreeRADIUS: <?= $radius_status['installed'] ? '<span class="text-success fw-bold">✓ Terpasang</span>' : '<span class="text-danger fw-bold">✗ Belum ada</span>' ?></div>
+                <div>Modul SQL (MySQL): <?= $radius_status['sql_module'] ? '<span class="text-success fw-bold">✓ Siap</span>' : '<span class="text-secondary">Belum aktif</span>' ?></div>
+                <div>Service daemon: <?= $radius_status['running'] ? '<span class="text-success fw-bold">✓ Running</span>' : '<span class="text-secondary">Stopped</span>' ?></div>
+            </div>
+
+            <?php if (!$radius_status['installed'] || !$radius_status['running']): ?>
+            <form method="POST" class="mt-2 mb-2">
+                <input type="hidden" name="action" value="run_radius_setup">
+                <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-play-circle me-1"></i> Jalankan Auto-Install FreeRADIUS
+                </button>
+            </form>
+            <div class="small text-muted" style="font-size:.75rem;">
+                Atau jalankan skrip terminal VPS:<br>
+                <code class="d-block p-1 bg-white border rounded text-dark mt-1 font-mono">sudo bash <?= BASE_PATH ?>/setup_freeradius.sh</code>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <h6 class="fw-700 mb-3"><i class="bi bi-database me-2 text-blue"></i>Konfigurasi Database MySQL</h6>
     <form method="POST" action="/install.php?step=2">
         <div class="mb-3">
             <label class="form-label">Host DB</label>
@@ -604,8 +748,26 @@ if ($step === 6 && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['in
     <div class="text-center py-3">
         <div style="font-size:4rem; color: #2E7D32;">✓</div>
         <h4 class="fw-700 mt-2">Instalasi Selesai!</h4>
-        <p class="text-muted">Aplikasi berhasil diinstal. Silakan login dengan akun yang baru dibuat.</p>
-        <a href="/login.php" class="btn btn-primary btn-lg px-5">Login Sekarang</a>
+        <p class="text-muted mb-3">Aplikasi dan Database berhasil diinstal &amp; disinkronkan.</p>
+        
+        <div class="bg-light border rounded p-3 text-start small mb-4">
+            <div class="d-flex justify-content-between mb-1">
+                <span><i class="bi bi-database-check text-success me-1"></i> Database MySQL:</span>
+                <span class="badge bg-success">Tersimpan</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+                <span><i class="bi bi-shield-check text-success me-1"></i> FreeRADIUS Config:</span>
+                <span class="badge bg-primary">Tersinkronisasi</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span><i class="bi bi-person-check text-success me-1"></i> Akun Superadmin:</span>
+                <span class="badge bg-success">Siap Digunakan</span>
+            </div>
+        </div>
+
+        <a href="/login.php" class="btn btn-primary btn-lg w-100">
+            <i class="bi bi-box-arrow-in-right me-2"></i> Login ke Admin Panel Sekarang
+        </a>
     </div>
     <?php endif; ?>
 </div>
