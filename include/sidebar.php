@@ -5,7 +5,7 @@
 $current_page = get('page', 'dashboard');
 $admin = current_admin();
 
-function nav_active(string $page, string|array $match): string {
+function nav_active(string $page, $match): string {
     $pages = (array)$match;
     return in_array($page, $pages) ? 'active' : '';
 }
@@ -13,7 +13,7 @@ function nav_active(string $page, string|array $match): string {
 <aside id="sidebar">
     <!-- Brand -->
     <div class="sidebar-brand">
-        <img src="/assets/img/logo.png?v=2" alt="<?= APP_COMPANY ?>">
+        <img src="/assets/img/logo.png?v=<?= filemtime(__DIR__ . '/../assets/img/logo.png') ?>" alt="<?= APP_COMPANY ?>">
         <div class="sidebar-brand-text" style="line-height:1.2; font-size:1.1rem; padding-top:4px;">
             <?= APP_NAME ?>
         </div>
@@ -56,10 +56,22 @@ function nav_active(string $page, string|array $match): string {
             </a>
         </li>
         <li>
+            <a href="/index.php?page=pppoe_payments" class="nav-link <?= nav_active($current_page, ['pppoe_payments','pppoe_receipt']) ?>">
+                <i class="bi bi-wallet2"></i> Riwayat Pembayaran
+            </a>
+        </li>
+        <li>
             <a href="/index.php?page=monitor_ont" class="nav-link <?= nav_active($current_page, 'monitor_ont') ?>">
                 <i class="bi bi-hdd-network"></i> Monitor ONT
             </a>
         </li>
+        <?php if ($admin['role'] === 'superadmin'): ?>
+        <li>
+            <a href="/index.php?page=pppoe_settings" class="nav-link <?= nav_active($current_page, 'pppoe_settings') ?>">
+                <i class="bi bi-gear-wide-connected"></i> Pengaturan PPPoE
+            </a>
+        </li>
+        <?php endif; ?>
 
         <!-- Vouchers -->
         <li class="nav-label">Voucher</li>
@@ -96,7 +108,12 @@ function nav_active(string $page, string|array $match): string {
         <li class="nav-label">Laporan</li>
         <li>
             <a href="/index.php?page=report_sales" class="nav-link <?= nav_active($current_page, 'report_sales') ?>">
-                <i class="bi bi-bar-chart-line"></i> Penjualan
+                <i class="bi bi-bar-chart-line"></i> Penjualan Hotspot
+            </a>
+        </li>
+        <li>
+            <a href="/index.php?page=pppoe_payments" class="nav-link <?= nav_active($current_page, 'pppoe_payments') ?>">
+                <i class="bi bi-wallet2"></i> Pembayaran PPPoE
             </a>
         </li>
         <li>

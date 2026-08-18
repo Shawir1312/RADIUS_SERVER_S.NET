@@ -86,6 +86,9 @@ include __DIR__ . '/../../../include/header.php';
         <p class="page-subtitle">Kelola data pelanggan broadband (PPPoE).</p>
     </div>
     <div class="d-flex gap-2">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalPayGlobal" <?= empty($customers) ? 'disabled' : '' ?>>
+            <i class="bi bi-cash-stack me-1"></i> Bayar Kasir
+        </button>
         <a href="/index.php?page=pppoe_add&router_id=<?= $selRid ?>" class="btn btn-primary <?= !$selRouter ? 'disabled' : '' ?>">
             <i class="bi bi-person-plus me-1"></i> Tambah Pelanggan
         </a>
@@ -145,12 +148,12 @@ include __DIR__ . '/../../../include/header.php';
                     <th>Jatuh Tempo</th>
                     <th>Harga / Bln</th>
                     <th>Sesi Online</th>
-                    <th>Aksi</th>
+                    <th style="min-width: 140px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
             <?php if (empty($customers)): ?>
-            <tr><td colspan="8" class="text-center text-muted py-4">Belum ada pelanggan PPPoE di router ini.</td></tr>
+            <tr><td colspan="9" class="text-center text-muted py-4">Belum ada pelanggan PPPoE di router ini.</td></tr>
             <?php else: ?>
             <?php foreach ($customers as $c): 
                 $is_online = isset($active_sessions[$c['pppoe_username']]);
@@ -186,8 +189,12 @@ include __DIR__ . '/../../../include/header.php';
                 <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($c['profile'] ?: '-') ?></span></td>
                 <td>
                     <strong>Tgl <?= $c['due_day'] ?></strong>
-                    <?php if ($is_late): ?>
-                        <br><small class="text-danger fw-bold">Belum Bayar</small>
+                    <?php if ($c['paid_this_month'] > 0): ?>
+                        <br><small class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Lunas</small>
+                    <?php elseif ($is_late): ?>
+                        <br><small class="text-danger fw-bold"><i class="bi bi-exclamation-circle-fill"></i> Nunggak</small>
+                    <?php else: ?>
+                        <br><small class="text-muted">Belum bayar</small>
                     <?php endif; ?>
                 </td>
                 <td><?= format_price((float)$c['monthly_price']) ?></td>
@@ -205,8 +212,43 @@ include __DIR__ . '/../../../include/header.php';
                     <?php endif; ?>
                 </td>
                 <td>
-                    <div class="d-flex gap-1">
-                        <!-- Nanti ditambahkan route bayar dan isolir dll -->
+                    <div class="d-flex gap-1 flex-nowrap">
+                        <!-- Bayar Kasir Cepat -->
+                        <button type="button" class="btn btn-sm btn-outline-success btn-icon btn-quick-pay"
+                                data-id="<?= $c['id'] ?>"
+                                data-name="<?= htmlspecialchars($c['full_name']) ?>"
+                                data-username="<?= htmlspecialchars($c['pppoe_username']) ?>"
+                                data-price="<?= (float)$c['monthly_price'] ?>"
+                                data-status="<?= $c['status'] ?>"
+                                title="Catat Bayar Kasir">
+                            <i class="bi bi-cash-coin"></i>
+                        </button>
+
+                        <!-- Aksi Cepat Isolir / Buka Isolir -->
+                        <?php if ($c['status'] === 'active'): ?>
+                        <form method="POST" action="/process/toggle_pppoe_status.php" class="d-inline"
+                              onsubmit="return confirm('Apakah Anda yakin ingin MENGISOLIR pelanggan <?= htmlspecialchars(addslashes($c['full_name'])) ?>?')">
+                            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                            <input type="hidden" name="customer_id" value="<?= $c['id'] ?>">
+                            <input type="hidden" name="router_id" value="<?= $selRid ?>">
+                            <input type="hidden" name="target_status" value="isolated">
+                            <button type="submit" class="btn btn-sm btn-outline-warning btn-icon" title="Isolir Sekarang">
+                                <i class="bi bi-slash-circle"></i>
+                            </button>
+                        </form>
+                        <?php elseif ($c['status'] === 'isolated'): ?>
+                        <form method="POST" action="/process/toggle_pppoe_status.php" class="d-inline"
+                              onsubmit="return confirm('Apakah Anda yakin ingin MEMBUKA ISOLIR pelanggan <?= htmlspecialchars(addslashes($c['full_name'])) ?>?')">
+                            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                            <input type="hidden" name="customer_id" value="<?= $c['id'] ?>">
+                            <input type="hidden" name="router_id" value="<?= $selRid ?>">
+                            <input type="hidden" name="target_status" value="active">
+                            <button type="submit" class="btn btn-sm btn-outline-info btn-icon" title="Buka Isolir / Aktifkan Kembali">
+                                <i class="bi bi-play-circle-fill"></i>
+                            </button>
+                        </form>
+                        <?php endif; ?>
+
                         <a href="/index.php?page=pppoe_edit&router_id=<?= $selRid ?>&id=<?= $c['id'] ?>"
                            class="btn btn-sm btn-outline-primary btn-icon" title="Edit">
                             <i class="bi bi-pencil"></i>
@@ -226,5 +268,184 @@ include __DIR__ . '/../../../include/header.php';
         </table>
     </div>
 </div>
+
+<!-- Modal Catat Pembayaran Kasir -->
+<div class="modal fade" id="modalPayCustomer" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="/process/save_pppoe_payment.php" class="modal-content">
+            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+            <input type="hidden" name="router_id" value="<?= $selRid ?>">
+            <input type="hidden" name="customer_id" id="pay_customer_id" value="">
+            <input type="hidden" name="redirect_page" value="pppoe_customers">
+
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-cash-stack text-success me-2"></i>Catat Pembayaran Tagihan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-light border mb-3">
+                    <div class="fw-bold fs-6" id="pay_customer_name">-</div>
+                    <div class="font-mono text-muted small" id="pay_customer_username">-</div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Periode Bulan <span class="text-danger">*</span></label>
+                        <select name="period_month" class="form-select" required>
+                            <?php 
+                            $months = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+                            $curM = (int)date('n');
+                            foreach ($months as $k => $m):
+                            ?>
+                            <option value="<?= $k ?>" <?= $curM === $k ? 'selected' : '' ?>><?= $m ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Periode Tahun <span class="text-danger">*</span></label>
+                        <input type="number" name="period_year" class="form-control" value="<?= date('Y') ?>" required min="2024" max="2099">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Nominal Pembayaran (Rp) <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" id="pay_amount" class="form-control fs-5 fw-bold text-success" required min="1000" step="1000">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Metode Pembayaran</label>
+                        <select name="payment_method" class="form-select">
+                            <option value="cash">💵 Tunai / Cash (Kasir Kantor)</option>
+                            <option value="transfer">🏦 Transfer Bank</option>
+                            <option value="qris">📱 QRIS / E-Wallet</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Catatan / Keterangan (Opsional)</label>
+                        <input type="text" name="notes" class="form-control" placeholder="Contoh: Lunas bayar di loket">
+                    </div>
+
+                    <div class="col-12" id="pay_unisolir_wrap">
+                        <div class="form-check form-switch mt-1">
+                            <input class="form-check-input" type="checkbox" name="auto_unisolir" value="1" id="checkAutoUnisolir" checked>
+                            <label class="form-check-label fw-bold text-primary" for="checkAutoUnisolir">
+                                Otomatis Buka Isolir di MikroTik jika pelanggan terisolir
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-success px-4"><i class="bi bi-check-lg me-1"></i> Simpan Pembayaran</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Catat Pembayaran Global (Pilih Pelanggan) -->
+<div class="modal fade" id="modalPayGlobal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="/process/save_pppoe_payment.php" class="modal-content">
+            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+            <input type="hidden" name="router_id" value="<?= $selRid ?>">
+            <input type="hidden" name="redirect_page" value="pppoe_customers">
+
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-cash-stack text-success me-2"></i>Catat Pembayaran Kasir</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Pilih Pelanggan <span class="text-danger">*</span></label>
+                        <select name="customer_id" id="global_customer_id" class="form-select" required onchange="updateGlobalPrice(this)">
+                            <option value="">-- Pilih Pelanggan --</option>
+                            <?php foreach ($customers as $c): ?>
+                            <option value="<?= $c['id'] ?>" data-price="<?= (float)$c['monthly_price'] ?>">
+                                <?= htmlspecialchars($c['full_name']) ?> (<?= htmlspecialchars($c['pppoe_username']) ?>) — Rp <?= number_format((float)$c['monthly_price'], 0, ',', '.') ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Periode Bulan <span class="text-danger">*</span></label>
+                        <select name="period_month" class="form-select" required>
+                            <?php foreach ($months as $k => $m): ?>
+                            <option value="<?= $k ?>" <?= $curM === $k ? 'selected' : '' ?>><?= $m ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Periode Tahun <span class="text-danger">*</span></label>
+                        <input type="number" name="period_year" class="form-control" value="<?= date('Y') ?>" required min="2024" max="2099">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Nominal Pembayaran (Rp) <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" id="global_pay_amount" class="form-control fs-5 fw-bold text-success" required min="1000" step="1000">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Metode Pembayaran</label>
+                        <select name="payment_method" class="form-select">
+                            <option value="cash">💵 Tunai / Cash (Kasir Kantor)</option>
+                            <option value="transfer">🏦 Transfer Bank</option>
+                            <option value="qris">📱 QRIS / E-Wallet</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Catatan / Keterangan</label>
+                        <input type="text" name="notes" class="form-control" placeholder="Contoh: Lunas bayar di kantor">
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check form-switch mt-1">
+                            <input class="form-check-input" type="checkbox" name="auto_unisolir" value="1" id="checkAutoUnisolirGlobal" checked>
+                            <label class="form-check-label fw-bold text-primary" for="checkAutoUnisolirGlobal">
+                                Otomatis Buka Isolir di MikroTik jika pelanggan terisolir
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-success px-4"><i class="bi bi-check-lg me-1"></i> Simpan Pembayaran</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const payButtons = document.querySelectorAll('.btn-quick-pay');
+    const modalEl = document.getElementById('modalPayCustomer');
+    if (modalEl && payButtons.length > 0) {
+        const modal = new bootstrap.Modal(modalEl);
+        payButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('pay_customer_id').value = this.dataset.id;
+                document.getElementById('pay_customer_name').textContent = this.dataset.name;
+                document.getElementById('pay_customer_username').textContent = 'Username: ' + this.dataset.username;
+                document.getElementById('pay_amount').value = this.dataset.price;
+                modal.show();
+            });
+        });
+    }
+});
+
+function updateGlobalPrice(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    const price = opt ? opt.getAttribute('data-price') : 0;
+    document.getElementById('global_pay_amount').value = price || '';
+}
+</script>
 
 <?php include __DIR__ . '/../../../include/footer.php'; ?>

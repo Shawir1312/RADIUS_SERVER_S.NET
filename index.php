@@ -52,6 +52,9 @@ $routes = [
     'pppoe_profile_add'=> 'pages/pppoe/profiles/add.php',
     'pppoe_profile_edit'=> 'pages/pppoe/profiles/edit.php',
     'pppoe_profile_delete'=> 'pages/pppoe/profiles/delete.php',
+    'pppoe_payments'   => 'pages/pppoe/payments.php',
+    'pppoe_settings'   => 'pages/pppoe/settings.php',
+    'pppoe_receipt'    => 'pages/pppoe/receipt.php',
     // ONT & ACS
     'monitor_ont'      => 'pages/monitor_ont/list.php',
     // Reports

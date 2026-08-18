@@ -112,13 +112,22 @@ if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['action'])&&$_POST['action'
             db_execute("UPDATE pppoe_payments SET midtrans_tx_id=?,midtrans_status='paid' WHERE midtrans_order_id=?", 'ss', [$payload['transaction_id']??'',$orderId]);
             db_execute("UPDATE pppoe_customers SET status='active',isolated_at=NULL,isolated_reason='' WHERE id=?", 'i', [$pay['cid']]);
             // Reaktivasi di MikroTik
-            $router=db_fetch_one("SELECT * FROM routers WHERE id=?", 'i', [$pay['router_id']]);
-            if($router){
-                require_once __DIR__ . '/../include/routeros_api.class.php';
+            $router = db_fetch_one("SELECT * FROM routers WHERE id=?", 'i', [$pay['router_id']]);
+            if ($router) {
+                require_once __DIR__ . '/../lib/routeros_api.class.php';
                 $api = new RouterosAPI();
-                if ($api->connect($router['ip_address'], $router['username'], decrypt_password($router['password']), $router['port'])) {
-                    $profile=$pay['profile']?:'default';
+                $api->debug = false;
+                if ($api->connect($router['ip_address'], $router['api_user'], $router['api_password'], (int)$router['api_port'])) {
+                    $profile = $pay['profile'] ?: 'default';
                     $api->comm('/ppp/secret/set', ['?name' => $pay['pppoe_username'], 'profile' => $profile]);
+                    
+                    // Disconnect active session agar dial ulang dengan profil aktif
+                    $acts = $api->comm('/ppp/active/print', ['?name' => $pay['pppoe_username']]);
+                    foreach ($acts as $act) {
+                        if (isset($act['.id'])) {
+                            $api->comm('/ppp/active/remove', ['.id' => $act['.id']]);
+                        }
+                    }
                     $api->disconnect();
                 }
             }
@@ -138,8 +147,8 @@ if($cust){
 $paid=isset($_GET['paid'])&&$_GET['paid']==='1';
 $dueDay=$cust['due_day']??1;
 $monthName=date('F');$year=date('Y');
-$paidThisMonth=$cust?$db->prepare("SELECT COUNT(*) FROM pppoe_payments WHERE customer_id=? AND period_month=? AND period_year=? AND midtrans_status IN ('paid','') AND payment_method IN ('cash','midtrans')")->execute([$cust['id'],date('n'),date('Y')])||false:false;
-$paidThisMonth=$cust?$db->prepare("SELECT COUNT(*) FROM pppoe_payments WHERE customer_id=? AND period_month=? AND period_year=? AND midtrans_status!='pending'")->execute([$cust['id'],date('n'),date('Y')])?$db->query("SELECT COUNT(*) FROM pppoe_payments WHERE customer_id={$cust['id']} AND period_month=".date('n')." AND period_year=".date('Y')." AND midtrans_status!='pending'")->fetchColumn():0:0;
+$paidCount = $cust ? (db_fetch_one("SELECT COUNT(*) as c FROM pppoe_payments WHERE customer_id=? AND period_month=? AND period_year=? AND midtrans_status NOT IN ('pending','cancel','deny','expire')", 'iii', [$cust['id'], (int)date('n'), (int)date('Y')])['c'] ?? 0) : 0;
+$paidThisMonth = $paidCount > 0;
 
 $snapJsUrl=$midMode==='production'?'https://app.midtrans.com/snap/snap.js':'https://app.sandbox.midtrans.com/snap/snap.js';
 ?>
