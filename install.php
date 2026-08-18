@@ -42,25 +42,22 @@ function get_freeradius_status(): array {
     $has_enabled = false;
     $is_active = false;
 
-    if (file_exists('/usr/sbin/freeradius') || file_exists('/usr/bin/freeradius') || is_dir('/etc/freeradius/3.0')) {
-        $has_bin = true;
-    } elseif (function_exists('shell_exec')) {
-        $out = @shell_exec('which freeradius 2>/dev/null');
-        if (!empty($out)) $has_bin = true;
-    }
-
-    if (file_exists('/etc/freeradius/3.0/mods-available/sql')) {
-        $has_sql = true;
-    }
-    if (file_exists('/etc/freeradius/3.0/mods-enabled/sql')) {
-        $has_enabled = true;
-    }
-
     if (function_exists('shell_exec')) {
+        $out = @shell_exec('which freeradius 2>/dev/null');
+        if (!empty(trim((string)$out))) $has_bin = true;
+        
+        $sql_avail = @shell_exec('test -f /etc/freeradius/3.0/mods-available/sql && echo "yes" 2>/dev/null');
+        if (trim((string)$sql_avail) === 'yes') $has_sql = true;
+        
+        $sql_en = @shell_exec('test -L /etc/freeradius/3.0/mods-enabled/sql && echo "yes" 2>/dev/null');
+        if (trim((string)$sql_en) === 'yes') $has_enabled = true;
+
         $res = @shell_exec('systemctl is-active freeradius 2>/dev/null');
-        if (trim((string)$res) === 'active') {
-            $is_active = true;
-        }
+        if (trim((string)$res) === 'active') $is_active = true;
+    } else {
+        if (@file_exists('/usr/sbin/freeradius') || @is_dir('/etc/freeradius/3.0')) $has_bin = true;
+        if (@file_exists('/etc/freeradius/3.0/mods-available/sql')) $has_sql = true;
+        if (@file_exists('/etc/freeradius/3.0/mods-enabled/sql')) $has_enabled = true;
     }
 
     return [
@@ -83,44 +80,6 @@ function auto_configure_freeradius(array $dbc): array {
         $port = (int)$dbc['db_port'];
         $cmd = "sudo bash $script $h $u $p $n $port 2>&1";
         $out = @shell_exec($cmd);
-    }
-
-    // Direct write fallback jika PHP punya permission
-    $sql_conf = '/etc/freeradius/3.0/mods-available/sql';
-    if (is_writable($sql_conf) || (is_dir('/etc/freeradius/3.0/mods-available') && is_writable('/etc/freeradius/3.0/mods-available'))) {
-        $host = $dbc['db_host'] === 'localhost' ? '127.0.0.1' : $dbc['db_host'];
-        $content = "sql {\n"
-            . "    driver = \"rlm_sql_mysql\"\n"
-            . "    dialect = \"mysql\"\n"
-            . "    server = \"{$host}\"\n"
-            . "    port = {$dbc['db_port']}\n"
-            . "    login = \"{$dbc['db_user']}\"\n"
-            . "    password = \"{$dbc['db_pass']}\"\n"
-            . "    radius_db = \"{$dbc['db_name']}\"\n"
-            . "    acct_table1 = \"radacct\"\n"
-            . "    acct_table2 = \"radacct\"\n"
-            . "    postauth_table = \"radpostauth\"\n"
-            . "    authcheck_table = \"radcheck\"\n"
-            . "    authreply_table = \"radreply\"\n"
-            . "    groupcheck_table = \"radgroupcheck\"\n"
-            . "    groupreply_table = \"radgroupreply\"\n"
-            . "    usergroup_table = \"radusergroup\"\n"
-            . "    nas_table = \"nas\"\n"
-            . "    sql_user_name = \"%{%\${Stripped-User-Name}:-%{User-Name:-DEFAULT}}\"\n"
-            . "    default_user_profile = \"\"\n"
-            . "    simul_count_query = \"SELECT COUNT(*) FROM \${acct_table1} WHERE username = '%{SQL-User-Name}' AND acctstoptime IS NULL\"\n"
-            . "    simul_verify_query = \"SELECT radacctid, acctsessionid, username, nasipaddress, nasportid, framedipaddress, callingstationid, framedprotocol FROM \${acct_table1} WHERE username = '%{SQL-User-Name}' AND acctstoptime IS NULL\"\n"
-            . "    read_clients = yes\n"
-            . "    client_table = \"nas\"\n"
-            . "    group_attribute = \"SQL-Group\"\n"
-            . "    safe_characters = \"@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_: /\"\n"
-            . "    \$INCLUDE \${modconfdir}/\${.:name}/main/\${dialect}/queries.conf\n"
-            . "}\n";
-        @file_put_contents($sql_conf, $content);
-        @symlink($sql_conf, '/etc/freeradius/3.0/mods-enabled/sql');
-        if (function_exists('shell_exec')) {
-            @shell_exec('sudo systemctl restart freeradius 2>/dev/null || systemctl restart freeradius 2>/dev/null');
-        }
     }
 
     return ['output' => $out];
