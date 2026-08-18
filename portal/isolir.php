@@ -154,7 +154,7 @@ $snapJsUrl=$midMode==='production'?'https://app.midtrans.com/snap/snap.js':'http
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Exo 2',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--g50);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 16px;color:var(--g700)}
 .logo-container{display:flex;align-items:center;justify-content:center;margin-bottom:8px;margin-top:20px}
-.hdr-logo{height:50px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.1))}
+.hdr-logo{height:52px;object-fit:contain;background:#fff;padding:6px 14px;border-radius:10px;box-shadow:0 4px 14px rgba(27,63,166,.1)}
 .logo-text{font-size:1.8rem;font-weight:900;color:var(--blue-d)}
 .subtitle{font-size:.85rem;color:var(--g500);text-align:center;margin-bottom:24px;font-weight:500}
 .card{background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(27,63,166,.08);width:100%;max-width:420px;overflow:hidden;margin-bottom:16px;border:1px solid var(--g200)}

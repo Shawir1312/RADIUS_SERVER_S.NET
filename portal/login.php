@@ -90,8 +90,9 @@ body{font-family:'Exo 2',sans-serif;min-height:100vh;background:var(--g50);displ
 /* Login card */
 .hero{background:linear-gradient(135deg,var(--blue-d),var(--blue));padding:28px 28px 22px;text-align:center;position:relative}
 .hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:20px;background:#fff;clip-path:ellipse(55% 100% at 50% 100%)}
-.hero img{max-width:180px;max-height:56px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3));margin-bottom:10px}
-.hero-t{color:rgba(255,255,255,.72);font-size:.78rem;letter-spacing:.5px}
+.hero .logo-box{background:#ffffff;padding:8px 18px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.15);margin-bottom:12px}
+.hero .logo-box img{max-width:170px;max-height:50px;object-fit:contain;display:block;filter:none;margin-bottom:0}
+.hero-t{color:rgba(255,255,255,.8);font-size:.78rem;letter-spacing:.5px;font-weight:600}
 .body{padding:28px}
 .t1{font-size:1.3rem;font-weight:800;color:var(--blue-d);margin-bottom:3px}
 .t2{color:var(--g400);font-size:.82rem;margin-bottom:22px}
@@ -147,7 +148,7 @@ input.cid{font-family:'JetBrains Mono',monospace;font-size:1rem;letter-spacing:2
 <!-- ═══ Card Login ═══ -->
 <div class="card">
     <div class="hero">
-        <?php if($logo):?><img src="<?=$logo?>" alt="S.NET"><?php else:?><div style="color:#fff;font-size:2rem;font-weight:900;margin-bottom:8px">S.NET</div><?php endif;?>
+        <?php if($logo):?><div class="logo-box"><img src="<?=$logo?>" alt="S.NET"></div><?php else:?><div style="color:#fff;font-size:2rem;font-weight:900;margin-bottom:8px">S.NET</div><?php endif;?>
         <div class="hero-t">Portal Pelanggan — Self-Service WiFi</div>
     </div>
     <div class="body">

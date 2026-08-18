@@ -83,11 +83,12 @@ img { max-width: 100%; }
 }
 
 .sidebar-brand img {
-  height: 36px;
+  height: 38px;
   object-fit: contain;
   background-color: #ffffff;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 
 .sidebar-brand-text {
@@ -508,7 +509,14 @@ body.sidebar-open #sidebar-backdrop {
   text-align: center;
   margin-bottom: 24px;
 }
-.login-logo img { height: 56px; object-fit: contain; }
+.login-logo img {
+  height: 58px;
+  object-fit: contain;
+  background-color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+}
 .login-logo h5 {
   color: var(--blue-dark);
   font-weight: 700;
@@ -845,8 +853,10 @@ table.dataTable thead th { background: var(--gray-50) !important; }
   color: #fff;
 }
 [data-bs-theme="dark"] .login-logo img {
-  background-color: transparent !important;
-  border-radius: 0;
+  background-color: #ffffff !important;
+  padding: 6px 14px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
 }
 [data-bs-theme="dark"] .table thead th,
 [data-bs-theme="dark"] table.dataTable thead th {
