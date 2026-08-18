@@ -33,9 +33,24 @@ DB_PASS="${3:-}"
 DB_NAME="${4:-}"
 DB_PORT="${5:-3306}"
 
-# If parameters not passed via CLI, try parsing from config/db_local.php
+# If parameters not passed via CLI, try parsing from config/db_local.php using PHP CLI
 if [ -z "$DB_HOST" ] && [ -f "$CONFIG_FILE" ]; then
     echo -e "${BLUE}[INFO] Membaca konfigurasi database dari ${CONFIG_FILE}...${NC}"
+    if command -v php &> /dev/null; then
+        DB_PARAMS=$(php -r "
+            @include '$CONFIG_FILE';
+            if (defined('DB_HOST')) {
+                echo DB_HOST . '|' . DB_USER . '|' . DB_PASS . '|' . DB_NAME . '|' . DB_PORT;
+            }
+        ")
+        if [ -n "$DB_PARAMS" ]; then
+            IFS='|' read -r DB_HOST DB_USER DB_PASS DB_NAME DB_PORT <<< "$DB_PARAMS"
+        fi
+    fi
+fi
+
+# Fallback regex if php CLI was not used
+if [ -z "$DB_HOST" ] && [ -f "$CONFIG_FILE" ]; then
     DB_HOST=$(grep "define('DB_HOST'" "$CONFIG_FILE" | sed -E "s/.*'DB_HOST', *'([^']*)'.*/\1/" || echo "127.0.0.1")
     DB_USER=$(grep "define('DB_USER'" "$CONFIG_FILE" | sed -E "s/.*'DB_USER', *'([^']*)'.*/\1/" || echo "radius")
     DB_PASS=$(grep "define('DB_PASS'" "$CONFIG_FILE" | sed -E "s/.*'DB_PASS', *'([^']*)'.*/\1/" || echo "")
