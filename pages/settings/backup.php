@@ -26,31 +26,54 @@ $SAFE_TABLES = [
 ];
 
 // Handle download export
-if (isset($_POST['action']) && $_POST['action'] === 'export_v2') {
+if (isset($_POST['action']) && in_array($_POST['action'], ['export_v2', 'export_v2_gz'])) {
+    @set_time_limit(600);
+    @ini_set('memory_limit', '512M');
+
+    $isGz = ($_POST['action'] === 'export_v2_gz');
+
     $selected = $_POST['tables'] ?? [];
     $selected = array_intersect($selected, array_keys($SAFE_TABLES));
     if (empty($selected)) {
         $msg_error = 'Pilih minimal 1 tabel untuk di-export.';
     } else {
-        header('Content-Type: application/sql; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="snet_v1_to_v2_' . date('Ymd_His') . '.sql"');
+        $filename = 'snet_v1_to_v2_' . date('Ymd_His') . ($isGz ? '.sql.gz' : '.sql');
+        header('Content-Type: ' . ($isGz ? 'application/gzip' : 'application/sql; charset=UTF-8'));
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Cache-Control: no-cache, no-store');
-        echo "-- ============================================================\n";
-        echo "-- S.NET V1 ke V2 Migration Export\n";
-        echo "-- Dibuat: " . date('Y-m-d H:i:s') . "\n";
-        echo "-- CARA RESTORE: Login V2 -> Pengaturan -> Backup & Restore\n";
-        echo "-- Upload file ini di bagian 'Restore dari V1'\n";
-        echo "-- ============================================================\n\n";
-        echo "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS = 0;\n\n";
+
+        $tmpFile = null;
+        $gzOut   = null;
+        if ($isGz) {
+            $tmpFile = tempnam(sys_get_temp_dir(), 'snet_v1_gz_');
+            $gzOut   = gzopen($tmpFile, 'wb6');
+        }
+
+        $writeSql = function(string $text) use ($isGz, $gzOut) {
+            if ($isGz && $gzOut) {
+                gzwrite($gzOut, $text);
+            } else {
+                echo $text;
+            }
+        };
+
+        $writeSql("-- ============================================================\n");
+        $writeSql("-- S.NET V1 ke V2 Migration Export\n");
+        $writeSql("-- Dibuat: " . date('Y-m-d H:i:s') . "\n");
+        $writeSql("-- CARA RESTORE: Login V2 -> Pengaturan -> Backup & Restore\n");
+        $writeSql("-- Upload file ini di bagian 'Restore dari V1'\n");
+        $writeSql("-- ============================================================\n\n");
+        $writeSql("SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS = 0;\n\n");
+
         $db = db();
         foreach ($selected as $table) {
             if (!isset($SAFE_TABLES[$table])) continue;
             $safeTable = $db->real_escape_string($table);
-            echo "-- Tabel: $table (" . $SAFE_TABLES[$table] . ")\n";
-            echo "DELETE FROM `" . $safeTable . "`;\n";
+            $writeSql("-- Tabel: $table (" . $SAFE_TABLES[$table] . ")\n");
+            $writeSql("DELETE FROM `" . $safeTable . "`;\n");
             $result = $db->query("SELECT * FROM `" . $safeTable . "`");
             if (!$result || $result->num_rows === 0) {
-                echo "-- (kosong)\n\n";
+                $writeSql("-- (kosong)\n\n");
                 if ($result) $result->free();
                 continue;
             }
@@ -66,17 +89,23 @@ if (isset($_POST['action']) && $_POST['action'] === 'export_v2') {
                 }, $row);
                 $rows[] = '(' . implode(', ', $vals) . ')';
                 if (count($rows) >= 200) {
-                    echo "INSERT INTO `" . $safeTable . "` ($fieldStr) VALUES\n" . implode(",\n", $rows) . ";\n";
+                    $writeSql("INSERT INTO `" . $safeTable . "` ($fieldStr) VALUES\n" . implode(",\n", $rows) . ";\n");
                     $rows = [];
                 }
             }
             if (!empty($rows)) {
-                echo "INSERT INTO `" . $safeTable . "` ($fieldStr) VALUES\n" . implode(",\n", $rows) . ";\n";
+                $writeSql("INSERT INTO `" . $safeTable . "` ($fieldStr) VALUES\n" . implode(",\n", $rows) . ";\n");
             }
             $result->free();
-            echo "\n";
+            $writeSql("\n");
         }
-        echo "SET FOREIGN_KEY_CHECKS = 1;\n-- Selesai\n";
+        $writeSql("SET FOREIGN_KEY_CHECKS = 1;\n-- Selesai\n");
+
+        if ($isGz && $gzOut) {
+            gzclose($gzOut);
+            readfile($tmpFile);
+            @unlink($tmpFile);
+        }
         exit;
     }
 }
@@ -103,7 +132,7 @@ include __DIR__ . '/../../include/header.php';
 ?>
 <div class="page-header">
     <div>
-        <h1 class="page-title"><i class="bi bi-box-arrow-up me-2 text-primary"></i>Backup & Migrasi ke V2</h1>
+        <h1 class="page-title"><i class="bi bi-box-arrow-up me-2 text-primary"></i>Backup &amp; Migrasi ke V2</h1>
         <p class="page-subtitle">Export data dari V1 ini untuk di-restore ke S.NET Manager V2</p>
     </div>
 </div>
@@ -119,9 +148,9 @@ include __DIR__ . '/../../include/header.php';
         <div><strong>Cara pakai:</strong>
         <ol class="mb-0 mt-1">
             <li>Centang tabel yang ingin di-export</li>
-            <li>Klik <strong>"Download File SQL"</strong></li>
+            <li>Klik tombol <strong>"Download .SQL.GZ (Kecil)"</strong> (hemat kuota & upload cepat)</li>
             <li>Buka V2 &rarr; <strong>Pengaturan &rarr; Backup &amp; Restore</strong></li>
-            <li>Upload file SQL tersebut di bagian <strong>"Restore dari V1"</strong></li>
+            <li>Upload file tersebut di bagian <strong>"Restore dari V1"</strong></li>
         </ol></div>
     </div>
 </div>
@@ -134,7 +163,6 @@ include __DIR__ . '/../../include/header.php';
     </div>
     <div class="card-body">
     <form method="POST">
-        <input type="hidden" name="action" value="export_v2">
         <div class="d-flex justify-content-between mb-3">
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="checkAll" checked>
@@ -172,7 +200,17 @@ include __DIR__ . '/../../include/header.php';
         <div class="alert alert-warning mt-3 mb-3" style="font-size:.83rem;">
             <i class="bi bi-shield-check me-2"></i><strong>Aman:</strong> Data PPPoE Rumahan, WireGuard, WhatsApp, dan konfigurasi V2 lainnya <strong>tidak akan terhapus</strong> saat restore di V2.
         </div>
-        <button type="submit" class="btn btn-primary btn-lg w-100"><i class="bi bi-download me-2"></i>Download File SQL untuk V2</button>
+        <div class="d-flex flex-column flex-sm-row gap-2">
+            <button type="submit" name="action" value="export_v2_gz" class="btn btn-primary btn-lg flex-fill">
+                <i class="bi bi-file-earmark-zip me-2"></i>Download .SQL.GZ (Kecil ~5 MB)
+            </button>
+            <button type="submit" name="action" value="export_v2" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-filetype-sql me-1"></i>.SQL Biasa
+            </button>
+        </div>
+        <div class="form-text mt-2 text-muted small">
+            <i class="bi bi-info-circle me-1"></i>Format <strong>.SQL.GZ</strong> mengompresi data hingga 90% lebih kecil (51 MB jadi ~5 MB) sehingga download dan upload sangat cepat.
+        </div>
     </form>
     </div>
 </div>
@@ -182,7 +220,7 @@ include __DIR__ . '/../../include/header.php';
     <div class="card border-success">
         <div class="card-header bg-success text-white"><h5 class="card-title mb-0"><i class="bi bi-arrow-right-circle me-2"></i>Panduan Restore di V2</h5></div>
         <div class="card-body" style="font-size:.85rem;">
-            <?php foreach (['Download file SQL dari form ini','Buka V2 → Pengaturan → Backup & Restore','Upload file .sql di bagian "Restore dari V1"','Selesai! Data otomatis masuk ke V2'] as $i => $step): ?>
+            <?php foreach (['Download file .sql.gz atau .sql dari form ini','Buka V2 → Pengaturan → Backup & Restore','Upload file di bagian "Restore dari V1"','Selesai! Data otomatis masuk ke V2'] as $i => $step): ?>
             <div class="d-flex gap-2 mb-3">
                 <div class="badge <?= $i===3?'bg-success':'bg-primary' ?> rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:28px;height:28px;font-size:.8rem;"><?= $i===3?'✓':$i+1 ?></div>
                 <div><?= $step ?></div>
@@ -191,9 +229,9 @@ include __DIR__ . '/../../include/header.php';
             <hr>
             <h6 class="fw-bold">✅ Aman di-restore ke V2:</h6>
             <ul class="small text-success mb-2">
-                <li>Voucher & pelanggan hotspot</li>
-                <li>Profil & paket internet</li>
-                <li>Riwayat sesi & pemakaian</li>
+                <li>Voucher &amp; pelanggan hotspot</li>
+                <li>Profil &amp; paket internet</li>
+                <li>Riwayat sesi &amp; pemakaian</li>
                 <li>Router, NAS, akun admin</li>
             </ul>
             <h6 class="fw-bold">🔒 Tidak akan hilang di V2:</h6>
