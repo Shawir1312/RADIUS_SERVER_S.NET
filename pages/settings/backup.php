@@ -1,6 +1,6 @@
 <?php
 /**
- * S.NET V1 → V2 Migration Backup
+ * S.NET V1 -> V2 Migration Backup
  * Export data selektif yang aman untuk di-restore ke aplikasi V2
  */
 $page_title = 'Backup & Migrasi ke V2';
@@ -32,9 +32,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'export_v2') {
     if (empty($selected)) {
         $msg_error = 'Pilih minimal 1 tabel untuk di-export.';
     } else {
-        header('Content-Type: application/sql');
+        header('Content-Type: application/sql; charset=UTF-8');
         header('Content-Disposition: attachment; filename="snet_v1_to_v2_' . date('Ymd_His') . '.sql"');
-        header('Cache-Control: no-cache');
+        header('Cache-Control: no-cache, no-store');
         echo "-- ============================================================\n";
         echo "-- S.NET V1 ke V2 Migration Export\n";
         echo "-- Dibuat: " . date('Y-m-d H:i:s') . "\n";
@@ -45,23 +45,35 @@ if (isset($_POST['action']) && $_POST['action'] === 'export_v2') {
         $db = db();
         foreach ($selected as $table) {
             if (!isset($SAFE_TABLES[$table])) continue;
+            $safeTable = $db->real_escape_string($table);
             echo "-- Tabel: $table (" . $SAFE_TABLES[$table] . ")\n";
-            echo "DELETE FROM \`$table\`;\n";
-            $result = $db->query("SELECT * FROM \`$table\`");
-            if (!$result || $result->num_rows === 0) { echo "-- (kosong)\n\n"; continue; }
+            echo "DELETE FROM `" . $safeTable . "`;\n";
+            $result = $db->query("SELECT * FROM `" . $safeTable . "`");
+            if (!$result || $result->num_rows === 0) {
+                echo "-- (kosong)\n\n";
+                if ($result) $result->free();
+                continue;
+            }
             $fields = [];
-            while ($fi = $result->fetch_field()) { $fields[] = '`' . $fi->name . '`'; }
+            while ($fi = $result->fetch_field()) {
+                $fields[] = '`' . $fi->name . '`';
+            }
             $fieldStr = implode(', ', $fields);
             $rows = [];
             while ($row = $result->fetch_row()) {
-                $vals = array_map(fn($v) => $v === null ? 'NULL' : "'" . $db->real_escape_string($v) . "'", $row);
+                $vals = array_map(function($v) use ($db) {
+                    return $v === null ? 'NULL' : "'" . $db->real_escape_string($v) . "'";
+                }, $row);
                 $rows[] = '(' . implode(', ', $vals) . ')';
                 if (count($rows) >= 200) {
-                    echo "INSERT INTO \`$table\` ($fieldStr) VALUES\n" . implode(",\n", $rows) . ";\n";
+                    echo "INSERT INTO `" . $safeTable . "` ($fieldStr) VALUES\n" . implode(",\n", $rows) . ";\n";
                     $rows = [];
                 }
             }
-            if (!empty($rows)) echo "INSERT INTO \`$table\` ($fieldStr) VALUES\n" . implode(",\n", $rows) . ";\n";
+            if (!empty($rows)) {
+                echo "INSERT INTO `" . $safeTable . "` ($fieldStr) VALUES\n" . implode(",\n", $rows) . ";\n";
+            }
+            $result->free();
             echo "\n";
         }
         echo "SET FOREIGN_KEY_CHECKS = 1;\n-- Selesai\n";
@@ -73,9 +85,18 @@ if (isset($_POST['action']) && $_POST['action'] === 'export_v2') {
 $table_counts = [];
 foreach ($SAFE_TABLES as $t => $label) {
     try {
-        $r = db()->query("SELECT COUNT(*) AS n FROM \`$t\`");
-        $table_counts[$t] = $r ? (int)$r->fetch_assoc()['n'] : 0;
-    } catch (Throwable $e) { $table_counts[$t] = -1; }
+        $safeT = db()->real_escape_string($t);
+        $r = db()->query("SELECT COUNT(*) AS n FROM `" . $safeT . "`");
+        if ($r) {
+            $row = $r->fetch_assoc();
+            $table_counts[$t] = (int)($row['n'] ?? 0);
+            $r->free();
+        } else {
+            $table_counts[$t] = -1;
+        }
+    } catch (Throwable $e) {
+        $table_counts[$t] = -1;
+    }
 }
 
 include __DIR__ . '/../../include/header.php';
