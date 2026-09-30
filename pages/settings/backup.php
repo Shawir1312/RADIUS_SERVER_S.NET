@@ -168,7 +168,11 @@ include __DIR__ . '/../../include/header.php';
                 <input class="form-check-input" type="checkbox" id="checkAll" checked>
                 <label class="form-check-label fw-bold" for="checkAll">Pilih Semua</label>
             </div>
-            <small class="text-muted">Centang tabel yang ingin di-export</small>
+            <small class="text-muted">Tabel utama dicentang otomatis</small>
+        </div>
+                <div class="alert alert-warning py-2 mb-3" style="font-size:.82rem;">
+            <i class="bi bi-lightning-charge-fill text-warning me-1"></i>
+            <strong>Tips Migrasi Cepat:</strong> Tabel riwayat sesi (<code>radacct</code>) otomatis tidak dicentang karena berukuran sangat besar (~45 MB) dan berisi jutaan log sesi lama. Tanpa <code>radacct</code>, ukuran export hanya <strong>~500 KB</strong> dan proses restore selesai dalam <strong>2 detik</strong>!
         </div>
         <div class="table-responsive">
         <table class="table table-sm table-hover align-middle">
@@ -179,10 +183,12 @@ include __DIR__ . '/../../include/header.php';
             <?php foreach ($SAFE_TABLES as $table => $label):
                 $cnt = $table_counts[$table];
                 $exists = $cnt >= 0;
+                $isHeavy = in_array($table, ['radacct', 'radpostauth']);
+                $isChecked = $exists && !$isHeavy;
                 $isCore = in_array($table, ['radcheck','radreply','radacct','radpostauth','radusergroup','radgroupcheck','radgroupreply','nas']);
             ?>
-            <tr class="<?= !$exists ? 'table-secondary text-muted' : '' ?>">
-                <td><input class="form-check-input tbl-check" type="checkbox" name="tables[]" value="<?= $table ?>" id="tbl_<?= $table ?>" <?= $exists ? 'checked' : 'disabled' ?>></td>
+            <tr class="<?= !$exists ? 'table-secondary text-muted' : ($isHeavy ? 'table-light' : '') ?>">
+                <td><input class="form-check-input tbl-check" type="checkbox" name="tables[]" value="<?= $table ?>" id="tbl_<?= $table ?>" <?= $isChecked ? 'checked' : '' ?> <?= !$exists ? 'disabled' : '' ?>></td>
                 <td><label for="tbl_<?= $table ?>" class="font-monospace mb-0" style="font-size:.82rem;cursor:pointer;"><?= $table ?></label></td>
                 <td style="font-size:.82rem;"><?= $label ?></td>
                 <td class="text-end">
